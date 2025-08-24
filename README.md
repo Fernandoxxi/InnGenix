@@ -7,6 +7,15 @@ con enfoque en usabilidad y navegación.
 
 ---
 
+## 📂 Estructura
+- `empresa/hotel/caribbean/admin/` → panel admin (configuración, finanzas, reembolsos, reportes)
+- `empresa/hotel/caribbean/` → vistas de recepción (dashboard, inventario, post-venta, login)
+- `public/hotel/caribbean/` → vistas públicas (contacto, habitaciones, reserva, registro, login)
+- `styles/` → estilos globales (TailwindCSS, CSS personalizado)
+- `shared/` → componentes reutilizables
+
+---
+
 ## ✨ Características
 
 - **Interfaces separadas por roles**: cliente, recepcionista y administrador.  
@@ -27,21 +36,15 @@ con enfoque en usabilidad y navegación.
 
 ---
 
-## 🚀 Cómo usar
+## 🌐 Demo Online
 
-1. Clonar el repositorio:
-   ```bash
-   git clone https://github.com/Fernandoxxi/InnGenix.git
+- **CLIENTE**: https://symphonious-sprinkles-da7e8f.netlify.app/public/hotel/caribbean/indexpublico.html
+- **RECEPCION O ADMIN**: https://symphonious-sprinkles-da7e8f.netlify.app/empresa/hotel/caribbean/login.html
 
-2. Instalar dependencias:
-    npm install
-
-3. Correr build de Tailwind:
-    npm run build
-
-4. Abrir indexpublico.html en un navegador (primera vista, iniciar sesion con cualquier credencial no esta validado)
-
-5. Abrir /empresa/hotel/caribbean/login.html para acceder a los roles RECECPIONISTA y ADMIN
+    - **Credenciales Cliente**:
+        - **USER**: No validado (Cualquier Usuario)
+        - **PASS**: No validado (Cualquier Password)
+    
     - **Credenciales Recepcionista**:
         - **USER**: RECEPCION1
         - **PASS**: 1234
@@ -50,10 +53,7 @@ con enfoque en usabilidad y navegación.
         - **USER**: ADMIN
         - **PASS**: 1234
 
-## 🌐 Demo Online
-- **CLIENTE**: https://symphonious-sprinkles-da7e8f.netlify.app/public/hotel/caribbean/indexpublico.html
 
-- **RECEPCION O ADMIN**: https://symphonious-sprinkles-da7e8f.netlify.app/empresa/hotel/caribbean/login.html
 
 
 
