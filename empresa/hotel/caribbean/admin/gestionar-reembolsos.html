@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Gestionar Reembolsos - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
+    <h1 class="text-lg font-bold flex items-center gap-2">
+      <i class="fa-solid fa-hotel text-cyan-400"></i> Hotel Caribbean
+    </h1>
+    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
+      <i class="fa-solid fa-right-from-bracket"></i>Salir
+    </button>
+  </header>
+
+  <div class="flex">
+    <!-- SIDEBAR -->
+    <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
+      <nav class="space-y-2 text-slate-700">
+        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
+        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
+        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
+        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-gear text-gray-500"></i> Configuración</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+      <!-- HEADER PAGE -->
+      <div class="flex justify-between items-center">
+        <h2 class="text-2xl font-bold">Gestión de Reembolsos</h2>
+        <div class="flex gap-2">
+          <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> Excel</button>
+          <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> PDF</button>
+        </div>
+      </div>
+
+      <!-- FILTROS -->
+      <div class="bg-white p-4 rounded shadow flex flex-wrap gap-3 items-center">
+        <input type="text" id="buscar" placeholder="Buscar por código o cliente..." class="border rounded px-3 py-2 text-sm flex-1">
+        <select id="filtroEstado" class="border rounded px-3 py-2 text-sm">
+          <option value="">Todos</option>
+          <option value="Pendiente">Pendiente</option>
+          <option value="Aprobado">Aprobado</option>
+          <option value="Rechazado">Rechazado</option>
+        </select>
+        <input type="date" id="fechaFiltro" class="border rounded px-3 py-2 text-sm">
+        <button onclick="filtrar()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">Filtrar</button>
+      </div>
+
+      <!-- TABLA DE SOLICITUDES -->
+      <div class="bg-white p-4 rounded shadow overflow-x-auto">
+        <table id="tablaReembolsos" class="w-full text-sm border-collapse">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="p-2 text-left">Código</th>
+              <th class="p-2 text-left">Cliente</th>
+              <th class="p-2 text-left">Monto</th>
+              <th class="p-2 text-left">Motivo</th>
+              <th class="p-2 text-left">Fecha Solicitud</th>
+              <th class="p-2 text-left">Estado</th>
+              <th class="p-2 text-left">Acciones</th>
+            </tr>
+          </thead>
+          <tbody id="bodyReembolsos">
+            <!-- Se llena dinámicamente -->
+          </tbody>
+        </table>
+      </div>
+    </main>
+  </div>
+
+  <script>
+    const solicitudes = [
+      {codigo:"HC123456", cliente:"Carlos Pérez", monto:"S/ 650.00", motivo:"Emergencia personal", fecha:"2025-08-15", estado:"Pendiente"},
+      {codigo:"HC789012", cliente:"Ana López", monto:"S/ 420.00", motivo:"Reserva duplicada", fecha:"2025-08-14", estado:"Pendiente"},
+      {codigo:"HC456789", cliente:"Luis Gómez", monto:"S/ 1,200.00", motivo:"Problemas de viaje", fecha:"2025-08-13", estado:"Aprobado"},
+    ];
+
+    function renderTabla(data){
+      const tbody = document.getElementById('bodyReembolsos');
+      tbody.innerHTML="";
+      data.forEach(r=>{
+        tbody.innerHTML+=`
+          <tr class="border-b hover:bg-slate-50">
+            <td class="p-2">${r.codigo}</td>
+            <td class="p-2">${r.cliente}</td>
+            <td class="p-2">${r.monto}</td>
+            <td class="p-2">${r.motivo}</td>
+            <td class="p-2">${r.fecha}</td>
+            <td class="p-2">
+              <span class="px-2 py-1 rounded text-xs ${r.estado==='Pendiente'?'bg-yellow-100 text-yellow-700':r.estado==='Aprobado'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${r.estado}</span>
+            </td>
+            <td class="p-2 flex gap-2">
+              ${r.estado==="Pendiente" ? `
+              <button onclick="aprobar('${r.codigo}')" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i> Aprobar</button>
+              <button onclick="rechazar('${r.codigo}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+              ` : `<span class="text-gray-500">--</span>`}
+            </td>
+          </tr>`;
+      });
+    }
+
+    function aprobar(cod){
+      const s=solicitudes.find(x=>x.codigo===cod);
+      if(s){ s.estado="Aprobado"; renderTabla(solicitudes); alert("Reembolso aprobado para "+cod); }
+    }
+    function rechazar(cod){
+      const s=solicitudes.find(x=>x.codigo===cod);
+      if(s){ s.estado="Rechazado"; renderTabla(solicitudes); alert("Reembolso rechazado para "+cod); }
+    }
+    function filtrar(){
+      const texto=document.getElementById('buscar').value.toLowerCase();
+      const estado=document.getElementById('filtroEstado').value;
+      const fecha=document.getElementById('fechaFiltro').value;
+      const filtrado=solicitudes.filter(r=>
+        (r.cliente.toLowerCase().includes(texto) || r.codigo.toLowerCase().includes(texto)) &&
+        (!estado || r.estado===estado) &&
+        (!fecha || r.fecha===fecha)
+      );
+      renderTabla(filtrado);
+    }
+
+    function exportExcel(){
+      const tabla=document.getElementById("tablaReembolsos");
+      const wb=XLSX.utils.book_new();
+      const ws=XLSX.utils.table_to_sheet(tabla);
+      XLSX.utils.book_append_sheet(wb, ws, "Reembolsos");
+      XLSX.writeFile(wb, "Reembolsos.xlsx");
+    }
+    function exportPDF(){
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.text("Reporte de Reembolsos", 14, 20);
+      doc.autoTable({ html: '#tablaReembolsos', startY: 30 });
+      doc.save("Reembolsos.pdf");
+    }
+
+    function logout(){
+      window.location.href = "../login.html";
+    }
+
+    // Inicial
+    renderTabla(solicitudes);
+  </script>
+</body>
+</html>

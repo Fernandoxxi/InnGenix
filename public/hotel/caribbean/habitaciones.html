@@ -1,0 +1,892 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Habitaciones - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D',
+            dorado: '#D4AF37'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    .slide-up {
+      animation: slideUp 0.5s ease-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideUp {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    .room-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .room-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .view-360-container {
+      position: relative;
+      height: 300px;
+      overflow: hidden;
+      border-radius: 1rem 1rem 0 0;
+      cursor: grab;
+    }
+    .view-360-container:active {
+      cursor: grabbing;
+    }
+    .view-360-overlay {
+      position: absolute;
+      bottom: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.7);
+      color: white;
+      padding: 5px 10px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+    .pricing-tabs {
+      display: flex;
+      border-bottom: 2px solid #e5e7eb;
+    }
+    .pricing-tab {
+      padding: 10px 15px;
+      cursor: pointer;
+      border-bottom: 3px solid transparent;
+      transition: all 0.3s;
+    }
+    .pricing-tab.active {
+      border-bottom-color: #2E5339;
+      color: #2E5339;
+      font-weight: 600;
+    }
+    .pricing-content {
+      display: none;
+    }
+    .pricing-content.active {
+      display: block;
+    }
+    .tarifa-destacada {
+      border: 2px solid #D4AF37;
+      position: relative;
+    }
+    .tarifa-destacada::before {
+      content: "Más popular";
+      position: absolute;
+      top: -12px;
+      right: 15px;
+      background: #D4AF37;
+      color: white;
+      padding: 3px 10px;
+      border-radius: 15px;
+      font-size: 0.7rem;
+      font-weight: bold;
+    }
+    .habitacion-modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+    }
+    .habitacion-modal .contenido {
+      background: white;
+      border-radius: 1rem;
+      width: 90%;
+      max-width: 1000px;
+      max-height: 90vh;
+      overflow: auto;
+      position: relative;
+    }
+    .close-modal {
+      position: absolute;
+      top: 15px;
+      right: 15px;
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 101;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition font-medium">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Menú de usuario -->
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <!-- Dropdown -->
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-user"></i>
+              <span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button> 
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-grow py-12 px-4">
+    <div class="max-w-7xl mx-auto">
+      <!-- Encabezado -->
+      <div class="text-center mb-12 fade-in">
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Nuestras Habitaciones</h1>
+        <p class="text-gray-600 mt-2 max-w-2xl mx-auto">Disfruta de nuestro sistema flexible de tarifas por horas. Explora nuestras habitaciones en 360°.</p>
+      </div>
+
+      <!-- Selector de fecha para calcular tarifas -->
+      <div class="bg-white rounded-2xl shadow-md p-6 mb-8 slide-up">
+        <h2 class="text-xl font-bold mb-4 text-azul">Consulta tarifas según fecha</h2>
+        <div class="flex flex-col md:flex-row gap-4 items-center">
+          <div class="flex-1">
+            <label for="fechaConsulta" class="block text-sm font-medium text-gray-700 mb-1">Selecciona una fecha:</label>
+            <input type="date" id="fechaConsulta" class="w-full p-3 border border-gray-300 rounded-lg">
+          </div>
+          <div>
+            <button id="calcularTarifas" class="mt-6 px-6 py-3 bg-verde hover:bg-green-700 text-white rounded-lg font-medium">
+              Calcular Tarifas
+            </button>
+          </div>
+        </div>
+        <div id="resultadoTarifas" class="mt-4 hidden">
+          <p class="text-sm p-3 bg-blue-50 rounded-lg">Las tarifas mostradas corresponden a: <span id="tipoTarifa" class="font-medium"></span></p>
+        </div>
+      </div>
+
+      <!-- Lista de Habitaciones -->
+      <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+        <!-- Habitación 1 - Standard -->
+        <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="view-360-container" id="view-360-standard">
+            <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Habitación Standard" class="w-full h-full object-cover">
+            <div class="view-360-overlay">
+              <i class="fas fa-360-degrees"></i> Haz clic y arrastra para ver en 360°
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-gray-900">Habitación Standard</h3>
+              <span class="text-verde font-bold text-xl"><span id="precio-standard">S/ 220</span><span class="text-sm text-gray-500">/24h</span></span>
+            </div>
+            <p class="text-gray-600 mb-4">Cómoda habitación perfecta para estancias cortas con todas las comodidades esenciales.</p>
+            
+            <div class="pricing-tabs mb-4">
+              <div class="pricing-tab active" data-target="standard-lv">L-V</div>
+              <div class="pricing-tab" data-target="standard-sd">S-D-F</div>
+            </div>
+            
+            <div class="pricing-content active" id="standard-lv">
+              <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 80</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 120</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 220</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="pricing-content" id="standard-sd">
+              <div class="grid grid-cols-4 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 70</div>
+                  <div class="text-xs">4 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 100</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 180</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 320</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button class="flex-1 py-2 px-4 bg-verde hover:bg-green-700 text-white rounded-lg font-medium transition-colors ver-detalle" data-habitacion="standard">
+                Ver Detalles
+              </button>
+              <a href="reserva.html?tipo=habitacion&id=standard"
+                class="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                Reservar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Habitación 2 - Deluxe -->
+        <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="view-360-container" id="view-360-deluxe">
+            <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" alt="Habitación Deluxe" class="w-full h-full object-cover">
+            <div class="view-360-overlay">
+              <i class="fas fa-360-degrees"></i> Haz clic y arrastra para ver en 360°
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-gray-900">Habitación Deluxe</h3>
+              <span class="text-verde font-bold text-xl"><span id="precio-deluxe">S/ 350</span><span class="text-sm text-gray-500">/24h</span></span>
+            </div>
+            <p class="text-gray-600 mb-4">Amplia habitación con vista al mar, diseño elegante y amenities de primera calidad.</p>
+            
+            <div class="pricing-tabs mb-4">
+              <div class="pricing-tab active" data-target="deluxe-lv">L-V</div>
+              <div class="pricing-tab" data-target="deluxe-sd">S-D-F</div>
+            </div>
+            
+            <div class="pricing-content active" id="deluxe-lv">
+              <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 130</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 200</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 350</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="pricing-content" id="deluxe-sd">
+              <div class="grid grid-cols-4 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 120</div>
+                  <div class="text-xs">4 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 160</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 280</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 480</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button class="flex-1 py-2 px-4 bg-verde hover:bg-green-700 text-white rounded-lg font-medium transition-colors ver-detalle" data-habitacion="deluxe">
+                Ver Detalles
+              </button>
+              <a href="reserva.html?tipo=habitacion&id=deluxe"
+                class="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                Reservar
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Habitación 3 - Suite -->
+        <div class="room-card bg-white rounded-2xl shadow-md overflow-hidden">
+          <div class="view-360-container" id="view-360-suite">
+            <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Suite Presidencial" class="w-full h-full object-cover">
+            <div class="view-360-overlay">
+              <i class="fas fa-360-degrees"></i> Haz clic y arrastra para ver en 360°
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="flex justify-between items-start mb-4">
+              <h3 class="text-xl font-bold text-gray-900">Suite Presidencial</h3>
+              <span class="text-verde font-bold text-xl"><span id="precio-suite">S/ 650</span><span class="text-sm text-gray-500">/24h</span></span>
+            </div>
+            <p class="text-gray-600 mb-4">La máxima experiencia de lujo con espacio amplio, amenities exclusivas y servicio personalizado.</p>
+            
+            <div class="pricing-tabs mb-4">
+              <div class="pricing-tab active" data-target="suite-lv">L-V</div>
+              <div class="pricing-tab" data-target="suite-sd">S-D-F</div>
+            </div>
+            
+            <div class="pricing-content active" id="suite-lv">
+              <div class="grid grid-cols-3 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 250</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 400</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 650</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="pricing-content" id="suite-sd">
+              <div class="grid grid-cols-4 gap-2 mb-4">
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 220</div>
+                  <div class="text-xs">4 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 300</div>
+                  <div class="text-xs">6 horas</div>
+                </div>
+                <div class="text-center p-2 bg-gray-100 rounded">
+                  <div class="font-bold text-verde">S/ 500</div>
+                  <div class="text-xs">12 horas</div>
+                </div>
+                <div class="text-center p-2 bg-verde text-white rounded tarifa-destacada">
+                  <div class="font-bold">S/ 780</div>
+                  <div class="text-xs">24 horas</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="flex gap-3">
+              <button class="flex-1 py-2 px-4 bg-verde hover:bg-green-700 text-white rounded-lg font-medium transition-colors ver-detalle" data-habitacion="suite">
+                Ver Detalles
+              </button>
+              <a href="reserva.html?tipo=habitacion&id=suite"
+                class="py-2 px-4 bg-gray-100 hover:bg-gray-200 text-gray-800 rounded-lg font-medium transition-colors">
+                Reservar
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal para detalles de habitación -->
+      <div id="modalHabitacion" class="habitacion-modal">
+        <div class="contenido">
+          <div class="close-modal" id="closeModal">
+            <i class="fas fa-times"></i>
+          </div>
+          <div id="modalContent" class="p-6">
+            <!-- El contenido se cargará dinámicamente -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+
+  <!-- JS -->
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Mobile menu
+      const mobileBtn = document.getElementById('mobileMenuButton');
+      const mobileMenu = document.getElementById('mobileMenu');
+
+      mobileBtn?.addEventListener('click', () => {
+        const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+        mobileBtn.setAttribute('aria-expanded', String(!expanded));
+        mobileMenu.classList.toggle('hidden');
+      });
+
+      // User menu
+      const userBtn = document.getElementById('userMenuButton');
+      const userMenu = document.getElementById('userMenu');
+
+      function openMenu(menu, btn) {
+        menu.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+        menu.classList.add('opacity-100', 'scale-100');
+        btn?.setAttribute('aria-expanded', 'true');
+      }
+
+      function closeMenu(menu, btn) {
+        menu.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+        menu.classList.remove('opacity-100', 'scale-100');
+        btn?.setAttribute('aria-expanded', 'false');
+      }
+
+      userBtn?.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
+        if (isOpen) closeMenu(userMenu, userBtn); else openMenu(userMenu, userBtn);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+          closeMenu(userMenu, userBtn);
+        }
+      });
+
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeMenu(userMenu, userBtn);
+      });
+
+      // Tabs de precios
+      const pricingTabs = document.querySelectorAll('.pricing-tab');
+      pricingTabs.forEach(tab => {
+        tab.addEventListener('click', function() {
+          const target = this.getAttribute('data-target');
+          const parent = this.closest('.room-card');
+          
+          // Desactivar todas las pestañas
+          parent.querySelectorAll('.pricing-tab').forEach(t => t.classList.remove('active'));
+          // Activar esta pestaña
+          this.classList.add('active');
+          
+          // Ocultar todos los contenidos
+          parent.querySelectorAll('.pricing-content').forEach(c => c.classList.remove('active'));
+          // Mostrar el contenido objetivo
+          document.getElementById(target).classList.add('active');
+        });
+      });
+
+      // Simulación de vista 360
+      const viewContainers = document.querySelectorAll('.view-360-container');
+      viewContainers.forEach(container => {
+        let isDown = false;
+        let startX;
+        let images = [
+          container.querySelector('img').src,
+          'https://images.unsplash.com/photo-1505693416388-ac5ce068fe85?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80',
+          'https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80'
+        ];
+        let currentImage = 0;
+
+        container.addEventListener('mousedown', (e) => {
+          isDown = true;
+          startX = e.pageX - container.offsetLeft;
+        });
+        
+        container.addEventListener('mouseleave', () => {
+          isDown = false;
+        });
+        
+        container.addEventListener('mouseup', () => {
+          isDown = false;
+        });
+        
+        container.addEventListener('mousemove', (e) => {
+          if (!isDown) return;
+          e.preventDefault();
+          const x = e.pageX - container.offsetLeft;
+          const walk = (x - startX) * 2;
+          
+          if (Math.abs(walk) > 50) {
+            currentImage = walk > 0 
+              ? (currentImage + 1) % images.length 
+              : (currentImage - 1 + images.length) % images.length;
+            
+            container.querySelector('img').src = images[currentImage];
+            startX = e.pageX - container.offsetLeft;
+          }
+        });
+
+        // Para dispositivos táctiles
+        container.addEventListener('touchstart', (e) => {
+          isDown = true;
+          startX = e.touches[0].pageX - container.offsetLeft;
+        });
+        
+        container.addEventListener('touchend', () => {
+          isDown = false;
+        });
+        
+        container.addEventListener('touchmove', (e) => {
+          if (!isDown) return;
+          const x = e.touches[0].pageX - container.offsetLeft;
+          const walk = (x - startX) * 2;
+          
+          if (Math.abs(walk) > 50) {
+            currentImage = walk > 0 
+              ? (currentImage + 1) % images.length 
+              : (currentImage - 1 + images.length) % images.length;
+            
+            container.querySelector('img').src = images[currentImage];
+            startX = e.touches[0].pageX - container.offsetLeft;
+          }
+        });
+      });
+
+      // Cálculo de tarifas según fecha
+      const fechaConsulta = document.getElementById('fechaConsulta');
+      const calcularTarifasBtn = document.getElementById('calcularTarifas');
+      const resultadoTarifas = document.getElementById('resultadoTarifas');
+      const tipoTarifa = document.getElementById('tipoTarifa');
+
+      // Establecer fecha mínima como hoy
+      const today = new Date().toISOString().split('T')[0];
+      fechaConsulta.min = today;
+
+      calcularTarifasBtn.addEventListener('click', function() {
+        if (!fechaConsulta.value) {
+          alert('Por favor, selecciona una fecha');
+          return;
+        }
+
+        const selectedDate = new Date(fechaConsulta.value);
+        const dayOfWeek = selectedDate.getDay(); // 0 = Domingo, 1 = Lunes, ..., 6 = Sábado
+        const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+        
+        // Verificar si es feriado (aquí se podría integrar una API de feriados)
+        const isHoliday = false; // Simulación
+        
+        if (isWeekend || isHoliday) {
+          tipoTarifa.textContent = 'Fines de semana y feriados';
+          // Activar pestañas de fin de semana
+          document.querySelectorAll('.pricing-tab[data-target$="sd"]').forEach(tab => {
+            tab.click();
+          });
+        } else {
+          tipoTarifa.textContent = 'Lunes a viernes';
+          // Activar pestañas de días laborables
+          document.querySelectorAll('.pricing-tab[data-target$="lv"]').forEach(tab => {
+            tab.click();
+          });
+        }
+        
+        resultadoTarifas.classList.remove('hidden');
+      });
+
+      // Modal de detalles de habitación
+      const modal = document.getElementById('modalHabitacion');
+      const closeModalBtn = document.getElementById('closeModal');
+      const modalContent = document.getElementById('modalContent');
+      const verDetalleButtons = document.querySelectorAll('.ver-detalle');
+
+      verDetalleButtons.forEach(button => {
+        button.addEventListener('click', function() {
+          const habitacion = this.getAttribute('data-habitacion');
+          let contenido = '';
+          
+          if (habitacion === 'standard') {
+            contenido = `
+              <h2 class="text-2xl font-bold mb-4">Habitación Standard</h2>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <img src="https://images.unsplash.com/photo-1611892440504-42a792e24d32?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Habitación Standard" class="w-full rounded-lg">
+                </div>
+                <div>
+                  <p class="text-gray-600 mb-4">Nuestra habitación Standard ofrece todas las comodidades esenciales para una estancia confortable. Ideal para viajes de negocios o escapadas cortas.</p>
+                  <div class="mb-4">
+                    <h3 class="font-bold mb-2">Características:</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                      <li>Cama doble de 1.50m</li>
+                      <li>Baño privado con amenities</li>
+                      <li>Televisor de 32" con cable</li>
+                      <li>Aire acondicionado</li>
+                      <li>Wi-Fi gratuito</li>
+                      <li>Caja de seguridad</li>
+                      <li>Teléfono</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6">
+                <h3 class="font-bold mb-2">Servicios incluidos:</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-coffee text-verde"></i>
+                    <span>Desayuno continental</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-towel text-verde"></i>
+                    <span>Toallas y ropa de cama</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-soap text-verde"></i>
+                    <span>Artículos de tocador</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-bell text-verde"></i>
+                    <span>Servicio a la habitación</span>
+                  </div>
+                </div>
+              </div>`;
+          } else if (habitacion === 'deluxe') {
+            contenido = `
+              <h2 class="text-2xl font-bold mb-4">Habitación Deluxe</h2>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <img src="https://images.unsplash.com/photo-1566665797739-1674de7a421a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1074&q=80" alt="Habitación Deluxe" class="w-full rounded-lg">
+                </div>
+                <div>
+                  <p class="text-gray-600 mb-4">Amplia habitación con vista al mar y amenities de primera calidad. Disfruta de un espacio elegante y refinado para tu estancia.</p>
+                  <div class="mb-4">
+                    <h3 class="font-bold mb-2">Características:</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                      <li>Cama king size de 2.00m</li>
+                      <li>Baño privado con bañera</li>
+                      <li>Televisor smart TV de 43"</li>
+                      <li>Aire acondicionado inverter</li>
+                      <li>Wi-Fi gratuito de alta velocidad</li>
+                      <li>Minibar surtido</li>
+                      <li>Balcón con vista al mar</li>
+                      <li>Área de trabajo</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6">
+                <h3 class="font-bold mb-2">Servicios incluidos:</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-utensils text-verde"></i>
+                    <span>Desayuno buffet</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-concierge-bell text-verde"></i>
+                    <span>Servicio de conserjería</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-robe text-verde"></i>
+                    <span>Batas y pantuflas</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-wine-glass-alt text-verde"></i>
+                    <span>Welcome drink</span>
+                  </div>
+                </div>
+              </div>`;
+          } else if (habitacion === 'suite') {
+            contenido = `
+              <h2 class="text-2xl font-bold mb-4">Suite Presidencial</h2>
+              <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                  <img src="https://images.unsplash.com/photo-1584132967334-10e028bd69f7?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=1170&q=80" alt="Suite Presidencial" class="w-full rounded-lg">
+                </div>
+                <div>
+                  <p class="text-gray-600 mb-4">La experiencia máxima de lujo con espacio amplio, diseño exclusivo y servicios personalizados. Ideal para ocasiones especiales.</p>
+                  <div class="mb-4">
+                    <h3 class="font-bold mb-2">Características:</h3>
+                    <ul class="list-disc list-inside text-gray-600 space-y-1">
+                      <li>Suite con sala de estar separada</li>
+                      <li>Dormitorio con cama king size</li>
+                      <li>Baño de lujo con jacuzzi</li>
+                      <li>Televisores smart TV 55" en sala y dormitorio</li>
+                      <li>Sistema de climatización individual</li>
+                      <li>Wi-Fi gratuito premium</li>
+                      <li>Minibar y área de café/tea</li>
+                      <li>Terraza privada con vistas panorámicas</li>
+                      <li>Vestidor independiente</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              <div class="mt-6">
+                <h3 class="font-bold mb-2">Servicios incluidos:</h3>
+                <div class="grid grid-cols-2 gap-2">
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-crown text-verde"></i>
+                    <span>Desayuno á la carte</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-user-check text-verde"></i>
+                    <span>Butler service</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-gem text-verde"></i>
+                    <span>Amenities de lujo</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <i class="fas fa-glass-cheers text-verde"></i>
+                    <span>Acceso a lounge executive</span>
+                  </div>
+                </div>
+              </div>`;
+          }
+          
+          modalContent.innerHTML = contenido;
+          modal.style.display = 'flex';
+        });
+      });
+
+      // Cerrar modal
+      closeModalBtn.addEventListener('click', () => {
+        modal.style.display = 'none';
+      });
+
+      // Cerrar modal al hacer clic fuera
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.style.display = 'none';
+        }
+      });
+    });
+
+
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+  </script>
+</body>
+</html>

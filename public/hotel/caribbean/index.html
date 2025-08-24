@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hotel Caribbean - Inicio</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D'
+          }
+        }
+      }
+    }
+  </script>
+</head>
+<body class="bg-gray-100 text-gray-800">
+
+   <!-- HEADER -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Menú de usuario -->
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <!-- Dropdown -->
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-user"></i>
+              <span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- HERO -->
+  <section class="relative bg-cover bg-center h-[420px]" style="background-image: url('assets/hotel-banner.jpg');">
+    <div class="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/40"></div>
+    <div class="relative z-10 h-full flex flex-col items-center justify-center text-white text-center px-4">
+      <h2 class="text-4xl md:text-5xl font-bold mb-3 drop-shadow">Tu Refugio de Confort y Lujo</h2>
+      <p class="max-w-2xl text-white/90">Vive una experiencia única en el corazón de la ciudad, con atención personalizada y espacios diseñados para ti.</p>
+    </div>
+  </section>
+
+  <!-- POR QUÉ ELEGIRNOS -->
+  <section class="max-w-7xl mx-auto px-6 py-12">
+    <h3 class="text-2xl font-bold text-center mb-10 text-azul">¿Por qué elegirnos?</h3>
+    <div class="grid gap-6 md:grid-cols-4">
+      <div class="bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition">
+        <i class="fas fa-star text-green-600 text-3xl mb-4"></i>
+        <h4 class="font-bold text-lg mb-1">Calidad Premium</h4>
+        <p class="text-sm text-gray-600">Habitaciones y servicios de primer nivel para tu comodidad.</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition">
+        <i class="fas fa-map-marker-alt text-green-600 text-3xl mb-4"></i>
+        <h4 class="font-bold text-lg mb-1">Ubicación Estratégica</h4>
+        <p class="text-sm text-gray-600">Cerca de los principales atractivos turísticos y comerciales.</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition">
+        <i class="fas fa-utensils text-green-600 text-3xl mb-4"></i>
+        <h4 class="font-bold text-lg mb-1">Gastronomía Exclusiva</h4>
+        <p class="text-sm text-gray-600">Menú variado con platillos nacionales e internacionales.</p>
+      </div>
+      <div class="bg-white p-6 rounded-2xl shadow-sm ring-1 ring-gray-100 hover:shadow-md transition">
+        <i class="fas fa-spa text-green-600 text-3xl mb-4"></i>
+        <h4 class="font-bold text-lg mb-1">Relax & Spa</h4>
+        <p class="text-sm text-gray-600">Un espacio para relajarte y recargar energías.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- UBICACIÓN -->
+  <section class="bg-gray-50 py-12">
+    <div class="max-w-7xl mx-auto px-6 grid md:grid-cols-2 gap-8 items-center">
+      <div class="h-[350px] rounded-2xl overflow-hidden shadow ring-1 ring-gray-200">
+        <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3902.725038415002!2d-77.06721042618506!3d-11.993518040909093!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x9105ce56e708af63%3A0x6639532903fc864a!2sHotel%20Caribbean!5e0!3m2!1ses-419!2spe!4v1754932161175!5m2!1ses-419!2spe" width="600" height="450" style="border:0;" allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"></iframe>
+      </div>
+      <div class="rounded-2xl overflow-hidden shadow ring-1 ring-gray-200">
+        <img src="assets/hotel-exterior.jpg" alt="Hotel Caribbean" class="w-full h-[350px] object-cover">
+      </div>
+    </div>
+  </section>
+
+<!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+  <!-- JS -->
+  <script>
+    const $ = (s, p = document) => p.querySelector(s);
+
+    // User menu
+    const userBtn = $('#userMenuButton');
+    const userMenu = $('#userMenu');
+
+    function openMenu(menu, btn) {
+      menu.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.add('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu(menu, btn) {
+      menu.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.remove('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'false');
+    }
+
+    userBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
+      if (isOpen) closeMenu(userMenu, userBtn); else openMenu(userMenu, userBtn);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+        closeMenu(userMenu, userBtn);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu(userMenu, userBtn);
+    });
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+    
+  </script>
+</body>
+</html>

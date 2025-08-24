@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hotel Caribbean — Inventario</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a; /* deep navy */
+            --accent: #06b6d4; /* aqua teal */
+            --muted: #64748b;
+        }
+
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        .main-content {
+            flex-grow: 1;
+            overflow-y: auto;
+            padding: 1.5rem;
+        }
+
+        /* Custom scrollbar for better aesthetics */
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+        .main-content::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 4px;
+        }
+        .main-content::-webkit-scrollbar-track {
+            background-color: #f1f5f9;
+        }
+
+        /* Modal animations */
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .modal-animation {
+            animation: modalFadeIn 0.3s ease-out forwards;
+        }
+
+        /* Input focus styles */
+        .input-focus:focus {
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+
+        /* Botones del header */
+        .hdr-btn {
+        height: 34px;
+        padding: 0 10px;
+        border-radius: .5rem;
+        font-weight: 800;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color .2s ease;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-900">
+    <!-- HEADER -->
+    <header class="h-16 bg-slate-900 text-white px-3 md:px-6 flex items-center justify-between shadow">
+        <nav class="hidden sm:flex items-center gap-4 text-[13px]">
+        <a href="dashboard.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-concierge-bell"></i>Recepción</a>
+        <a href="post-venta.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-handshake"></i>Post Venta</a>
+        <a href="inventario.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i>Inventario</a>
+        </nav>
+        <div class="flex items-center gap:2 md:gap-3">
+        <button class="hdr-btn bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i>Reserva</button>
+        <button onclick="openCaja()" class="hdr-btn bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2"><i class="fa-solid fa-cash-register"></i>Caja 1</button>
+        <button onclick="logout()" class="hdr-btn bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i>Salir</button>
+        </div>
+    </header>
+
+    <div class="flex-1 main-content p-6">
+        <div class="max-w-7xl mx-auto">
+            <h1 class="text-2xl font-bold text-slate-800 mb-6">Gestión de Inventario</h1>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-blue-500">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-slate-500">Total de Productos</span>
+                        <i class="fa-solid fa-box text-2xl text-blue-300"></i>
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-slate-800">45</div>
+                    <p class="text-xs text-slate-400 mt-1">Productos únicos en stock</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-green-500">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-slate-500">Stock Total</span>
+                        <i class="fa-solid fa-layer-group text-2xl text-green-300"></i>
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-slate-800">5,124</div>
+                    <p class="text-xs text-slate-400 mt-1">Unidades totales disponibles</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-yellow-500">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-slate-500">Nivel de Alerta</span>
+                        <i class="fa-solid fa-triangle-exclamation text-2xl text-yellow-300"></i>
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-slate-800">8</div>
+                    <p class="text-xs text-slate-400 mt-1">Productos con bajo stock</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-lg border-l-4 border-red-500">
+                    <div class="flex justify-between items-center">
+                        <span class="text-sm font-medium text-slate-500">Fuera de Stock</span>
+                        <i class="fa-solid fa-xmark-circle text-2xl text-red-300"></i>
+                    </div>
+                    <div class="mt-2 text-3xl font-bold text-slate-800">2</div>
+                    <p class="text-xs text-slate-400 mt-1">Productos agotados</p>
+                </div>
+            </div>
+
+            <div class="flex justify-between items-center bg-white p-4 rounded-lg shadow-md mb-6">
+                <div class="relative flex-grow mr-4">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3 top-1/2 -translate-y-1/2"></i>
+                    <input type="text" placeholder="Buscar por SKU, producto o categoría..." class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent)]">
+                </div>
+                <div class="flex gap-3">
+                    <button onclick="openNewProductModal()" class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fa-solid fa-plus mr-2"></i>Nuevo Producto
+                    </button>
+                </div>
+            </div>
+
+            <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                <table class="min-w-full divide-y divide-slate-200">
+                    <thead class="bg-slate-50">
+                        <tr>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">SKU</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Producto</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Categoría</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Stock</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Almacén</th>
+                            <th class="px-6 py-3 text-left text-xs font-semibold text-slate-500 uppercase tracking-wider">Precio</th>
+                            <th class="px-6 py-3 text-right text-xs font-semibold text-slate-500 uppercase tracking-wider">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-slate-200">
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">SKU-001</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">Agua embotellada 500ml</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Bebidas</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="bg-green-100 text-green-800 px-2 inline-flex text-xs leading-5 font-semibold rounded-full">150 unidades</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Principal</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">S/. 3.50</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-4" onclick="openEditModal('SKU-001', 'Agua embotellada 500ml', 'Bebidas', 150, 'Principal', 3.50)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" onclick="deleteProduct('SKU-001')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">SKU-002</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">Juego de toallas de mano</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Utensilios</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="bg-yellow-100 text-yellow-800 px-2 inline-flex text-xs leading-5 font-semibold rounded-full">25 unidades</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Lavandería</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">S/. 12.00</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-4" onclick="openEditModal('SKU-002', 'Juego de toallas de mano', 'Utensilios', 25, 'Lavandería', 12.00)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" onclick="deleteProduct('SKU-002')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">SKU-003</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">Kit de afeitado</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Amenidades</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="bg-green-100 text-green-800 px-2 inline-flex text-xs leading-5 font-semibold rounded-full">80 unidades</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Principal</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">S/. 5.00</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-4" onclick="openEditModal('SKU-003', 'Kit de afeitado', 'Amenidades', 80, 'Principal', 5.00)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" onclick="deleteProduct('SKU-003')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                        <tr class="hover:bg-slate-50 transition-colors">
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">SKU-004</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-slate-900">Pastilla de jabón</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Amenidades</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm">
+                                <span class="bg-red-100 text-red-800 px-2 inline-flex text-xs leading-5 font-semibold rounded-full">5 unidades</span>
+                            </td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">Principal</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-sm text-slate-600">S/. 2.00</td>
+                            <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                                <button class="text-indigo-600 hover:text-indigo-900 mr-4" onclick="openEditModal('SKU-004', 'Pastilla de jabón', 'Amenidades', 5, 'Principal', 2.00)">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                                <button class="text-red-600 hover:text-red-900" onclick="deleteProduct('SKU-004')">
+                                    <i class="fa-solid fa-trash"></i>
+                                </button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="flex justify-between items-center mt-6">
+                <p class="text-sm text-slate-600">Mostrando 1 a 10 de 45 resultados</p>
+                <div class="flex items-center gap-2">
+                    <button class="px-3 py-1 text-sm bg-white rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50 disabled:opacity-50">Anterior</button>
+                    <span class="px-3 py-1 text-sm bg-blue-600 text-white rounded-lg">1</span>
+                    <button class="px-3 py-1 text-sm bg-white rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">2</button>
+                    <button class="px-3 py-1 text-sm bg-white rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">3</button>
+                    <button class="px-3 py-1 text-sm bg-white rounded-lg border border-slate-300 text-slate-600 hover:bg-slate-50">Siguiente</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    
+   <!-- MODAL CAJA (MEJORADO) -->
+<div id="modalCaja" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+
+    <!-- HEADER -->
+    <div class="bg-gradient-to-r from-slate-800 to-slate-700 px-4 py-3 flex justify-between items-center">
+      <h2 class="font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-cash-register"></i> Caja Hotel Caribbean
+      </h2>
+      <button onclick="closeCaja()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm shadow">✖</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex border-b text-sm font-medium bg-gray-50">
+      <button class="caja-tab-btn px-4 py-2 border-r active text-blue-600 font-semibold" data-tab="apertura">
+        <i class="fa-solid fa-door-open"></i> Apertura y/o Cierre
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="gastos">
+        <i class="fa-solid fa-receipt"></i> Gastos
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="ajuste">
+        <i class="fa-solid fa-sliders"></i> Ajuste
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="remesas">
+        <i class="fa-solid fa-exchange-alt"></i> Remesas
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="comisiones">
+        <i class="fa-solid fa-percent"></i> Comisiones
+      </button>
+      <button class="caja-tab-btn px-4 py-2 text-gray-600" data-tab="divisas">
+        <i class="fa-solid fa-coins"></i> Divisas
+      </button>
+    </div>
+
+    <!-- BODY -->
+    <div class="p-6 flex-1 overflow-y-auto text-sm">
+      <!-- TAB APERTURA -->
+      <div id="tab-apertura" class="caja-tab-content space-y-4">
+
+        <!-- GRID FORMULARIO -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-cash-register text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Caja</label>
+            <select class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+              <option>CAJA 1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-money-bill-wave text-red-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Gastos</label>
+            <input type="number" value="0" class="flex-1 border rounded px-3 py-2 text-sm text-red-600 font-bold focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-scale-balanced text-blue-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Ajuste</label>
+            <input type="number" value="0" class="flex-1 border rounded px-3 py-2 text-sm text-blue-600 font-bold focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-key text-green-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Monto Apertura</label>
+            <input   value="500" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-lock text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Monto Cierre</label>
+            <input type="password" value="******" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-clock text-yellow-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Turno</label>
+            <select class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+              <option>2º TURNO NOCHE 8PM - 8AM</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3 col-span-2">
+            <i class="fa-solid fa-user text-indigo-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Usuario</label>
+            <input type="text" value="Recepción 1" readonly class="flex-1 border rounded px-3 py-2 text-sm bg-gray-100 font-medium">
+          </div>
+          <div class="flex items-center gap-3 col-span-2">
+            <i class="fa-solid fa-comment text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Comentario</label>
+            <input type="text" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- OTRAS TABS -->
+      <div id="tab-gastos" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-receipt mr-2 text-gray-500"></i> Aquí se registran los gastos de caja.</p>
+      </div>
+      <div id="tab-ajuste" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-sliders mr-2 text-gray-500"></i> Aquí se gestionan los ajustes de caja.</p>
+      </div>
+      <div id="tab-remesas" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-exchange-alt mr-2 text-gray-500"></i> Aquí se registran las remesas.</p>
+      </div>
+      <div id="tab-comisiones" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-percent mr-2 text-gray-500"></i> Aquí se calculan las comisiones.</p>
+      </div>
+      <div id="tab-divisas" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-coins mr-2 text-gray-500"></i> Aquí se controlan las divisas.</p>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="bg-gray-50 px-4 py-3 border-t flex justify-end gap-2">
+      <button class="px-4 py-2 bg-gray-200 rounded-lg text-sm font-semibold flex items-center gap-2" disabled>
+        <i class="fa-solid fa-door-closed"></i> Cerrar Caja
+      </button>
+      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-door-open"></i> Aperturar Caja
+      </button>
+    </div>
+  </div>
+</div>
+
+    <!-- Modal Nuevo Producto Mejorado -->
+    <div id="newProductModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 modal-animation">
+            <div class="flex justify-between items-center bg-gradient-to-r from-[var(--bg-primary)] to-slate-800 p-5 rounded-t-xl">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-box-open"></i>
+                    <span>Agregar Nuevo Producto</span>
+                </h2>
+                <button onclick="closeNewProductModal()" class="text-white hover:text-gray-300 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Grupo SKU -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-barcode text-gray-500"></i>
+                            <span>Código SKU</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-hashtag text-gray-400"></i>
+                            </div>
+                            <input type="text" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" 
+                                   placeholder="SKU-001" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Nombre -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-tag text-gray-500"></i>
+                            <span>Nombre del Producto</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-pen text-gray-400"></i>
+                            </div>
+                            <input type="text" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" 
+                                   placeholder="Ej: Agua mineral 500ml" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Categoría -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-list-alt text-gray-500"></i>
+                            <span>Categoría</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-folder text-gray-400"></i>
+                            </div>
+                            <select class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]">
+                                <option value="">Seleccione una categoría</option>
+                                <option>Bebidas</option>
+                                <option>Amenidades</option>
+                                <option>Utensilios</option>
+                                <option>Limpieza</option>
+                                <option>Alimentos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Stock -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-boxes text-gray-500"></i>
+                            <span>Stock Inicial</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-layer-group text-gray-400"></i>
+                            </div>
+                            <input type="number" min="0" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" 
+                                   placeholder="0" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Almacén -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-warehouse text-gray-500"></i>
+                            <span>Almacén</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            </div>
+                            <select class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]">
+                                <option>Principal</option>
+                                <option>Lavandería</option>
+                                <option>Cocina</option>
+                                <option>Bar</option>
+                                <option>Limpieza</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Precio -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-tag text-gray-500"></i>
+                            <span>Precio de Venta</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500">S/</span>
+                            </div>
+                            <input type="number" step="0.01" min="0" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" 
+                                   placeholder="0.00" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Descripción -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-align-left text-gray-500"></i>
+                            <span>Descripción (opcional)</span>
+                        </label>
+                        <textarea rows="3" class="input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" 
+                                  placeholder="Ingrese una descripción detallada del producto..."></textarea>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-gray-200">
+                    <button type="button" onclick="closeNewProductModal()" 
+                            class="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fas fa-times"></i>
+                        <span>Cancelar</span>
+                    </button>
+                    <button type="submit" 
+                            class="flex items-center gap-2 bg-[var(--accent)] text-white font-medium px-5 py-2.5 rounded-lg hover:bg-cyan-600 transition-colors">
+                        <i class="fas fa-save"></i>
+                        <span>Guardar Producto</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Editar Producto Mejorado -->
+    <div id="editProductModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-2xl max-w-2xl w-full mx-4 modal-animation">
+            <div class="flex justify-between items-center bg-gradient-to-r from-[var(--bg-primary)] to-slate-800 p-5 rounded-t-xl">
+                <h2 class="text-xl font-bold text-white flex items-center gap-2">
+                    <i class="fas fa-edit"></i>
+                    <span>Editar Producto</span>
+                </h2>
+                <button onclick="closeEditModal()" class="text-white hover:text-gray-300 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            
+            <form class="p-6 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <!-- Grupo SKU (readonly) -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-barcode text-gray-500"></i>
+                            <span>Código SKU</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-hashtag text-gray-400"></i>
+                            </div>
+                            <input type="text" id="editSku" class="pl-10 bg-gray-100 block w-full rounded-md border-gray-300 shadow-sm" readonly>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Nombre -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-tag text-gray-500"></i>
+                            <span>Nombre del Producto</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-pen text-gray-400"></i>
+                            </div>
+                            <input type="text" id="editProductName" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Categoría -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-list-alt text-gray-500"></i>
+                            <span>Categoría</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-folder text-gray-400"></i>
+                            </div>
+                            <select id="editCategory" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]">
+                                <option>Bebidas</option>
+                                <option>Amenidades</option>
+                                <option>Utensilios</option>
+                                <option>Limpieza</option>
+                                <option>Alimentos</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Stock -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-boxes text-gray-500"></i>
+                            <span>Stock Actual</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-layer-group text-gray-400"></i>
+                            </div>
+                            <input type="number" id="editStock" min="0" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Almacén -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-warehouse text-gray-500"></i>
+                            <span>Almacén</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            </div>
+                            <select id="editWarehouse" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]">
+                                <option>Principal</option>
+                                <option>Lavandería</option>
+                                <option>Cocina</option>
+                                <option>Bar</option>
+                                <option>Limpieza</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Precio -->
+                    <div class="space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-tag text-gray-500"></i>
+                            <span>Precio de Venta</span>
+                            <span class="text-red-500">*</span>
+                        </label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500">S/</span>
+                            </div>
+                            <input type="number" id="editPrice" step="0.01" min="0" class="pl-10 input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]" required>
+                        </div>
+                    </div>
+
+                    <!-- Grupo Descripción -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-align-left text-gray-500"></i>
+                            <span>Descripción</span>
+                        </label>
+                        <textarea id="editDescription" rows="3" class="input-focus block w-full rounded-md border-gray-300 shadow-sm focus:ring-2 focus:ring-[var(--accent)]"></textarea>
+                    </div>
+
+                    <!-- Grupo Historial -->
+                    <div class="md:col-span-2 space-y-2">
+                        <label class="block text-sm font-medium text-gray-700 flex items-center gap-1">
+                            <i class="fas fa-history text-gray-500"></i>
+                            <span>Últimos Movimientos</span>
+                        </label>
+                        <div class="bg-gray-50 p-3 rounded-md border border-gray-200 max-h-40 overflow-y-auto">
+                            <div class="text-sm text-gray-600">
+                                <div class="flex justify-between py-1 border-b border-gray-100">
+                                    <span><i class="fas fa-plus-circle text-green-500 mr-2"></i>Ingreso inicial</span>
+                                    <span class="text-gray-500">15/05/2023 - 150 unidades</span>
+                                </div>
+                                <div class="flex justify-between py-1 border-b border-gray-100">
+                                    <span><i class="fas fa-minus-circle text-red-500 mr-2"></i>Salida por consumo</span>
+                                    <span class="text-gray-500">20/05/2023 - 25 unidades</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-between items-center pt-4 border-t border-gray-200">
+                    <button type="button" onclick="showDeleteConfirm()" 
+                            class="flex items-center gap-2 bg-red-100 text-red-700 font-medium px-4 py-2 rounded-lg hover:bg-red-200 transition-colors">
+                        <i class="fas fa-trash"></i>
+                        <span>Eliminar Producto</span>
+                    </button>
+                    
+                    <div class="flex gap-3">
+                        <button type="button" onclick="closeEditModal()" 
+                                class="flex items-center gap-2 bg-white border border-gray-300 text-gray-700 font-medium px-5 py-2.5 rounded-lg hover:bg-gray-50 transition-colors">
+                            <i class="fas fa-times"></i>
+                            <span>Cancelar</span>
+                        </button>
+                        <button type="button" onclick="saveProductChanges()" 
+                                class="flex items-center gap-2 bg-[var(--accent)] text-white font-medium px-5 py-2.5 rounded-lg hover:bg-cyan-600 transition-colors">
+                            <i class="fas fa-save"></i>
+                            <span>Guardar Cambios</span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Confirmación para Eliminar -->
+    <div id="deleteConfirmModal" class="fixed inset-0 bg-gray-900 bg-opacity-70 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-xl shadow-xl max-w-md w-full mx-4 p-6 modal-animation">
+            <div class="text-center">
+                <div class="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-red-100">
+                    <i class="fas fa-exclamation-triangle text-red-600 text-xl"></i>
+                </div>
+                <h3 class="mt-3 text-lg font-medium text-gray-900">¿Eliminar este producto?</h3>
+                <div class="mt-2 text-sm text-gray-500">
+                    <p>Estás a punto de eliminar permanentemente el producto <span id="productToDelete" class="font-semibold"></span>.</p>
+                    <p class="mt-1">Esta acción no se puede deshacer.</p>
+                </div>
+            </div>
+            <div class="mt-5 flex justify-center gap-3">
+                <button type="button" onclick="hideDeleteConfirm()" 
+                        class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50">
+                    Cancelar
+                </button>
+                <button type="button" onclick="confirmDeleteProduct()" 
+                        class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-red-600 hover:bg-red-700">
+                    Sí, eliminar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Funciones para los modales mejorados
+        function openNewProductModal() {
+            document.getElementById('newProductModal').classList.remove('hidden');
+        }
+        
+        function closeNewProductModal() {
+            document.getElementById('newProductModal').classList.add('hidden');
+        }
+
+        function openEditModal(sku, productName, category, stock, warehouse, price) {
+            document.getElementById('editSku').value = sku;
+            document.getElementById('editProductName').value = productName;
+            document.getElementById('editCategory').value = category;
+            document.getElementById('editStock').value = stock;
+            document.getElementById('editWarehouse').value = warehouse;
+            document.getElementById('editPrice').value = price;
+            document.getElementById('productToDelete').textContent = sku + " - " + productName;
+            
+            document.getElementById('editProductModal').classList.remove('hidden');
+        }
+        
+        function closeEditModal() {
+            document.getElementById('editProductModal').classList.add('hidden');
+        }
+        
+        function saveProductChanges() {
+            // Aquí iría la lógica para guardar los cambios del producto
+            alert('Cambios guardados correctamente');
+            closeEditModal();
+        }
+
+        function showDeleteConfirm() {
+            document.getElementById('deleteConfirmModal').classList.remove('hidden');
+        }
+        
+        function hideDeleteConfirm() {
+            document.getElementById('deleteConfirmModal').classList.add('hidden');
+        }
+        
+        function confirmDeleteProduct() {
+            const sku = document.getElementById('editSku').value;
+            alert('Producto ' + sku + ' eliminado correctamente');
+            hideDeleteConfirm();
+            closeEditModal();
+            // Aquí iría la lógica para eliminar el producto de la base de datos
+        }
+
+        function deleteProduct(sku) {
+            if (confirm('¿Estás seguro de que quieres eliminar el producto ' + sku + '?')) {
+                // Lógica para eliminar el producto
+                alert('Producto ' + sku + ' eliminado.');
+            }
+        }
+
+        // CAJA
+        function openCaja(){
+            document.getElementById('modalCaja').classList.remove('hidden');
+            document.getElementById('modalCaja').classList.add('flex');
+        }
+        function closeCaja(){
+            document.getElementById('modalCaja').classList.add('hidden');
+        }
+        document.querySelectorAll('.caja-tab-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+            document.querySelectorAll('.caja-tab-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelectorAll('.caja-tab-content').forEach(c=>c.classList.add('hidden'));
+            btn.classList.add('active');
+            document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+            });
+        });
+
+        function logout(){
+            window.location.href = "login.html";
+        }
+    </script>
+</body>
+</html>

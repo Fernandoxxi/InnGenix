@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ajustes — Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D',
+            dorado: '#D4AF37'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in{animation:fade .35s ease-in-out}@keyframes fade{from{opacity:0}to{opacity:1}}
+    .ring-gold{box-shadow:0 0 0 3px rgba(212,175,55,.25)}
+    .req-ok{color:#16a34a}
+    .req-bad{color:#6b7280}
+    .toast{animation:slideup .25s ease both}
+    @keyframes slideup{from{transform:translateY(6px);opacity:0}to{transform:translateY(0);opacity:1}}
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- HEADER -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Menú de usuario -->
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <!-- Dropdown -->
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-user"></i>
+              <span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl bg-green-50 text-verde">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MAIN -->
+  <main class="max-w-7xl mx-auto w-full px-4 md:px-6 py-10 flex-1">
+    <div class="mb-8 text-center">
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Ajustes de la cuenta</h1>
+      <p class="text-gray-600 mt-2">Administra tu seguridad, contraseña y preferencias.</p>
+    </div>
+
+    <div class="grid lg:grid-cols-[1fr_380px] gap-6">
+      <!-- Columna principal -->
+      <section class="space-y-6">
+        <!-- Cambiar contraseña -->
+        <div class="bg-white rounded-2xl shadow p-6 fade-in">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold text-azul flex items-center gap-2">
+              <i class="fa-solid fa-key text-verde"></i> Cambiar contraseña
+            </h2>
+            <span class="text-xs text-gray-500">Último cambio: 22/07/2025</span>
+          </div>
+
+          <form id="formPass" class="space-y-4" autocomplete="off">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Contraseña actual</label>
+              <div class="relative">
+                <input id="oldPass" type="password" class="w-full p-3 border rounded-lg pr-12" placeholder="Tu contraseña actual">
+                <button type="button" data-toggle="#oldPass" class="toggle-eye absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+              <p class="text-xs text-gray-500 mt-1">Para la demo usa: <code class="font-mono">Demo*1234</code></p>
+            </div>
+
+            <div class="grid md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nueva contraseña</label>
+                <div class="relative">
+                  <input id="newPass" type="password" class="w-full p-3 border rounded-lg pr-12" placeholder="Mínimo 8 caracteres">
+                  <button type="button" data-toggle="#newPass" class="toggle-eye absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+
+                <!-- Barra de fortaleza -->
+                <div class="mt-2">
+                  <div class="h-2 bg-gray-200 rounded-full overflow-hidden">
+                    <div id="strengthBar" class="h-2 w-0 bg-red-500 transition-all"></div>
+                  </div>
+                  <div id="strengthText" class="text-xs mt-1 text-gray-500">Fortaleza: —</div>
+                </div>
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Confirmar nueva contraseña</label>
+                <div class="relative">
+                  <input id="confirmPass" type="password" class="w-full p-3 border rounded-lg pr-12" placeholder="Repite la nueva contraseña">
+                  <button type="button" data-toggle="#confirmPass" class="toggle-eye absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                    <i class="fa-regular fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Requisitos -->
+            <div class="grid md:grid-cols-2 gap-4 text-sm">
+              <ul class="space-y-1">
+                <li id="reqLen" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Mínimo 8 caracteres</li>
+                <li id="reqUpper" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Al menos una mayúscula (A–Z)</li>
+                <li id="reqLower" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Al menos una minúscula (a–z)</li>
+              </ul>
+              <ul class="space-y-1">
+                <li id="reqNum" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Al menos un número (0–9)</li>
+                <li id="reqSym" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Al menos un símbolo (!@#...)</li>
+                <li id="reqSpace" class="req-bad"><i class="fa-solid fa-circle mr-2"></i>Sin espacios</li>
+              </ul>
+            </div>
+
+            <div id="alertPass" class="hidden p-3 rounded-xl text-sm"></div>
+
+            <div class="flex flex-col sm:flex-row gap-3 sm:items-center sm:justify-end">
+              <a href="perfil.html" class="px-5 py-2 rounded-lg border">Cancelar</a>
+              <button id="btnSave" type="submit" disabled class="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg font-medium cursor-not-allowed">Guardar cambios</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Seguridad adicional (opcional) -->
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h2 class="text-xl font-bold text-azul mb-4 flex items-center gap-2">
+            <i class="fa-solid fa-shield-halved text-verde"></i> Seguridad adicional
+          </h2>
+          <div class="flex items-center justify-between p-4 bg-gray-50 rounded-xl">
+            <div>
+              <p class="font-medium">Autenticación en dos pasos (2FA)</p>
+              <p class="text-sm text-gray-500">Añade una capa extra con códigos por app/authenticator.</p>
+            </div>
+            <label class="inline-flex items-center cursor-pointer">
+              <input id="toggle2FA" type="checkbox" class="sr-only peer">
+              <div class="w-12 h-6 bg-gray-300 rounded-full peer-checked:bg-verde relative after:absolute after:content-[''] after:w-5 after:h-5 after:bg-white after:rounded-full after:top-0.5 after:left-0.5 after:transition-all peer-checked:after:translate-x-6"></div>
+            </label>
+          </div>
+
+          <div class="mt-4 p-4 bg-white border rounded-xl">
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-laptop text-azul"></i>
+                <div>
+                  <p class="font-medium">Sesiones y dispositivos</p>
+                  <p class="text-sm text-gray-500">Chrome en Windows · Lima · Activo ahora</p>
+                </div>
+              </div>
+              <button id="closeAll" class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg text-sm">Cerrar todas</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Columna lateral -->
+      <aside class="space-y-6">
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-azul mb-2 flex items-center gap-2"><i class="fa-solid fa-circle-info text-verde"></i> Consejos de seguridad</h3>
+          <ul class="text-sm text-gray-600 space-y-2">
+            <li>• No reutilices contraseñas entre sitios.</li>
+            <li>• Activa 2FA para reforzar tu cuenta.</li>
+            <li>• Cambia tu contraseña periódicamente.</li>
+          </ul>
+        </div>
+
+        <div class="bg-white rounded-2xl shadow p-6">
+          <h3 class="font-bold text-azul mb-2 flex items-center gap-2"><i class="fa-solid fa-building text-verde"></i> Datos de la empresa</h3>
+          <p class="text-sm text-gray-600">HOTEL CARIBBEAN SRL<br>RUC 20601234567<br>Av. Costa Verde 123, Lima, Perú</p>
+          <p class="text-sm text-gray-600 mt-2">Soporte: soporte@caribbean.pe</p>
+        </div>
+      </aside>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL ÉXITO -->
+  <div id="okModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center ring-gold">
+          <i class="fa-solid fa-check text-green-600 text-2xl"></i>
+        </div>
+        <h3 class="text-xl font-bold mb-1">Contraseña actualizada</h3>
+        <p class="text-gray-600">Tu contraseña se cambió correctamente.</p>
+        <div class="mt-6 flex justify-center gap-3">
+          <a href="perfil.html" class="px-5 py-2 rounded-lg border">Ir a perfil</a>
+          <button id="closeOk" class="px-5 py-2 bg-verde hover:bg-green-700 text-white rounded-lg">Listo</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST -->
+  <div id="toast" class="fixed bottom-4 left-1/2 -translate-x-1/2 hidden">
+    <div class="toast bg-white shadow rounded-xl px-4 py-2 text-sm flex items-center gap-2">
+      <i class="fa-solid fa-circle-check text-verde"></i>
+      <span id="toastMsg">Hecho</span>
+    </div>
+  </div>
+
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+  <!-- JS -->
+  <script>
+    const $ = (s,p=document)=>p.querySelector(s);
+    const $$ = (s,p=document)=>p.querySelectorAll(s);
+
+    // Menús
+    const mobileBtn = $('#mobileMenuButton'), mobileMenu = $('#mobileMenu');
+    mobileBtn?.addEventListener('click',()=>{ const e=mobileBtn.getAttribute('aria-expanded')==='true'; mobileBtn.setAttribute('aria-expanded', String(!e)); mobileMenu.classList.toggle('hidden'); });
+    const userBtn=$('#userMenuButton'), userMenu=$('#userMenu');
+    function openMenu(m,b){ m.classList.remove('pointer-events-none','opacity-0','scale-95'); m.classList.add('opacity-100','scale-100'); b?.setAttribute('aria-expanded','true'); }
+    function closeMenu(m,b){ m.classList.add('pointer-events-none','opacity-0','scale-95'); m.classList.remove('opacity-100','scale-100'); b?.setAttribute('aria-expanded','false'); }
+    userBtn?.addEventListener('click',(e)=>{ e.stopPropagation(); const o=userBtn.getAttribute('aria-expanded')==='true'; o?closeMenu(userMenu,userBtn):openMenu(userMenu,userBtn); });
+    document.addEventListener('click',(e)=>{ if(!userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(userMenu,userBtn); });
+    document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') closeMenu(userMenu,userBtn); });
+
+    // Mostrar/ocultar contraseñas
+    $$('.toggle-eye').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const input = $(btn.getAttribute('data-toggle'));
+        if(!input) return;
+        input.type = input.type === 'password' ? 'text' : 'password';
+        btn.querySelector('i').classList.toggle('fa-eye');
+        btn.querySelector('i').classList.toggle('fa-eye-slash');
+      });
+    });
+
+    // Validación
+    const REQ = {
+      len: v => v.length >= 8,
+      upper: v => /[A-Z]/.test(v),
+      lower: v => /[a-z]/.test(v),
+      num: v => /\d/.test(v),
+      sym: v => /[^A-Za-z0-9\s]/.test(v),
+      space: v => !/\s/.test(v)
+    };
+
+    function updateReq(v){
+      toggleReq('#reqLen', REQ.len(v));
+      toggleReq('#reqUpper', REQ.upper(v));
+      toggleReq('#reqLower', REQ.lower(v));
+      toggleReq('#reqNum', REQ.num(v));
+      toggleReq('#reqSym', REQ.sym(v));
+      toggleReq('#reqSpace', REQ.space(v));
+      updateStrength(v);
+      updateButton();
+    }
+
+    function toggleReq(sel, ok){
+      const el=$(sel);
+      el.classList.toggle('req-ok', ok);
+      el.classList.toggle('req-bad', !ok);
+      el.querySelector('i').className = ok ? 'fa-solid fa-check mr-2' : 'fa-solid fa-circle mr-2';
+    }
+
+    function score(v){
+      let s=0;
+      if(REQ.len(v)) s++;
+      if(REQ.upper(v)) s++;
+      if(REQ.lower(v)) s++;
+      if(REQ.num(v)) s++;
+      if(REQ.sym(v)) s++;
+      if(REQ.space(v)) s++;
+      return s; // 0–6
+    }
+
+    function updateStrength(v){
+      const s=score(v);
+      const bar=$('#strengthBar'), txt=$('#strengthText');
+      const pct = Math.min(100, (s/6)*100);
+      bar.style.width = pct+'%';
+      bar.className = 'h-2 transition-all ' + (s<=2?'bg-red-500': s<=4?'bg-amber-500':'bg-green-600');
+      txt.textContent = 'Fortaleza: ' + (s<=2?'Débil': s<=4?'Media':'Fuerte');
+    }
+
+    function updateButton(){
+      const oldV = $('#oldPass').value;
+      const newV = $('#newPass').value;
+      const confV = $('#confirmPass').value;
+      const allReq = REQ.len(newV) && REQ.upper(newV) && REQ.lower(newV) && REQ.num(newV) && REQ.sym(newV) && REQ.space(newV);
+      const same = newV === confV;
+      const diff = oldV && newV && oldV !== newV;
+      const btn = $('#btnSave');
+      const can = !!oldV && allReq && same && diff;
+      btn.disabled = !can;
+      btn.className = 'px-6 py-3 rounded-lg font-medium ' + (can ? 'bg-verde hover:bg-green-700 text-white' : 'bg-gray-200 text-gray-600 cursor-not-allowed');
+    }
+
+    $('#newPass').addEventListener('input', e=>{ updateReq(e.target.value); updateButton(); });
+    $('#confirmPass').addEventListener('input', updateButton);
+    $('#oldPass').addEventListener('input', updateButton);
+
+    // Toast helper
+    function toast(msg){
+      const t=$('#toast'); $('#toastMsg').textContent=msg;
+      t.classList.remove('hidden'); setTimeout(()=> t.classList.add('hidden'), 2200);
+    }
+
+    // Simulación guardar
+    const DEMO_OLD = 'Demo*1234';
+    $('#formPass').addEventListener('submit', (e)=>{
+      e.preventDefault();
+      const oldV=$('#oldPass').value, newV=$('#newPass').value, confV=$('#confirmPass').value;
+      const alert=$('#alertPass');
+      alert.classList.add('hidden');
+
+      if(oldV !== DEMO_OLD){
+        setAlert('La contraseña actual no es correcta.', false);
+        return;
+      }
+      if(newV !== confV){
+        setAlert('La confirmación no coincide.', false);
+        return;
+      }
+      // “Guardar”
+      setAlert('Guardando cambios…', true, true);
+      setTimeout(()=>{
+        setAlert('', true); // limpiar
+        $('#okModal').classList.remove('hidden'); $('#okModal').classList.add('flex');
+        // limpiar campos
+        $('#oldPass').value=''; $('#newPass').value=''; $('#confirmPass').value='';
+        updateReq(''); updateButton(); toast('Contraseña actualizada');
+      }, 900);
+    });
+
+    function setAlert(msg, good, loading=false){
+      const alert=$('#alertPass');
+      if(!msg){ alert.classList.add('hidden'); alert.textContent=''; return; }
+      alert.textContent = (loading ? '⏳ ' : (good?'✅ ':'⚠️ ')) + msg;
+      alert.className = 'p-3 rounded-xl text-sm ' + (good ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800');
+      alert.classList.remove('hidden');
+    }
+
+    // Modal ok
+    $('#closeOk').addEventListener('click', ()=>{
+      $('#okModal').classList.add('hidden'); $('#okModal').classList.remove('flex');
+    });
+    $('#okModal').addEventListener('click', (e)=>{ if(e.target.id==='okModal') $('#closeOk').click(); });
+
+    // 2FA y cerrar todas
+    $('#toggle2FA').addEventListener('change', (e)=>{
+      toast(e.target.checked ? '2FA activado' : '2FA desactivado');
+    });
+    $('#closeAll').addEventListener('click', ()=>{
+      toast('Se cerraron las demás sesiones');
+    });
+
+
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+  </script>
+</body>
+</html>

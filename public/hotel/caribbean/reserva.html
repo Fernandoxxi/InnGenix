@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reserva - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: { azul:'#1B2A41', verde:'#2E5339', vino:'#6A1E2D', dorado:'#D4AF37' }
+        }
+      }
+    }
+  </script>
+  <style>
+  .fade-in{animation:fadeIn .3s ease-in-out}@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  .tabs [role="tab"]{outline:none}
+  .tabs [aria-selected="true"]{background:#2E5339;color:#fff}
+  .step-dot{width:28px;height:28px}
+  .ring-gold{box-shadow:0 0 0 3px rgba(212,175,55,.25)}
+
+  /* ——— PESTAÑAS DE MÉTODO DE PAGO ——— */
+  .paytab{
+    border-color:#e5e7eb; /* gray-200 */
+    color:#1f2937;        /* gray-800 */
+    transition:all .15s ease;
+  }
+  .paytab:hover{background:#f9fafb} /* gray-50 */
+
+  /* Estado seleccionado: alto contraste y borde/halo verde */
+  .paytab[aria-selected="true"]{
+    border-color:#2E5339;       /* verde */
+    background:#eaf6ef;         /* verde muy claro */
+    color:#1B2A41;              /* azul marca */
+    box-shadow:0 0 0 3px rgba(46,83,57,.15) inset;
+  }
+  .paytab[aria-selected="true"] i{
+    color:#2E5339;              /* icono verde al seleccionar */
+  }
+
+  /* Tarjetas de método ocupan todo el ancho */
+  .pay-card{
+    border-radius:1rem;         /* 2xl */
+    border:1px solid #e5e7eb;
+    padding:1rem;
+    background:#fff;
+  }
+</style>
+
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- HEADER (igual estilo que habitaciones.html) -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-user"></i><span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-clipboard"></i><span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- MAIN -->
+  <main class="flex-grow py-10 px-4">
+    <div class="max-w-5xl mx-auto">
+      <h1 class="text-3xl md:text-4xl font-bold text-center text-gray-900 mb-6">Completa tu Reserva</h1>
+
+      <!-- Steps / Tabs -->
+      <div class="tabs bg-white rounded-2xl shadow overflow-hidden">
+        <div class="grid grid-cols-4 gap-0 bg-gray-50 p-2">
+          <button role="tab" id="tab-1" aria-selected="true" class="px-3 py-2 rounded-xl flex items-center justify-center gap-2">
+            <span class="step-dot rounded-full bg-verde text-white flex items-center justify-center text-sm">1</span>
+            <span class="hidden sm:inline font-medium">Disponibilidad</span>
+          </button>
+          <button role="tab" id="tab-2" aria-selected="false" class="px-3 py-2 rounded-xl flex items-center justify-center gap-2">
+            <span class="step-dot rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm">2</span>
+            <span class="hidden sm:inline font-medium">Datos</span>
+          </button>
+          <button role="tab" id="tab-3" aria-selected="false" class="px-3 py-2 rounded-xl flex items-center justify-center gap-2">
+            <span class="step-dot rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm">3</span>
+            <span class="hidden sm:inline font-medium">Pago</span>
+          </button>
+          <button role="tab" id="tab-4" aria-selected="false" class="px-3 py-2 rounded-xl flex items-center justify-center gap-2">
+            <span class="step-dot rounded-full bg-gray-200 text-gray-700 flex items-center justify-center text-sm">4</span>
+            <span class="hidden sm:inline font-medium">Confirmación</span>
+          </button>
+        </div>
+
+        <!-- Panel 1 -->
+        <section id="panel-1" role="tabpanel" aria-labelledby="tab-1" class="p-6 fade-in">
+          <div id="alertParams" class="hidden mb-4 p-3 rounded-xl bg-red-50 text-red-800"></div>
+
+          <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+            <div>
+              <p class="text-sm text-gray-500">Has elegido</p>
+              <h2 id="selNombre" class="text-2xl font-bold">—</h2>
+              <p id="selSub" class="text-sm text-gray-600">—</p>
+            </div>
+            <div class="text-right">
+              <p class="text-sm text-gray-500">Tarifa de referencia</p>
+              <div class="text-2xl font-extrabold text-verde" id="refPrecio">S/ 0.00</div>
+              <div class="text-xs text-gray-500" id="refDetalle">—</div>
+            </div>
+          </div>
+
+          <div class="grid md:grid-cols-4 gap-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Fecha de inicio</label>
+              <input type="date" id="fechaInicio" class="w-full p-3 border border-gray-300 rounded-lg">
+              <p class="text-xs text-gray-500 mt-1">Las tarifas cambian según si es L–V o S–D–F.</p>
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Hora de inicio</label>
+              <input type="time" id="horaInicio" class="w-full p-3 border border-gray-300 rounded-lg">
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Duración</label>
+              <select id="duracion" class="w-full p-3 border border-gray-300 rounded-lg"></select>
+              <p class="text-xs text-gray-500 mt-1" id="durHint">—</p>
+            </div>
+          </div>
+
+          <div class="mt-4 flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
+            <button id="btnDisponibilidad" class="px-6 py-3 bg-verde hover:bg-green-700 text-white rounded-lg font-medium">Verificar disponibilidad</button>
+            <div id="dispOK" class="hidden md:text-right">
+              <div class="inline-flex items-center gap-2 bg-green-50 text-green-800 px-3 py-2 rounded-xl ring-gold">
+                <i class="fa-solid fa-circle-check"></i>
+                <span class="text-sm">¡Disponible! Monto estimado <b id="montoEst">S/ 0.00</b></span>
+              </div>
+            </div>
+          </div>
+
+          <div class="mt-6 flex justify-end">
+            <button id="toDatos" disabled class="px-6 py-3 bg-gray-200 text-gray-600 rounded-lg font-medium cursor-not-allowed">Continuar</button>
+          </div>
+        </section>
+
+        <!-- Panel 2 -->
+        <section id="panel-2" role="tabpanel" aria-labelledby="tab-2" class="p-6 hidden fade-in">
+          <h3 class="text-xl font-bold text-azul mb-4">Datos del huésped y comprobante</h3>
+          <div class="grid md:grid-cols-2 gap-4">
+            <input id="cliNombre" class="p-3 border rounded-lg" placeholder="Nombres y Apellidos">
+            <input id="cliEmail" type="email" class="p-3 border rounded-lg" placeholder="Correo electrónico">
+            <input id="cliFono" class="p-3 border rounded-lg" placeholder="Teléfono (9XXXXXXXX)">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Comprobante</label>
+              <div class="flex gap-4 mt-1">
+                <label class="flex items-center gap-2"><input type="radio" name="comp" value="boleta" checked> Boleta</label>
+                <label class="flex items-center gap-2"><input type="radio" name="comp" value="factura"> Factura</label>
+              </div>
+            </div>
+            <div id="wrapDNI">
+              <input id="cliDNI" class="p-3 border rounded-lg" maxlength="8" placeholder="DNI (8 dígitos)">
+            </div>
+            <div id="wrapRUC" class="hidden">
+              <input id="cliRUC" class="p-3 border rounded-lg" maxlength="11" placeholder="RUC (11 dígitos)">
+            </div>
+          </div>
+          <div id="alertDatos" class="hidden mt-4 p-3 rounded-xl bg-amber-50 text-amber-800"></div>
+          <div class="mt-6 flex items-center justify-between">
+            <button id="back1" class="px-5 py-2 rounded-lg border">Volver</button>
+            <button id="toPago" class="px-6 py-3 bg-verde hover:bg-green-700 text-white rounded-lg font-medium">Continuar a pago</button>
+          </div>
+        </section>
+
+        <!-- Panel 3 -->
+        <section id="panel-3" role="tabpanel" aria-labelledby="tab-3" class="p-6 hidden fade-in">
+          <h3 class="text-xl font-bold text-azul mb-4">Pago</h3>
+
+          <!-- Selector de método -->
+          <div class="grid grid-cols-2 gap-3 mb-5">
+            <button id="payTabQR" class="paytab border rounded-xl px-4 py-2 flex items-center justify-center gap-2" aria-selected="true">
+              <i class="fa-solid fa-qrcode"></i> <span>Yape / Plin / BCP (QR)</span>
+            </button>
+            <button id="payTabCard" class="paytab border rounded-xl px-4 py-2 flex items-center justify-center gap-2" aria-selected="false">
+              <i class="fa-regular fa-credit-card"></i> <span>Tarjeta</span>
+            </button>
+          </div>
+
+          <!-- Contenedor de contenido (FULL WIDTH) -->
+          <div class="pay-card">
+
+            <!-- === QR (activo por defecto) === -->
+            <div id="payQR">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-solid fa-qrcode text-azul"></i>
+                <h4 class="font-semibold text-azul">Pago con QR</h4>
+              </div>
+
+              <p class="text-sm text-gray-600 mb-3">Escanea y paga a <b>HOTEL CARIBBEAN SRL</b>.</p>
+
+              <div class="grid md:grid-cols-[auto,1fr] gap-5">
+                <img id="qrYape" src="assets/yape-qr.png" alt="QR Yape" class="w-44 h-44 rounded-lg border mx-auto md:mx-0"
+                    onerror="this.src='https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=HOTEL%20CARIBBEAN%20SRL'">
+
+                <div>
+                  <div class="bg-blue-50 text-blue-800 p-3 rounded-xl text-sm">
+                    <p><span class="font-medium">Monto:</span> <span id="montoQR">S/ 0.00</span></p>
+                    <p><span class="font-medium">Concepto:</span> <span id="conceptoQR">—</span></p>
+                  </div>
+
+                  <div class="mt-3 grid sm:grid-cols-2 gap-2 text-sm">
+                    <input id="opNum" class="p-2 border rounded-lg" placeholder="N° operación">
+                    <input id="opTitular" class="p-2 border rounded-lg" placeholder="Titular cuenta">
+                  </div>
+
+                  <button id="btnQR" class="mt-3 w-full sm:w-auto px-4 py-2 bg-azul text-white rounded-lg">He pagado con QR</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- === TARJETA (oculto al inicio) === -->
+            <div id="payCard" class="hidden">
+              <div class="flex items-center gap-2 mb-2">
+                <i class="fa-regular fa-credit-card text-azul"></i>
+                <h4 class="font-semibold text-azul">Tarjeta crédito / débito</h4>
+              </div>
+
+              <div class="grid md:grid-cols-2 gap-3">
+                <input id="ccNumber" class="p-3 border rounded-lg md:col-span-2" placeholder="Número de tarjeta" maxlength="19">
+                <input id="ccExpiry" class="p-3 border rounded-lg" placeholder="MM/AA" maxlength="5">
+                <input id="ccCVV" class="p-3 border rounded-lg" placeholder="CVV" maxlength="4">
+                <input id="ccName" class="p-3 border rounded-lg md:col-span-2" placeholder="Titular (como en la tarjeta)">
+              </div>
+
+              <div class="mt-3 flex items-center gap-3">
+                <button id="btnCard" class="px-4 py-2 bg-azul text-white rounded-lg">Pagar con tarjeta</button>
+                <p id="msgCard" class="text-sm text-gray-600"></p>
+              </div>
+            </div>
+
+          </div>
+
+          <div class="mt-6 flex items-center justify-between">
+            <button id="back2" class="px-5 py-2 rounded-lg border">Volver</button>
+          </div>
+        </section>
+
+
+        <!-- Panel 4 -->
+        <section id="panel-4" role="tabpanel" aria-labelledby="tab-4" class="p-6 hidden fade-in">
+          <div class="flex items-start gap-4">
+            <div class="text-green-600 text-3xl"><i class="fa-solid fa-circle-check"></i></div>
+            <div>
+              <h3 class="text-xl font-bold text-azul">¡Reserva confirmada!</h3>
+              <p class="text-gray-700">Te enviamos un correo con el detalle. Descarga tu comprobante.</p>
+              <div class="mt-3 p-3 bg-gray-50 rounded-xl text-sm">
+                <p><span class="font-medium">Código:</span> <span id="codReserva">—</span></p>
+                <p><span class="font-medium">Método de pago:</span> <span id="metodoPago">—</span></p>
+                <p><span class="font-medium">Importe:</span> <span id="importeFinal">S/ 0.00</span></p>
+              </div>
+              <button id="btnPDF" class="mt-4 px-5 py-3 bg-verde text-white rounded-lg"><i class="fa-solid fa-file-arrow-down mr-2"></i>Descargar Comprobante (PDF)</button>
+            </div>
+          </div>
+        </section>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+<!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+  <script>
+    // ========= Helpers =========
+    const $ = s => document.querySelector(s);
+    const fmtSoles = n => new Intl.NumberFormat('es-PE',{style:'currency',currency:'PEN'}).format(n||0);
+    const isWeekend = d => [0,6].includes(d.getDay());
+
+    // ========= Datos Empresa (para PDF) =========
+    const EMPRESA = {
+      nombre: 'HOTEL CARIBBEAN SRL',
+      ruc: '20601234567',
+      direccion: 'Av. Costa Dorada 123, Miraflores - Lima',
+      telefono: '(01) 555-1234',
+      email: 'reservas@hotelcaribbean.pe',
+      web: 'www.hotelcaribbean.pe'
+    };
+
+    // ========= Tarifas (idéntico a habitaciones.html) =========
+    const TARIFAS = {
+      standard: { lv:{'6h':80,'12h':120,'24h':220}, sdf:{'4h':70,'6h':100,'12h':180,'24h':320}, base:220, nombre:'Habitación Standard' },
+      deluxe:   { lv:{'6h':130,'12h':200,'24h':350}, sdf:{'4h':120,'6h':160,'12h':280,'24h':480}, base:350, nombre:'Habitación Deluxe' },
+      suite:    { lv:{'6h':250,'12h':400,'24h':650}, sdf:{'4h':220,'6h':300,'12h':500,'24h':780}, base:650, nombre:'Suite Presidencial' }
+    };
+
+    const PROMOS = {
+      'escapada-romantica': { nombre:'Escapada Romántica (2 noches)', monto:420 },
+      'plan-familiar': { nombre:'Plan Familiar (3 noches, 2A+2N)', monto:780 },
+      'reserva-anticipada': { nombre:'Reserva Anticipada (x noche standard)', monto:190 },
+      'tarifa-flex-horas': { nombre:'Tarifa Flexible por Horas (24h)', monto:320 },
+      'larga-estancia': { nombre:'Larga Estancia (7 noches Deluxe)', monto:1450 },
+      'escape-weekend': { nombre:'Escape de Fin de Semana (2 noches)', monto:650 }
+    };
+
+    // ========= Estado =========
+    const state = {
+      tipo:'habitacion', id:null, fecha:null, hora:null, duracion:null, monto:0,
+      cliente:{ nombre:'', email:'', fono:'', comp:'boleta', dni:'', ruc:'' },
+      pago:{ metodo:null, operacion:null },
+      code:null
+    };
+
+    // ========= Inicialización =========
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Menú móvil y usuario
+      const mobileBtn=$('#mobileMenuButton'), mobileMenu=$('#mobileMenu');
+      mobileBtn?.addEventListener('click',()=>{ const e=mobileBtn.getAttribute('aria-expanded')==='true'; mobileBtn.setAttribute('aria-expanded', String(!e)); mobileMenu.classList.toggle('hidden'); });
+      const userBtn=$('#userMenuButton'), userMenu=$('#userMenu');
+      function openMenu(m,b){ m.classList.remove('pointer-events-none','opacity-0','scale-95'); m.classList.add('opacity-100','scale-100'); b?.setAttribute('aria-expanded','true'); }
+      function closeMenu(m,b){ m.classList.add('pointer-events-none','opacity-0','scale-95'); m.classList.remove('opacity-100','scale-100'); b?.setAttribute('aria-expanded','false'); }
+      userBtn?.addEventListener('click',(e)=>{ e.stopPropagation(); const o=userBtn.getAttribute('aria-expanded')==='true'; o?closeMenu(userMenu,userBtn):openMenu(userMenu,userBtn); });
+      document.addEventListener('click',(e)=>{ if(!userMenu.contains(e.target) && !userBtn.contains(e.target)) closeMenu(userMenu,userBtn); });
+      document.addEventListener('keydown',(e)=>{ if(e.key==='Escape') closeMenu(userMenu,userBtn); });
+
+      // Cargar selección desde querystring
+      const q = new URLSearchParams(location.search);
+      const tipo = q.get('tipo') || 'habitacion';
+      const id   = q.get('id');
+      state.tipo = tipo; state.id = id;
+
+      if(!id){
+        const a=$('#alertParams');
+        a.textContent = 'No se encontró la selección. Vuelve a Habitaciones o Promociones y elige “Reservar”.';
+        a.classList.remove('hidden');
+      }
+
+      // Pintar encabezado segun selección
+      if(tipo==='habitacion' && TARIFAS[id]){
+        $('#selNombre').textContent = TARIFAS[id].nombre;
+        $('#selSub').textContent = 'Reserva por horas (según fecha)';
+        $('#refPrecio').textContent = fmtSoles(TARIFAS[id].base);
+        $('#refDetalle').textContent = 'Referencia 24h L–V';
+      } else if(tipo==='promocion' && PROMOS[id]){
+        $('#selNombre').textContent = PROMOS[id].nombre;
+        $('#selSub').textContent = 'Promoción especial';
+        $('#refPrecio').textContent = fmtSoles(PROMOS[id].monto);
+        $('#refDetalle').textContent = 'Precio final de la promo';
+        cargaDuraciones(null,true); // duración fija
+      }
+
+      // Fechas / Hora mínimas
+      const today = new Date(); today.setMinutes(today.getMinutes()-today.getTimezoneOffset());
+      const minDate = today.toISOString().split('T')[0];
+      $('#fechaInicio').min = minDate;
+
+      $('#fechaInicio').addEventListener('change', onFechaChange);
+      $('#horaInicio').addEventListener('change', e=> state.hora = e.target.value);
+      $('#btnDisponibilidad').addEventListener('click', verificarDisponibilidad);
+      $('#toDatos').addEventListener('click', ()=> goTab(2));
+      $('#back1').addEventListener('click', ()=> goTab(1));
+      $('#toPago').addEventListener('click', continuarAPago);
+      $('#back2').addEventListener('click', ()=> goTab(2));
+
+      // Comprobante toggle
+      document.querySelectorAll('input[name="comp"]').forEach(r=>{
+        r.addEventListener('change',()=>{
+          state.cliente.comp = document.querySelector('input[name="comp"]:checked').value;
+          if(state.cliente.comp==='boleta'){ $('#wrapDNI').classList.remove('hidden'); $('#wrapRUC').classList.add('hidden'); }
+          else { $('#wrapRUC').classList.remove('hidden'); $('#wrapDNI').classList.add('hidden'); }
+        });
+      });
+
+      // Tabs de pago (exclusivos)
+      const payTabQR = $('#payTabQR'), payTabCard = $('#payTabCard');
+      payTabQR.addEventListener('click', ()=>switchPayTab('qr'));
+      payTabCard.addEventListener('click', ()=>switchPayTab('card'));
+
+      // Pago QR
+      $('#btnQR').addEventListener('click', ()=>{
+        const op=$('#opNum').value.trim(); const tit=$('#opTitular').value.trim();
+        if(!op||!tit){ alert('Completa número de operación y titular.'); return; }
+        state.pago.metodo='QR (Yape/Plin/BCP)'; state.pago.operacion=op; confirmar();
+      });
+
+      // Pago Tarjeta
+      $('#ccNumber').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^\d]/g,'').replace(/(.{4})/g,'$1 ').trim(); });
+      $('#ccExpiry').addEventListener('input',e=>{ e.target.value=e.target.value.replace(/[^\d]/g,'').replace(/(\d{2})(\d{0,2}).*/, (m,a,b)=> b? a+"/"+b : a); });
+      $('#btnCard').addEventListener('click', ()=>{
+        const num=$('#ccNumber').value.replace(/\s+/g,''); const exp=$('#ccExpiry').value; const cvv=$('#ccCVV').value; const name=$('#ccName').value.trim();
+        if(!/^[0-9]{13,19}$/.test(num) || !luhn(num)){ $('#msgCard').textContent='Número de tarjeta inválido.'; return; }
+        if(!/^\d{2}\/\d{2}$/.test(exp)){ $('#msgCard').textContent='Fecha inválida (MM/AA).'; return; }
+        if(!/^\d{3,4}$/.test(cvv)){ $('#msgCard').textContent='CVV inválido.'; return; }
+        if(!name){ $('#msgCard').textContent='Ingresa el titular.'; return; }
+        $('#msgCard').textContent='Procesando pago…';
+        setTimeout(()=>{ $('#msgCard').textContent='Pago aprobado ✔'; state.pago.metodo='Tarjeta'; state.pago.operacion='AUT'+Math.floor(100000+Math.random()*900000); confirmar(); },800);
+      });
+
+      // PDF
+      $('#btnPDF').addEventListener('click', generarPDF);
+
+      // Concepto QR
+      $('#conceptoQR').textContent = (tipo==='promocion'?'PROMO':'HAB') + ' - ' + (id||'');
+    });
+
+    // ========= Funciones UI / Tabs =========
+    function goTab(n){
+      for(let i=1;i<=4;i++){
+        $('#tab-'+i).setAttribute('aria-selected', i===n? 'true':'false');
+        $('#panel-'+i).classList.toggle('hidden', i!==n);
+        const dot=$('#tab-'+i+' .step-dot');
+        dot.className = 'step-dot rounded-full flex items-center justify-center text-sm ' + (i<=n? 'bg-verde text-white':'bg-gray-200 text-gray-700');
+      }
+    }
+
+    const payTabQR  = document.getElementById('payTabQR');
+  const payTabCard= document.getElementById('payTabCard');
+  payTabQR.addEventListener('click', ()=>switchPayTab('qr'));
+  payTabCard.addEventListener('click', ()=>switchPayTab('card'));
+
+  function switchPayTab(which){
+    const isQR = which === 'qr';
+
+    // Estado visual de los botones
+    payTabQR.setAttribute('aria-selected', isQR ? 'true' : 'false');
+    payTabCard.setAttribute('aria-selected', !isQR ? 'true' : 'false');
+
+    // Contenido (ocupando TODO el ancho)
+    document.getElementById('payQR').classList.toggle('hidden', !isQR);
+    document.getElementById('payCard').classList.toggle('hidden', isQR);
+  }
+
+    // ========= Lógica fechas/horas =========
+    function onFechaChange(){
+      const v=$('#fechaInicio').value; if(!v) return;
+      const d=new Date(v); state.fecha=d;
+      cargaDuraciones(d, state.tipo==='promocion');
+    }
+
+    function cargaDuraciones(date, promo){
+      const sel=$('#duracion'); sel.innerHTML='';
+      if(promo){ sel.disabled=true; sel.append(new Option('Promo fija','promo')); $('#durHint').textContent='Duración definida por la promoción.'; state.duracion='promo'; return; }
+      if(!state.id || !TARIFAS[state.id]) return;
+      const map = isWeekend(date||new Date()) ? TARIFAS[state.id].sdf : TARIFAS[state.id].lv;
+      Object.keys(map).forEach(k=> sel.append(new Option(k.replace('h',' horas').replace('24 horas','24 horas'),k)));
+      $('#durHint').textContent = isWeekend(date||new Date())? 'Tarifas de fin de semana / feriado (4h,6h,12h,24h).':'Tarifas L–V (6h,12h,24h).';
+      state.duracion = sel.options[0]?.value||null;
+    }
+
+    function calcularMonto(){
+      if(state.tipo==='promocion'){ const p=PROMOS[state.id]; return p? p.monto:0; }
+      const t=TARIFAS[state.id]; if(!t||!state.fecha||!state.duracion) return 0;
+      const tabla = isWeekend(state.fecha)? t.sdf : t.lv;
+      return tabla[state.duracion] ?? t.base;
+    }
+
+    function simDisponibilidad(){
+      // Validaciones extra: fecha/hora válidas, suite mantenimiento, 20% sin cupo sábados
+      const hoy=new Date();
+      const f=$('#fechaInicio').value, h=$('#horaInicio').value;
+      if(!f || !h) return {ok:false, motivo:'Selecciona fecha y hora de inicio.'};
+      const dt=new Date(f+'T'+h);
+      const now=new Date(); if(dt < now) return {ok:false, motivo:'No puedes reservar en una fecha/hora pasada.'};
+      const dia=dt.getDate();
+      if(state.tipo==='habitacion' && state.id==='suite' && dia>=15 && dia<=17) return {ok:false, motivo:'Suite en mantenimiento (15-17).'};
+      if(isWeekend(dt) && Math.random()<0.2) return {ok:false, motivo:'Sin disponibilidad por alta demanda, intenta otra fecha.'};
+      return {ok:true};
+    }
+
+    function verificarDisponibilidad(){
+      if(!state.id){ alert('Falta la selección.'); return; }
+      const f=$('#fechaInicio').value, h=$('#horaInicio').value;
+      if(!f || !h){ alert('Selecciona fecha y hora de inicio.'); return; }
+      if(!state.duracion) cargaDuraciones(new Date(f), state.tipo==='promocion');
+      state.fecha=new Date(f); state.hora=h;
+
+      const res=simDisponibilidad();
+      if(!res.ok){
+        $('#dispOK').classList.add('hidden');
+        const btn=$('#toDatos'); btn.disabled=true; btn.classList.add('bg-gray-200','text-gray-600','cursor-not-allowed');
+        alert(res.motivo);
+        return;
+      }
+      state.monto = calcularMonto();
+      $('#montoEst').textContent = fmtSoles(state.monto);
+      $('#montoQR').textContent = fmtSoles(state.monto);
+      $('#dispOK').classList.remove('hidden');
+
+      const btn=$('#toDatos'); btn.disabled=false; btn.classList.remove('bg-gray-200','text-gray-600','cursor-not-allowed'); btn.classList.add('bg-verde','text-white','hover:bg-green-700');
+    }
+
+    // ========= Datos cliente =========
+    function continuarAPago(){
+      state.cliente.nombre=$('#cliNombre').value.trim();
+      state.cliente.email=$('#cliEmail').value.trim();
+      state.cliente.fono=$('#cliFono').value.trim();
+      state.cliente.dni=$('#cliDNI').value.trim();
+      state.cliente.ruc=$('#cliRUC').value.trim();
+      state.cliente.comp=document.querySelector('input[name="comp"]:checked').value;
+
+      const alertBox=$('#alertDatos'); alertBox.classList.add('hidden');
+      if(!state.cliente.nombre || !state.cliente.email){ return showAlertDatos('Completa nombre y correo.'); }
+      if(state.cliente.comp==='boleta' && !/^\d{8}$/.test(state.cliente.dni)){ return showAlertDatos('Ingresa un DNI válido de 8 dígitos.'); }
+      if(state.cliente.comp==='factura' && !/^\d{11}$/.test(state.cliente.ruc)){ return showAlertDatos('Ingresa un RUC válido de 11 dígitos.'); }
+
+      goTab(3);
+    }
+    function showAlertDatos(msg){ const box=$('#alertDatos'); box.textContent=msg; box.classList.remove('hidden'); }
+
+    // ========= Confirmación =========
+    function confirmar(){
+      state.code = 'CARB-' + Math.random().toString(36).substring(2,7).toUpperCase();
+      $('#codReserva').textContent = state.code;
+      $('#metodoPago').textContent = state.pago.metodo + ' ('+state.pago.operacion+')';
+      $('#importeFinal').textContent = fmtSoles(state.monto);
+      goTab(4);
+    }
+
+    // ========= Validaciones Tarjeta =========
+    function luhn(s){ let sum=0, dbl=false; for(let i=s.length-1;i>=0;i--){ let d=parseInt(s[i]); if(dbl){ d*=2; if(d>9)d-=9; } sum+=d; dbl=!dbl;} return sum%10===0; }
+
+    // ========= PDF bonito =========
+    function generarPDF(){
+      const { jsPDF } = window.jspdf; const doc=new jsPDF({unit:'pt', format:'a4'});
+      const W=595.28, M=36; let y=M;
+
+      // Cabecera color
+      doc.setFillColor(27,42,65); // azul
+      doc.rect(0,0,W,90,'F');
+
+      // Logo (vector simple)
+      doc.setFillColor(212,175,55); // dorado
+      doc.circle(M+18,45,14,'F');
+      doc.setFont('helvetica','bold'); doc.setFontSize(14); doc.setTextColor(255,255,255);
+      doc.text(EMPRESA.nombre, M+45, 40);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      doc.text(`RUC: ${EMPRESA.ruc}`, M+45, 58);
+
+      // Caja comprobante
+      const comp = state.cliente.comp==='boleta'?'BOLETA':'FACTURA';
+      doc.setFillColor(240,248,255);
+      doc.roundedRect(W-220, M, 184, 70, 6, 6, 'F');
+      doc.setTextColor(27,42,65); doc.setFont('helvetica','bold'); doc.setFontSize(12);
+      doc.text(`${comp} ELECTRÓNICA`, W-210, M+24);
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      doc.text(`Serie: CARR-001`, W-210, M+42);
+      doc.text(`N°: ${state.code || '-'}`, W-210, M+58);
+
+      // Datos empresa
+      y = 110; doc.setTextColor(0,0,0);
+      doc.setFont('helvetica','bold'); doc.setFontSize(11); doc.text('Hotel:', M, y);
+      doc.setFont('helvetica','normal'); doc.text(`${EMPRESA.nombre}`, M+60, y); y+=16;
+      doc.setFont('helvetica','bold'); doc.text('Dirección:', M, y);
+      doc.setFont('helvetica','normal'); doc.text(`${EMPRESA.direccion}`, M+60, y); y+=16;
+      doc.setFont('helvetica','bold'); doc.text('Contacto:', M, y);
+      doc.setFont('helvetica','normal'); doc.text(`${EMPRESA.telefono}  |  ${EMPRESA.email}  |  ${EMPRESA.web}`, M+60, y); y+=24;
+
+      // Datos cliente
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Datos del Cliente', M, y); y+=10;
+      doc.setDrawColor(220); doc.line(M, y, W-M, y); y+=12;
+      doc.setFont('helvetica','bold'); doc.setFontSize(10); doc.text('Nombre:', M, y);
+      doc.setFont('helvetica','normal'); doc.text(state.cliente.nombre||'-', M+60, y);
+      doc.setFont('helvetica','bold'); doc.text('Correo:', W/2, y);
+      doc.setFont('helvetica','normal'); doc.text(state.cliente.email||'-', W/2+45, y); y+=16;
+
+      if(state.cliente.comp==='boleta'){
+        doc.setFont('helvetica','bold'); doc.text('DNI:', M, y);
+        doc.setFont('helvetica','normal'); doc.text(state.cliente.dni||'-', M+60, y);
+      } else {
+        doc.setFont('helvetica','bold'); doc.text('RUC:', M, y);
+        doc.setFont('helvetica','normal'); doc.text(state.cliente.ruc||'-', M+60, y);
+      }
+      doc.setFont('helvetica','bold'); doc.text('Teléfono:', W/2, y);
+      doc.setFont('helvetica','normal'); doc.text(state.cliente.fono||'-', W/2+60, y); y+=26;
+
+      // Detalle
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Detalle de la Reserva', M, y); y+=10;
+      doc.setDrawColor(220); doc.line(M, y, W-M, y); y+=14;
+
+      const itemNombre = state.tipo==='promocion'? (PROMOS[state.id]?.nombre || '-') : (TARIFAS[state.id]?.nombre || '-');
+      const fechaStr = $('#fechaInicio').value || '-';
+      const horaStr  = $('#horaInicio').value || '-';
+      const durStr   = (state.duracion==='promo'?'Promo':(state.duracion? state.duracion.replace('h',' h'):'-'));
+
+      // Tabla simple
+      const col1=M, col2=W-180, col3=W-M;
+      doc.setFont('helvetica','bold'); doc.setFontSize(10);
+      doc.text('Descripción', col1, y); doc.text('Cantidad', col2, y); doc.text('Importe', col3, y, {align:'right'}); y+=10;
+      doc.setDrawColor(220); doc.line(M, y, W-M, y); y+=14;
+
+      doc.setFont('helvetica','normal');
+      const desc1 = (state.tipo==='promocion' ? 'Promoción' : 'Habitación') + ': ' + itemNombre;
+      doc.text(desc1, col1, y);
+      doc.text('1', col2, y);
+      doc.text(fmtSoles(state.monto), col3, y, {align:'right'}); y+=16;
+
+      const desc2 = `Inicio: ${fechaStr} ${horaStr}   |   Duración: ${durStr}`;
+      doc.setTextColor(90); doc.text(desc2, col1, y); doc.setTextColor(0); y+=24;
+
+      // Total
+      doc.setDrawColor(220); doc.line(W-220, y, W-M, y);
+      y+=8; doc.setFont('helvetica','bold'); doc.text('TOTAL', W-220, y);
+      doc.setFont('helvetica','bold'); doc.text(fmtSoles(state.monto), W-M, y, {align:'right'}); y+=24;
+
+      // Pago
+      doc.setFont('helvetica','bold'); doc.setFontSize(12); doc.text('Información de Pago', M, y); y+=10;
+      doc.setDrawColor(220); doc.line(M, y, W-M, y); y+=14;
+      doc.setFont('helvetica','normal'); doc.setFontSize(10);
+      doc.text(`Método: ${state.pago.metodo||'-'}`, M, y); y+=14;
+      doc.text(`Operación: ${state.pago.operacion||'-'}`, M, y); y+=24;
+
+      // Nota
+      doc.setTextColor(120);
+      doc.text('Este es un comprobante simulado para fines de demostración.', M, y);
+      doc.setTextColor(0);
+
+      doc.save(`Comprobante_${state.code||'RESERVA'}.pdf`);
+    }
+
+    // ========= Util =========
+    function onFechaHoraString(){ // para concepto QR si quisieras
+      const f=$('#fechaInicio').value||''; const h=$('#horaInicio').value||'';
+      return (f && h) ? `${f} ${h}` : (f||h||'-');
+    }
+
+    // ========= Eventos extras =========
+    document.addEventListener('DOMContentLoaded', ()=>{
+      // Inicializar concepto QR con fecha/hora si ya están
+      const qConcept = ()=> $('#conceptoQR').textContent = ((state.tipo==='promocion'?'PROMO':'HAB') + ' - ' + (state.id||'') + ' - ' + onFechaHoraString());
+      $('#fechaInicio').addEventListener('change', qConcept);
+      $('#horaInicio').addEventListener('change', qConcept);
+    });
+
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+  </script>
+</body>
+</html>

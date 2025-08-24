@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Configuración - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
+    <h1 class="text-lg font-bold flex items-center gap-2">
+      <i class="fa-solid fa-hotel text-cyan-400"></i> Hotel Caribbean
+    </h1>
+    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
+      <i class="fa-solid fa-right-from-bracket"></i>Salir
+    </button>
+  </header>
+
+  <div class="flex">
+    <!-- SIDEBAR -->
+    <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
+      <nav class="space-y-2 text-slate-700">
+        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
+        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
+        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
+        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-gear text-gray-600"></i> Configuración</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN -->
+    <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
+        <i class="fa-solid fa-gear text-slate-600"></i> Configuración
+      </h2>
+
+      <!-- PERFIL -->
+      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-user text-blue-500"></i> Perfil del Administrador
+        </h3>
+        <div class="flex gap-6 items-center">
+          <img src="https://i.pravatar.cc/100" class="w-24 h-24 rounded-full shadow">
+          <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-sm text-gray-600 font-medium">Nombre</label>
+              <input type="text" value="Fernando Manrique" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 font-medium">Correo</label>
+              <input type="email" value="admin@hotelcaribbean.com" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 font-medium">Usuario</label>
+              <input type="text" value="admin01" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+            <div>
+              <label class="block text-sm text-gray-600 font-medium">Teléfono</label>
+              <input type="text" value="+51 987 654 321" class="w-full border rounded px-3 py-2 text-sm">
+            </div>
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-save"></i> Guardar Cambios
+          </button>
+        </div>
+      </section>
+
+      <!-- SEGURIDAD -->
+      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-key text-amber-500"></i> Seguridad
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Contraseña Actual</label>
+            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Nueva Contraseña</label>
+            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Confirmar Contraseña</label>
+            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-lock"></i> Cambiar Contraseña
+          </button>
+        </div>
+      </section>
+
+      <!-- CONFIGURACIÓN DEL SISTEMA -->
+      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
+        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-purple-600"></i> Configuración del Sistema
+        </h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Nombre del Hotel</label>
+            <input type="text" value="Hotel Caribbean" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Moneda Base</label>
+            <select class="w-full border rounded px-3 py-2 text-sm">
+              <option>Soles (PEN)</option>
+              <option>Dólares (USD)</option>
+              <option>Euros (EUR)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-600">Logo</label>
+            <input type="file" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+        </div>
+        <div class="flex justify-end">
+          <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+            <i class="fa-solid fa-gear"></i> Guardar Configuración
+          </button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script>
+    function logout(){
+      window.location.href = "../login.html";
+    }
+  </script>
+</body>
+</html>

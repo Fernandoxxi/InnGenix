@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recuperar Contraseña - Hotel Caribbean</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        azul: '#1B2A41',
+                        verde: '#2E5339',
+                        vino: '#6A1E2D'
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .fade-in {
+            animation: fadeIn 0.8s ease-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-azul to-verde relative overflow-hidden">
+
+<div class="absolute inset-0">
+    <img src="https://images.unsplash.com/photo-1501117716987-c8e1ecb21016" 
+         class="w-full h-full object-cover opacity-30" alt="Fondo hotel">
+</div>
+
+<div class="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 fade-in">
+    <div class="flex flex-col items-center mb-6">
+        <i class="fas fa-key text-verde text-4xl mb-2"></i>
+        <h1 class="text-2xl font-bold text-azul">Recuperar Contraseña</h1>
+        <p class="text-sm text-gray-500 text-center mt-2">
+            Ingresa tu correo electrónico para enviarte un enlace de recuperación.
+        </p>
+    </div>
+
+    <div id="statusMsg" class="hidden bg-green-100 text-green-700 px-3 py-2 rounded mb-4 text-sm text-center"></div>
+
+    <form id="forgotForm" class="space-y-4">
+        <div class="relative">
+            <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
+            <input type="email" id="email" placeholder="Correo electrónico" 
+                   class="w-full border rounded-lg px-10 py-2 focus:ring-2 focus:ring-verde outline-none" required>
+        </div>
+        <button type="submit" 
+                class="w-full bg-verde text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300 transform hover:scale-105">
+            Enviar Enlace
+        </button>
+    </form>
+
+    <div class="mt-4 text-center">
+        <a href="login.html" class="text-sm text-verde hover:underline">
+            <i class="fas fa-arrow-left mr-1"></i>
+            Volver al inicio de sesión
+        </a>
+    </div>
+</div>
+
+<script>
+    document.getElementById("forgotForm").addEventListener("submit", function(e) {
+        e.preventDefault();
+
+        const email = document.getElementById("email").value.trim();
+        const statusMsg = document.getElementById("statusMsg");
+
+        if (!email) {
+            mostrarMensaje("Por favor, ingresa tu correo electrónico.", "red");
+            return;
+        }
+
+        // Simula el envío de un correo (en un entorno real, esto se manejaría en el servidor)
+        mostrarMensaje("Si el correo está registrado, recibirás un enlace de recuperación.", "green");
+        
+        // Limpiar el campo después del envío
+        document.getElementById("email").value = "";
+    });
+
+    function mostrarMensaje(mensaje, tipo) {
+        const statusMsg = document.getElementById("statusMsg");
+        statusMsg.textContent = mensaje;
+        statusMsg.classList.remove("hidden", "bg-red-100", "text-red-700", "bg-green-100", "text-green-700");
+
+        if (tipo === "red") {
+            statusMsg.classList.add("bg-red-100", "text-red-700");
+        } else {
+            statusMsg.classList.add("bg-green-100", "text-green-700");
+        }
+        
+        statusMsg.classList.add("fade-in");
+        setTimeout(() => statusMsg.classList.add("hidden"), 5000);
+    }
+</script>
+
+</body>
+</html>

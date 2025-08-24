@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Login Admin - Hotel Caribbean</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<script>
+tailwind.config = {
+  theme: {
+    extend: {
+      colors: {
+        azul: '#1B2A41',
+        verde: '#2E5339',
+        vino: '#6A1E2D'
+      }
+    }
+  }
+}
+</script>
+<style>
+.fade-in {
+  animation: fadeIn 0.8s ease-out;
+}
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-15px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+</style>
+</head>
+<body class="min-h-screen flex items-center justify-center bg-gradient-to-br from-azul to-verde relative overflow-hidden">
+
+<!-- Fondo -->
+<div class="absolute inset-0">
+  <img src="https://images.unsplash.com/photo-1501117716987-c8e1ecb21016" 
+       class="w-full h-full object-cover opacity-30" alt="Fondo hotel">
+</div>
+
+<!-- Tarjeta Login -->
+<div class="relative z-10 w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 fade-in">
+  <div class="flex flex-col items-center mb-6">
+    <i class="fas fa-hotel text-verde text-4xl mb-2"></i>
+    <h1 class="text-2xl font-bold text-azul">HOTEL CARIBBEAN</h1>
+    <p class="text-sm text-gray-500">Ingrese sus credenciales</p>
+  </div>
+
+  <!-- Mensaje de error -->
+  <div id="errorMsg" class="hidden bg-red-100 text-red-700 px-3 py-2 rounded mb-4 text-sm text-center"></div>
+
+  <!-- Formulario -->
+  <form id="loginForm" class="space-y-4">
+    <div class="relative">
+      <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+      <input type="text" id="usuario" placeholder="Usuario" 
+             class="w-full border rounded-lg px-10 py-2 focus:ring-2 focus:ring-verde outline-none" required>
+    </div>
+    <div class="relative">
+      <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+      <input type="password" id="password" placeholder="Contraseña" 
+             class="w-full border rounded-lg px-10 py-2 focus:ring-2 focus:ring-verde outline-none" required>
+    </div>
+    <button type="submit" 
+            class="w-full bg-verde text-white py-2 rounded-lg font-semibold hover:bg-green-700 transition duration-300 transform hover:scale-105">
+      Ingresar
+    </button>
+  </form>
+
+  <!-- Enlaces -->
+  <div class="mt-4 text-center">
+    <a href="recuperar-contraseña.html" class="text-sm text-verde hover:underline">¿Olvidaste tu contraseña?</a>
+  </div>
+</div>
+
+<script>
+// Usuario y contraseña de prueba
+const RECEPCION_USER = "RECEPCION1";
+const RECEPCION_PASS = "1234";
+const ADMIN_USER = "ADMIN";
+const ADMIN_PASS = "1234";
+
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+  e.preventDefault();
+
+  const usuario = document.getElementById("usuario").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const errorMsg = document.getElementById("errorMsg");
+
+  if (!usuario || !password) {
+    mostrarError("Por favor, complete todos los campos.");
+    return;
+  }
+
+  if (usuario === RECEPCION_USER && password === RECEPCION_PASS) {
+    localStorage.setItem("recepcion", usuario);
+    window.location.href = "dashboard.html";
+  } else if (usuario === ADMIN_USER && password === ADMIN_PASS) {
+    localStorage.setItem("admin", usuario);
+    window.location.href = "../caribbean/admin/dashboard.html";
+  } else {
+    mostrarError("Usuario o contraseña incorrectos.");
+  }
+});
+
+function mostrarError(mensaje) {
+  const errorMsg = document.getElementById("errorMsg");
+  errorMsg.textContent = mensaje;
+  errorMsg.classList.remove("hidden");
+  errorMsg.classList.add("fade-in");
+  setTimeout(() => errorMsg.classList.add("hidden"), 3000);
+}
+</script>
+
+</body>
+</html>

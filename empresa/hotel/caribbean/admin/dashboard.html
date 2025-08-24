@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Panel Administrador - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body class="bg-gray-100 font-sans">
+
+  <!-- HEADER -->
+  <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
+    <h1 class="text-lg font-bold flex items-center gap-2">
+      <i class="fa-solid fa-hotel text-cyan-400"></i> Hotel Caribbean
+    </h1>
+    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
+      <i class="fa-solid fa-right-from-bracket"></i>Salir
+    </button>
+  </header>
+
+  <div class="flex">
+
+    <!-- SIDEBAR -->
+    <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
+      <nav class="space-y-2 text-slate-700">
+        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
+        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
+        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
+        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-gear text-gray-500"></i> Configuración</a>
+      </nav>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+
+      <!-- KPI CARDS -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+          <i class="fa-solid fa-wallet text-emerald-600 text-2xl"></i>
+          <div>
+            <p class="text-sm text-gray-500">Ingresos</p>
+            <h2 class="text-xl font-bold">S/ 12,500</h2>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+          <i class="fa-solid fa-calendar-check text-blue-600 text-2xl"></i>
+          <div>
+            <p class="text-sm text-gray-500">Reservas</p>
+            <h2 class="text-xl font-bold">320</h2>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+          <i class="fa-solid fa-bed text-purple-600 text-2xl"></i>
+          <div>
+            <p class="text-sm text-gray-500">Ocupación</p>
+            <h2 class="text-xl font-bold">78%</h2>
+          </div>
+        </div>
+        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+          <i class="fa-solid fa-receipt text-red-500 text-2xl"></i>
+          <div>
+            <p class="text-sm text-gray-500">Gastos</p>
+            <h2 class="text-xl font-bold">S/ 2,300</h2>
+          </div>
+        </div>
+      </div>
+
+      <!-- GRAFICOS -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="font-semibold mb-2">Ingresos por Mes</h3>
+          <canvas id="chartIngresos"></canvas>
+        </div>
+        <div class="bg-white p-4 rounded shadow">
+          <h3 class="font-semibold mb-2">Ocupación (%)</h3>
+          <canvas id="chartOcupacion"></canvas>
+        </div>
+      </div>
+
+      <!-- TABLA DE USUARIOS -->
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="font-semibold mb-4">Usuarios del Sistema</h3>
+        <table class="w-full text-sm border-collapse">
+          <thead class="bg-slate-100">
+            <tr>
+              <th class="p-2 text-left">Nombre</th>
+              <th class="p-2 text-left">Rol</th>
+              <th class="p-2 text-left">Estado</th>
+              <th class="p-2 text-left">Último Acceso</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-2">Fernando Manrique</td>
+              <td class="p-2">Administrador</td>
+              <td class="p-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Activo</span></td>
+              <td class="p-2">04/08/2025 23:11</td>
+            </tr>
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-2">Rosa Pérez</td>
+              <td class="p-2">Recepcionista</td>
+              <td class="p-2"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Pendiente</span></td>
+              <td class="p-2">04/08/2025 21:05</td>
+            </tr>
+            <tr class="border-b hover:bg-slate-50">
+              <td class="p-2">Carlos Gómez</td>
+              <td class="p-2">Supervisor</td>
+              <td class="p-2"><span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Inactivo</span></td>
+              <td class="p-2">03/08/2025 19:40</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+    </main>
+  </div>
+
+  <script>
+    // Gráfico de Ingresos
+    new Chart(document.getElementById('chartIngresos'), {
+      type: 'bar',
+      data: {
+        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
+        datasets: [{
+          label: 'Ingresos (S/)',
+          data: [1200, 1500, 1800, 1400, 2000, 2500, 2100],
+          backgroundColor: '#0ea5e9'
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { display: false } } }
+    });
+
+    // Gráfico de Ocupación
+    new Chart(document.getElementById('chartOcupacion'), {
+      type: 'line',
+      data: {
+        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
+        datasets: [{
+          label: 'Ocupación %',
+          data: [70, 65, 80, 75, 85, 90, 78],
+          borderColor: '#9333ea',
+          fill: false,
+          tension: 0.3
+        }]
+      },
+      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    });
+
+    // Logout redirige a login
+    function logout(){
+      window.location.href = "../login.html";
+    }
+  </script>
+</body>
+</html>

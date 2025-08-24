@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Post-Venta - Control de Ingresos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-primary: #0f172a; /* deep navy */
+            --accent: #06b6d4; /* aqua teal */
+            --muted: #64748b;
+        }
+        body { 
+            font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
+            background-color: #f1f5f9;
+            color: #0f172a;
+            overflow-x: hidden;
+        }
+        .header {
+            background-color: var(--bg-primary);
+            color: white;
+        }
+        .main-content {
+            padding: 1.5rem;
+        }
+        .control-panel {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .data-table-container {
+            background-color: #ffffff;
+            border-radius: 0.5rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            overflow-x: auto;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.875rem;
+        }
+        th, td {
+            padding: 0.75rem 1rem;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        th {
+            background-color: #f8fafc;
+            font-weight: 600;
+            color: #475569;
+            text-transform: uppercase;
+        }
+        .tab-button {
+            padding: 0.5rem 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-bottom-color 0.2s;
+            white-space: nowrap;
+        }
+        .tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .hidden-sidebar {
+            width: 0;
+            overflow: hidden;
+            transition: width 0.3s ease-in-out;
+        }
+        .visible-sidebar {
+            width: 320px;
+            padding: 1.5rem;
+        }
+        .main-container-with-sidebar {
+            margin-left: 320px;
+            transition: margin-left 0.3s ease-in-out;
+        }
+        .room-card {
+            background-color: #f1f5f9;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.5rem;
+            padding: 0.5rem;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+        }
+        .room-card:hover {
+            background-color: #e2e8f0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .room-card .room-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        .room-card .clean-count {
+            font-size: 0.875rem;
+            color: #64748b;
+        }
+        .rooms-grid-12 {
+            display: grid;
+            grid-template-columns: repeat(12, minmax(0, 1fr));
+            gap: 0.5rem;
+            flex: 1;
+        }
+        @media (max-width: 1280px) {
+            .rooms-grid-12 {
+                grid-template-columns: repeat(6, minmax(0, 1fr));
+            }
+        }
+        @media (max-width: 768px) {
+            .rooms-grid-12 {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+        }
+
+        /* Estilos específicos para la sección de Información Huésped */
+        .info-panel-container {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1.5rem;
+        }
+        .guest-details-form {
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .history-tabs-panel {
+            display: flex;
+            flex-direction: column;
+            background-color: #f8fafc;
+            padding: 1.5rem;
+            border-radius: 0.5rem;
+        }
+        .history-tabs-nav {
+            display: flex;
+            border-bottom: 2px solid #e2e8f0;
+            margin-bottom: 1rem;
+        }
+        .history-tab-button {
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            border-bottom: 2px solid transparent;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        .history-tab-button.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+        .history-tab-content table {
+            font-size: 0.8rem;
+        }
+        .history-tab-content th, .history-tab-content td {
+            padding: 0.5rem 0.75rem;
+        }
+        @media (max-width: 1024px) {
+            .info-panel-container {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* Botones del header */
+        .hdr-btn {
+        height: 34px;
+        padding: 0 10px;
+        border-radius: .5rem;
+        font-weight: 800;
+        font-size: 13px;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        transition: background-color .2s ease;
+        }
+    </style>
+</head>
+<body class="flex">
+    <aside id="cleaningHistoryAside" class="fixed left-0 top-0 h-full bg-white border-r border-slate-200 shadow-lg z-50 hidden-sidebar flex flex-col">
+        <div class="flex-1 overflow-y-auto">
+            <div class="flex justify-between items-center px-6 py-4 border-b border-slate-200">
+                <h3 class="text-xl font-bold text-slate-800">Historial de Limpieza</h3>
+                <button onclick="closeCleaningHistory()" class="text-slate-400 hover:text-slate-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div id="cleaningHistoryContent" class="p-6 space-y-4">
+            </div>
+        </div>
+    </aside>
+
+    <div id="mainContainer" class="flex-1">
+        <!-- HEADER -->
+        <header class="h-16 bg-slate-900 text-white px-3 md:px-6 flex items-center justify-between shadow">
+            <nav class="hidden sm:flex items-center gap-4 text-[13px]">
+            <a href="dashboard.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-concierge-bell"></i>Recepción</a>
+            <a href="post-venta.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-handshake"></i>Post Venta</a>
+            <a href="inventario.html" class="hover:text-cyan-400 flex items-center gap-2"><i class="fa-solid fa-boxes-stacked"></i>Inventario</a>
+            </nav>
+            <div class="flex items-center gap:2 md:gap-3">
+            <button class="hdr-btn bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2"><i class="fa-solid fa-calendar-plus"></i>Reserva</button>
+            <button onclick="openCaja()" class="hdr-btn bg-amber-500 hover:bg-amber-600 text-white flex items-center gap-2"><i class="fa-solid fa-cash-register"></i>Caja 1</button>
+            <button onclick="logout()" class="hdr-btn bg-red-600 hover:bg-red-700 text-white flex items-center gap-2"><i class="fa-solid fa-right-from-bracket"></i>Salir</button>
+            </div>
+        </header>
+
+        <div class="main-content">
+            <div class="control-panel">
+                <div class="flex justify-between items-center mb-4">
+                    <h2 class="text-xl font-bold text-slate-800" id="mainTitle">Control Ingreso Huéspedes</h2>
+                    <div class="flex space-x-2 text-sm text-slate-600 overflow-x-auto pb-2">
+                        <button id="tab-ingreso" class="tab-button active" onclick="showTab('ingreso')">Control de Ingreso Huéspedes</button>
+                        <button id="tab-informacion" class="tab-button" onclick="showTab('informacion')">Información Huésped</button>
+                    </div>
+                </div>
+                
+                <div id="content-ingreso" class="tab-content active">
+                    <div class="grid grid-cols-1 md:grid-cols-5 lg:grid-cols-7 gap-4 items-center">
+                        <div class="flex flex-col">
+                            <label for="habitacion" class="text-xs font-semibold text-slate-500 mb-1">HABITACIÓN</label>
+                            <select id="habitacion" class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option>ELIJ. HAB.</option>
+                                <option>101</option>
+                                <option>102</option>
+                            </select>
+                        </div>
+                        <div class="flex flex-col col-span-2">
+                            <label for="buscarPersona" class="text-xs font-semibold text-slate-500 mb-1">BUSCAR PERSONA</label>
+                            <div class="relative flex items-center">
+                                <input type="text" id="buscarPersona" placeholder="Buscar persona..." class="w-full border border-slate-300 rounded-md p-2 pl-8 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <i class="fa-solid fa-search absolute left-2 text-slate-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="fechaDesde" class="text-xs font-semibold text-slate-500 mb-1">FECHA DESDE</label>
+                            <div class="relative flex items-center">
+                                <input type="date" id="fechaDesde" value="2025-08-04" class="w-full border border-slate-300 rounded-md p-2 pr-8 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <i class="fa-solid fa-calendar-days absolute right-2 text-slate-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="fechaHasta" class="text-xs font-semibold text-slate-500 mb-1">FECHA HASTA</label>
+                            <div class="relative flex items-center">
+                                <input type="date" id="fechaHasta" value="2025-08-04" class="w-full border border-slate-300 rounded-md p-2 pr-8 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <i class="fa-solid fa-calendar-days absolute right-2 text-slate-400"></i>
+                            </div>
+                        </div>
+                        <div class="flex flex-col">
+                            <label for="ingresoSalida" class="text-xs font-semibold text-slate-500 mb-1">TURNO</label>
+                            <select id="ingresoSalida" class="w-full border border-slate-300 rounded-md p-2 text-sm focus:ring-blue-500 focus:border-blue-500">
+                                <option>DIA</option>
+                                <option>NOCHE</option>
+                            </select>
+                        </div>
+                        <div class="flex items-end space-x-2">
+                            <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-3 py-1 rounded-md transition-colors">
+                                <i class="fa-solid fa-search mr-1"></i>Buscar
+                            </button>
+                            <button onclick="exportarExcel()" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-3 py-1 rounded-md transition-colors">
+                                <i class="fa-solid fa-download mr-1"></i>Exportar
+                            </button>
+                        </div>
+                    </div>
+                    <div class="data-table-container mt-6">
+                        <div class="p-4 text-sm text-slate-600 border-b border-slate-200">
+                            Mostrando registros del 1 al 60 de un total de 98 registros
+                        </div>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th class="w-[8%]">FECHA</th>
+                                    <th class="w-[5%]">HAB</th>
+                                    <th class="w-[5%]">EFECTIVO</th>
+                                    <th class="w-[5%]">TARJETA</th>
+                                    <th class="w-[5%]">YAPE/PLIN</th>
+                                    <th class="w-[5%]">ENTRADA</th>
+                                    <th class="w-[5%]">SALIDA</th>
+                                    <th class="w-[15%]">NOMBRES</th>
+                                    <th class="w-[8%]">N° DOC</th>
+                                    <th class="w-[10%]">INVITADO</th>
+                                    <th class="w-[10%]">OBS.</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td>04/08/25</td>
+                                    <td>410</td>
+                                    <td>0</td>
+                                    <td>50</td>
+                                    <td>0</td>
+                                    <td>04/08/25 23:17</td>
+                                    <td>05/08/25 05:17</td>
+                                    <td>DIAZ RIOS, JOSE MANUEL</td>
+                                    <td>46813778</td>
+                                    <td>PERUANO(A) - DNI - 60808305 - CARLA XIOMARA SOSA-TUESTA</td>
+                                    <td></td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td>04/08/25</td>
+                                    <td>405</td>
+                                    <td>0</td>
+                                    <td>0</td>
+                                    <td>30</td>
+                                    <td>04/08/25 22:59</td>
+                                    <td>05/08/25 08:59</td>
+                                    <td>BALCAZAR LUPERDI, ADRIAN ENRIQUE</td>
+                                    <td>74812996</td>
+                                    <td>PERUANO(A) - DNI - 72252007 - NORELI FIDELIA TOLENTINO-PITTMAN</td>
+                                    <td>MATRIMONIAL-PROMO</td>
+                                </tr>
+                                <tr class="hover:bg-slate-50 transition-colors">
+                                    <td>04/08/25</td>
+                                    <td>606</td>
+                                    <td>0</td>
+                                    <td>60</td>
+                                    <td>0</td>
+                                    <td>04/08/25 22:56</td>
+                                    <td>05/08/25 10:56</td>
+                                    <td>HUARANCCA ORDOÑEZ, JHOEL DAVID</td>
+                                    <td>71206083</td>
+                                    <td>VENEZOLANO(A) - CE - 31352768 - GABRIELA NERIMAR REINA-DORTA</td>
+                                    <td></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        
+                        <div class="p-4 border-t border-slate-200 flex justify-between items-center text-sm text-slate-600">
+                            <div class="flex items-center space-x-4">
+                                <button class="bg-blue-500 hover:bg-blue-600 text-white px-3 py-1 rounded-md transition-colors">
+                                    Mostrar Montos
+                                </button>
+                                <div class="flex items-center space-x-2">
+                                    <span>Mostrar</span>
+                                    <select class="border border-slate-300 rounded-md p-1 text-sm">
+                                        <option>60</option>
+                                        <option>10</option>
+                                        <option>20</option>
+                                        <option>50</option>
+                                    </select>
+                                    <span>registros</span>
+                                </div>
+                            </div>
+                            <div class="flex items-center space-x-2">
+                                <button class="text-slate-500 hover:text-slate-800 transition-colors disabled:opacity-50" disabled>Anterior</button>
+                                <span class="px-2 py-1 bg-blue-500 text-white rounded-md">1</span>
+                                <button class="px-2 py-1 hover:bg-slate-200 rounded-md">2</button>
+                                <button class="text-slate-800 hover:text-blue-500 transition-colors">Siguiente</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="content-informacion" class="tab-content hidden">
+                    <div class="info-panel-container">
+                        <div class="guest-details-form space-y-4">
+                            <h3 class="text-lg font-semibold text-slate-800">DATOS DEL HUÉSPED</h3>
+                            <div class="space-y-2">
+                                <label for="nationality" class="text-xs font-semibold text-slate-500">NACIONALIDAD:</label>
+                                <div class="relative">
+                                    <select id="nationality" class="w-full border border-slate-300 rounded-md p-2 pl-10 text-sm">
+                                        <option>PERÚ</option>
+                                        <option>VENEZUELA</option>
+                                    </select>
+                                    <img src="https://flagcdn.com/w20/pe.png" alt="Bandera de Perú" class="absolute left-3 top-1/2 -translate-y-1/2 w-5">
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="docNumber" class="text-xs font-semibold text-slate-500">Nro. Documento:</label>
+                                <div class="flex gap-2">
+                                    <input type="text" id="docNumber" class="w-full border border-slate-300 rounded-md p-2 text-sm" placeholder="Buscar por Nro. Doc...">
+                                    <select id="docType" class="border border-slate-300 rounded-md p-2 text-sm">
+                                        <option>DNI</option>
+                                        <option>CE</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="space-y-2">
+                                <label for="paternalLastName" class="text-xs font-semibold text-slate-500">Primer Apellido:</label>
+                                <input type="text" id="paternalLastName" class="w-full border border-slate-300 rounded-md p-2 text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label for="maternalLastName" class="text-xs font-semibold text-slate-500">Segundo Apellido:</label>
+                                <input type="text" id="maternalLastName" class="w-full border border-slate-300 rounded-md p-2 text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label for="names" class="text-xs font-semibold text-slate-500">Nombres:</label>
+                                <input type="text" id="names" class="w-full border border-slate-300 rounded-md p-2 text-sm">
+                            </div>
+                            <div class="space-y-2">
+                                <label for="birthDate" class="text-xs font-semibold text-slate-500">Fecha de Nacimiento:</label>
+                                <input type="date" id="birthDate" class="w-full border border-slate-300 rounded-md p-2 text-sm">
+                            </div>
+                        </div>
+
+                        <div class="history-tabs-panel">
+                            <div class="history-tabs-nav">
+                                <button id="history-consumos" class="history-tab-button active" onclick="showHistoryTab('consumos')">Historial de Consumos</button>
+                                <button id="history-visitas" class="history-tab-button" onclick="showHistoryTab('visitas')">Registro de Visitas</button>
+                                <button id="history-invitado" class="history-tab-button" onclick="showHistoryTab('invitado')">Historial de Invitado</button>
+                            </div>
+
+                            <div id="history-consumos-content" class="history-tab-content active">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="text" placeholder="DESCRIPCION" class="border border-slate-300 rounded-md p-2 text-sm flex-1">
+                                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-md transition-colors">
+                                        <i class="fa-solid fa-search mr-1"></i>Buscar
+                                    </button>
+                                </div>
+                                <div class="text-sm text-slate-500 text-center py-4">0 registros encontrados.</div>
+                                </div>
+
+                            <div id="history-visitas-content" class="history-tab-content hidden">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="text" placeholder="DESCRIPCION" class="border border-slate-300 rounded-md p-2 text-sm flex-1">
+                                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-md transition-colors">
+                                        <i class="fa-solid fa-search mr-1"></i>Buscar
+                                    </button>
+                                </div>
+                                <div class="text-sm text-slate-500 text-center py-4">0 registros encontrados.</div>
+                                </div>
+
+                            <div id="history-invitado-content" class="history-tab-content hidden">
+                                <div class="flex items-center gap-4 mb-4">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="date" value="2025-08-04" class="border border-slate-300 rounded-md p-2 text-sm">
+                                    <input type="text" placeholder="DESCRIPCION" class="border border-slate-300 rounded-md p-2 text-sm flex-1">
+                                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-semibold px-4 py-2 rounded-md transition-colors">
+                                        <i class="fa-solid fa-search mr-1"></i>Buscar
+                                    </button>
+                                </div>
+                                <div class="text-sm text-slate-500 text-center py-4">0 registros encontrados.</div>
+                                </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div id="cashierModal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white rounded-lg shadow-lg max-w-2xl w-full">
+            <div class="flex justify-between items-center bg-gray-100 p-4 rounded-t-lg border-b border-gray-200">
+                <h2 class="text-lg font-bold text-gray-800">Caja HOTEL PRINCESS</h2>
+                <button onclick="closeCashierModal()" class="text-gray-400 hover:text-gray-600 transition-colors">
+                    <i class="fa-solid fa-xmark text-xl"></i>
+                </button>
+            </div>
+            <div class="p-4">
+                <div class="flex border-b border-gray-200 mb-4">
+                    <button class="px-4 py-2 text-sm font-medium border-b-2 border-blue-500 text-blue-500">Apertura y/o Cierre</button>
+                    <button class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Gastos Caja</button>
+                    <button class="px-4 py-2 text-sm text-gray-500 hover:text-gray-700">Ajuste Caja</button>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Caja</label>
+                        <div class="flex-1">
+                            <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                <option>CAJA 1</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-20">Gastos</label>
+                        <input type="number" value="0" class="w-20 border border-gray-300 rounded-md px-2 py-1 text-sm mr-4">
+                        <label class="text-sm font-medium text-gray-600 w-20">Ajuste</label>
+                        <input type="number" value="0" class="w-20 border border-gray-300 rounded-md px-2 py-1 text-sm">
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Monto Apertura</label>
+                        <div class="flex-1 flex items-center border border-gray-300 rounded-md">
+                            <span class="bg-gray-100 px-3 py-2 text-sm text-gray-500 rounded-l-md">PEN S/</span>
+                            <input type="number" value="500" class="flex-1 px-3 py-2 text-sm rounded-r-md outline-none">
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Monto Cierre</label>
+                        <input type="password" value="******" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Turno</label>
+                        <div class="flex-1">
+                            <select class="w-full border border-gray-300 rounded-md px-3 py-2 text-sm">
+                                <option>2º TURNO NOCHE 8PM - 8AM</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Usuario Apertura</label>
+                        <input type="text" value="FERNANDO MANRIQUE" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm bg-gray-100" readonly>
+                    </div>
+                    <div class="flex items-center">
+                        <label class="text-sm font-medium text-gray-600 w-32">Comentario</label>
+                        <input type="text" class="flex-1 border border-gray-300 rounded-md px-3 py-2 text-sm">
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 mt-6 pt-4 border-t border-gray-200">
+                    <button onclick="closeCashierModal()" class="bg-white border border-gray-300 text-gray-700 font-semibold px-4 py-2 rounded-lg hover:bg-gray-50 transition-colors">
+                        <i class="fa-solid fa-xmark mr-1"></i>
+                        <span>Cerrar Caja</span>
+                    </button>
+                    <button class="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
+                        <i class="fa-solid fa-cash-register mr-1"></i>
+                        <span>Aperturar Caja</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODAL CAJA (MEJORADO) -->
+<div id="modalCaja" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+  <div class="bg-white w-full max-w-3xl rounded-xl shadow-2xl flex flex-col overflow-hidden border border-gray-200">
+
+    <!-- HEADER -->
+    <div class="bg-gradient-to-r from-slate-800 to-slate-700 px-4 py-3 flex justify-between items-center">
+      <h2 class="font-semibold text-white flex items-center gap-2">
+        <i class="fa-solid fa-cash-register"></i> Caja Hotel Caribbean
+      </h2>
+      <button onclick="closeCaja()" class="bg-red-500 hover:bg-red-600 text-white px-2 py-1 rounded text-sm shadow">✖</button>
+    </div>
+
+    <!-- TABS -->
+    <div class="flex border-b text-sm font-medium bg-gray-50">
+      <button class="caja-tab-btn px-4 py-2 border-r active text-blue-600 font-semibold" data-tab="apertura">
+        <i class="fa-solid fa-door-open"></i> Apertura y/o Cierre
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="gastos">
+        <i class="fa-solid fa-receipt"></i> Gastos
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="ajuste">
+        <i class="fa-solid fa-sliders"></i> Ajuste
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="remesas">
+        <i class="fa-solid fa-exchange-alt"></i> Remesas
+      </button>
+      <button class="caja-tab-btn px-4 py-2 border-r text-gray-600" data-tab="comisiones">
+        <i class="fa-solid fa-percent"></i> Comisiones
+      </button>
+      <button class="caja-tab-btn px-4 py-2 text-gray-600" data-tab="divisas">
+        <i class="fa-solid fa-coins"></i> Divisas
+      </button>
+    </div>
+
+    <!-- BODY -->
+    <div class="p-6 flex-1 overflow-y-auto text-sm">
+      <!-- TAB APERTURA -->
+      <div id="tab-apertura" class="caja-tab-content space-y-4">
+
+        <!-- GRID FORMULARIO -->
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-cash-register text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Caja</label>
+            <select class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+              <option>CAJA 1</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-money-bill-wave text-red-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Gastos</label>
+            <input type="number" value="0" class="flex-1 border rounded px-3 py-2 text-sm text-red-600 font-bold focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-scale-balanced text-blue-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Ajuste</label>
+            <input type="number" value="0" class="flex-1 border rounded px-3 py-2 text-sm text-blue-600 font-bold focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-key text-green-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Monto Apertura</label>
+            <input   value="500" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-lock text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Monto Cierre</label>
+            <input type="password" value="******" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+          <div class="flex items-center gap-3">
+            <i class="fa-solid fa-clock text-yellow-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Turno</label>
+            <select class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+              <option>2º TURNO NOCHE 8PM - 8AM</option>
+            </select>
+          </div>
+          <div class="flex items-center gap-3 col-span-2">
+            <i class="fa-solid fa-user text-indigo-600"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Usuario</label>
+            <input type="text" value="Recepción 1" readonly class="flex-1 border rounded px-3 py-2 text-sm bg-gray-100 font-medium">
+          </div>
+          <div class="flex items-center gap-3 col-span-2">
+            <i class="fa-solid fa-comment text-gray-500"></i>
+            <label class="w-32 text-gray-700 font-medium text-xs">Comentario</label>
+            <input type="text" class="flex-1 border rounded px-3 py-2 text-sm focus:ring focus:ring-blue-200">
+          </div>
+        </div>
+      </div>
+
+      <!-- OTRAS TABS -->
+      <div id="tab-gastos" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-receipt mr-2 text-gray-500"></i> Aquí se registran los gastos de caja.</p>
+      </div>
+      <div id="tab-ajuste" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-sliders mr-2 text-gray-500"></i> Aquí se gestionan los ajustes de caja.</p>
+      </div>
+      <div id="tab-remesas" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-exchange-alt mr-2 text-gray-500"></i> Aquí se registran las remesas.</p>
+      </div>
+      <div id="tab-comisiones" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-percent mr-2 text-gray-500"></i> Aquí se calculan las comisiones.</p>
+      </div>
+      <div id="tab-divisas" class="caja-tab-content hidden">
+        <p class="text-gray-600"><i class="fa-solid fa-coins mr-2 text-gray-500"></i> Aquí se controlan las divisas.</p>
+      </div>
+    </div>
+
+    <!-- FOOTER -->
+    <div class="bg-gray-50 px-4 py-3 border-t flex justify-end gap-2">
+      <button class="px-4 py-2 bg-gray-200 rounded-lg text-sm font-semibold flex items-center gap-2" disabled>
+        <i class="fa-solid fa-door-closed"></i> Cerrar Caja
+      </button>
+      <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2">
+        <i class="fa-solid fa-door-open"></i> Aperturar Caja
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+    
+    <script>
+        // Función para mostrar la pestaña activa y ocultar las demás
+        function showTab(tabId) {
+            document.querySelectorAll('.tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.classList.add('hidden');
+            });
+            document.getElementById(`tab-${tabId}`).classList.add('active');
+            document.getElementById(`content-${tabId}`).classList.remove('hidden');
+
+
+            if (tabId === 'ingreso') {
+                document.getElementById('mainTitle').innerText = 'Control de Ingreso Huéspedes';
+            } else if (tabId === 'informacion') {
+                document.getElementById('mainTitle').innerText = 'Información Huésped';
+                loadGuestData();
+            }
+        }
+
+        // Funciones para la nueva sección de Información de Huésped
+        function showHistoryTab(tabId) {
+            document.querySelectorAll('.history-tab-button').forEach(button => {
+                button.classList.remove('active');
+            });
+            document.querySelectorAll('.history-tab-content').forEach(content => {
+                content.classList.remove('active');
+                content.classList.add('hidden');
+            });
+            document.getElementById(`history-${tabId}`).classList.add('active');
+            document.getElementById(`history-${tabId}-content`).classList.remove('hidden');
+        }
+
+        // CAJA
+        function openCaja(){
+            document.getElementById('modalCaja').classList.remove('hidden');
+            document.getElementById('modalCaja').classList.add('flex');
+        }
+        function closeCaja(){
+            document.getElementById('modalCaja').classList.add('hidden');
+        }
+        document.querySelectorAll('.caja-tab-btn').forEach(btn=>{
+            btn.addEventListener('click', ()=>{
+            document.querySelectorAll('.caja-tab-btn').forEach(b=>b.classList.remove('active'));
+            document.querySelectorAll('.caja-tab-content').forEach(c=>c.classList.add('hidden'));
+            btn.classList.add('active');
+            document.getElementById('tab-'+btn.dataset.tab).classList.remove('hidden');
+            });
+        });
+    
+    // EXPORTAR TABLA A EXCEL
+    function exportarExcel(){
+        const tabla = document.querySelector("table"); // usa el id si quieres más control
+        const wb = XLSX.utils.book_new();
+        const ws = XLSX.utils.table_to_sheet(tabla, { raw:true });
+
+        // Obtener rango de la hoja
+        const rango = XLSX.utils.decode_range(ws['!ref']);
+
+        // Estilos generales
+        for(let R = rango.s.r; R <= rango.e.r; ++R){
+            for(let C = rango.s.c; C <= rango.e.c; ++C){
+                const cell_address = XLSX.utils.encode_cell({r:R, c:C});
+                const cell = ws[cell_address];
+                if(!cell) continue;
+
+                // Estilo de la cabecera (primera fila)
+                if(R === 0){
+                    cell.s = {
+                        fill: { fgColor: { rgb: "1E293B" } }, // azul oscuro
+                        font: { color: { rgb: "FFFFFF" }, bold:true, sz:12 },
+                        alignment: { horizontal: "center", vertical:"center" },
+                        border: {
+                            top: {style:"thin", color:{rgb:"000000"}},
+                            bottom: {style:"thin", color:{rgb:"000000"}},
+                            left: {style:"thin", color:{rgb:"000000"}},
+                            right: {style:"thin", color:{rgb:"000000"}}
+                        }
+                    };
+                } 
+                else {
+                    // Estilo de las filas normales
+                    cell.s = {
+                        font: { sz:11, color:{ rgb:"000000" } },
+                        alignment: { horizontal: "center", vertical:"center" },
+                        border: {
+                            top: {style:"thin", color:{rgb:"CCCCCC"}},
+                            bottom: {style:"thin", color:{rgb:"CCCCCC"}},
+                            left: {style:"thin", color:{rgb:"CCCCCC"}},
+                            right: {style:"thin", color:{rgb:"CCCCCC"}}
+                        }
+                    };
+
+                    // Colorear alternado para filas pares
+                    if(R % 2 === 0){
+                        cell.s.fill = { fgColor: { rgb:"F3F4F6" } }; // gris clarito
+                    }
+                }
+            }
+        }
+
+        // Ajustar ancho de columnas automáticamente
+        const colWidths = [];
+        for(let C = rango.s.c; C <= rango.e.c; ++C){
+            let maxLen = 10;
+            for(let R = rango.s.r; R <= rango.e.r; ++R){
+                const cell = ws[XLSX.utils.encode_cell({r:R,c:C})];
+                if(cell && cell.v){
+                    const len = cell.v.toString().length;
+                    if(len > maxLen) maxLen = len;
+                }
+            }
+            colWidths.push({wch: maxLen + 2});
+        }
+        ws['!cols'] = colWidths;
+
+        XLSX.utils.book_append_sheet(wb, ws, "Ingresos");
+        XLSX.writeFile(wb, "Control_Ingresos.xlsx");
+    }
+
+    function logout(){
+        window.location.href = "login.html";
+    }
+    </script>
+</body>
+</html>

@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Mis Reservas — Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D',
+            naranja: '#D17A2A'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .reserva-card {
+      transition: all 0.3s ease;
+    }
+    .reserva-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+    }
+    .badge {
+      font-size: 0.75rem;
+      padding: 0.25rem 0.75rem;
+      border-radius: 9999px;
+    }
+    .modal {
+      transition: opacity 0.3s ease, transform 0.3s ease;
+      z-index: 100; /* Aseguramos que esté por encima del header (z-index: 60) */
+    }
+    .modal-content {
+      transform: scale(0.9);
+      transition: transform 0.3s ease;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    .modal-open .modal-content {
+      transform: scale(1);
+    }
+    /* Aseguramos que el modal ocupe toda la pantalla y esté por encima de todo */
+    .modal-container {
+      position: fixed;
+      inset: 0;
+      background-color: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 1rem;
+    }
+    .modal-container.open {
+      display: flex;
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- HEADER (idéntico al de index.html) -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Menú de usuario -->
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <!-- Dropdown -->
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-user"></i>
+              <span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl bg-green-50 text-verde">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+  </header>
+
+  <!-- SECCIÓN RESERVAS -->
+  <main class="max-w-6xl mx-auto px-4 md:px-6 py-8">
+    <!-- Encabezado -->
+    <div class="mb-8">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Mis Reservas</h1>
+      <p class="text-gray-600">Gestiona y revisa el estado de tus reservas en Hotel Caribbean</p>
+    </div>
+
+    <!-- Filtros -->
+    <div class="bg-white rounded-2xl shadow-md p-4 mb-6 flex flex-wrap gap-3">
+      <button class="px-4 py-2 rounded-lg bg-verde text-white font-medium">Todas</button>
+      <button class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium">Próximas</button>
+      <button class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium">En curso</button>
+      <button class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium">Finalizadas</button>
+      <button class="px-4 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 font-medium">Canceladas</button>
+    </div>
+
+    <!-- Lista de Reservas -->
+    <div class="space-y-6">
+      <!-- Reserva 1 - Próxima -->
+      <div class="reserva-card bg-white rounded-2xl shadow-md p-6 fade-in">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold">Habitación Deluxe con Vista al Mar</h2>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge bg-green-100 text-green-800">Confirmada</span>
+              <span class="text-gray-500">Código: HC123456</span>
+            </div>
+          </div>
+          <div class="text-lg font-bold text-verde">S/ 650.00</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <p class="text-sm text-gray-500">Check-in</p>
+            <p class="font-medium">Vie, 12 Feb 2025</p>
+            <p class="text-sm">Desde las 15:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Check-out</p>
+            <p class="font-medium">Dom, 14 Feb 2025</p>
+            <p class="text-sm">Hasta las 12:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Duración</p>
+            <p class="font-medium">2 noches</p>
+            <p class="text-sm">2 adultos</p>
+          </div>
+        </div>
+
+        <div class="flex flex-col md:flex-row gap-3 pt-4 border-t border-gray-100">
+          <button class="cambiar-fecha-btn px-4 py-2 bg-verde hover:bg-green-700 text-white rounded-lg font-medium flex items-center gap-2">
+            <i class="fas fa-calendar-alt"></i> Cambiar fecha
+          </button>
+          <button class="solicitar-reembolso-btn px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center gap-2">
+            <i class="fas fa-money-bill-wave"></i> Solicitar reembolso
+          </button>
+          <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center gap-2">
+            <i class="fas fa-file-invoice"></i> Ver detalles
+          </button>
+        </div>
+      </div>
+
+      <!-- Reserva 2 - En curso -->
+      <div class="reserva-card bg-white rounded-2xl shadow-md p-6 fade-in">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold">Suite Ejecutivo</h2>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge bg-blue-100 text-blue-800">En curso</span>
+              <span class="text-gray-500">Código: HC654321</span>
+            </div>
+          </div>
+          <div class="text-lg font-bold text-verde">S/ 1,200.00</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <p class="text-sm text-gray-500">Check-in</p>
+            <p class="font-medium">Mié, 10 Feb 2025</p>
+            <p class="text-sm">Desde las 15:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Check-out</p>
+            <p class="font-medium">Sáb, 13 Feb 2025</p>
+            <p class="text-sm">Hasta las 12:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Duración</p>
+            <p class="font-medium">3 noches</p>
+            <p class="text-sm">2 adultos, 1 niño</p>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <p class="text-sm text-gray-600 mb-3">Esta reserva ya está en curso. Para cambios contacta con recepción.</p>
+          <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center gap-2 inline-flex">
+            <i class="fas fa-file-invoice"></i> Ver detalles
+          </button>
+        </div>
+      </div>
+
+      <!-- Reserva 3 - Finalizada -->
+      <div class="reserva-card bg-white rounded-2xl shadow-md p-6 fade-in">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
+          <div>
+            <h2 class="text-xl font-bold">Habitación Standard</h2>
+            <div class="flex items-center gap-2 mt-1">
+              <span class="badge bg-gray-100 text-gray-800">Finalizada</span>
+              <span class="text-gray-500">Código: HC789012</span>
+            </div>
+          </div>
+          <div class="text-lg font-bold text-verde">S/ 420.00</div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+          <div>
+            <p class="text-sm text-gray-500">Check-in</p>
+            <p class="font-medium">Lun, 5 Feb 2025</p>
+            <p class="text-sm">Desde las 15:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Check-out</p>
+            <p class="font-medium">Mié, 7 Feb 2025</p>
+            <p class="text-sm">Hasta las 12:00</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-500">Duración</p>
+            <p class="font-medium">2 noches</p>
+            <p class="text-sm">1 adulto</p>
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-100">
+          <button class="px-4 py-2 bg-gray-100 hover:bg-gray-200 rounded-lg font-medium flex items-center gap-2 inline-flex">
+            <i class="fas fa-file-invoice"></i> Ver detalles y factura
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Políticas de reserva -->
+    <div class="bg-white rounded-2xl shadow-md p-6 mt-8">
+      <h2 class="text-xl font-bold mb-4">Políticas de modificación y cancelación</h2>
+      <div class="prose prose-sm max-w-none">
+        <ul class="list-disc pl-5 space-y-2">
+          <li>Las modificaciones de fecha deben realizarse con un mínimo de <strong>6 horas de antelación</strong> al check-in previsto.</li>
+          <li>Los cambios de fecha están sujetos a disponibilidad y diferencias tarifarias.</li>
+          <li>No se permiten cancelaciones directas. Para solicitar un reembolso, contacta con nuestro equipo.</li>
+          <li>Los reembolsos están sujetos a una penalización del 20% del importe total si se solicitan con menos de 24 horas de antelación.</li>
+          <li>En caso de no presentarse (no-show), no se aplicará reembolso alguno.</li>
+        </ul>
+        <p class="mt-4">Para más información, contacta con nuestro equipo de reservas: <a href="tel:+51123456789" class="text-verde font-medium">+51 123 456 789</a> o <a href="mailto:reservas@hotelcaribbean.com" class="text-verde font-medium">reservas@hotelcaribbean.com</a></p>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL CAMBIO FECHA -->
+<div id="modalCambioFecha" class="modal-container">
+  <div class="modal-content bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-xl font-bold">Cambiar fecha de reserva</h3>
+        <button class="close-modal text-gray-500 hover:text-gray-700">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+
+      <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+        <p class="text-sm text-blue-800">Reserva: <strong>Habitación Deluxe con Vista al Mar</strong></p>
+        <p class="text-sm text-blue-800">Código: <strong>HC123456</strong></p>
+        <p class="text-sm text-blue-800">Fecha actual: <strong>12-14 Feb 2025</strong></p>
+      </div>
+
+      <form id="cambioFechaForm">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva fecha de check-in</label>
+            <input id="nuevoCheckinFecha" type="date"
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent"
+                   required>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nueva hora de check-in</label>
+            <input id="nuevoCheckinHora" type="time"
+                   class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent"
+                   required>
+          </div>
+        </div>
+
+        <div class="mb-4">
+          <label class="block text-sm font-medium text-gray-700 mb-1">Motivo (opcional)</label>
+          <textarea id="motivoCambio" rows="3"
+            class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent"
+            placeholder="Puedes contarnos el motivo del cambio..."></textarea>
+        </div>
+
+        <div class="mb-4 p-3 bg-yellow-50 rounded-lg">
+          <p class="text-sm text-yellow-800">
+            ⚠️ Recuerda que debes solicitar cambios con al menos <strong>6 horas de antelación</strong> a tu check‑in original.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3">
+          <button type="button" class="close-modal px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg">
+            Cancelar
+          </button>
+          <button type="submit" class="px-4 py-2 bg-verde hover:bg-green-700 text-white rounded-lg font-medium">
+            Solicitar cambio
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+
+  <!-- MODAL SOLICITUD REEMBOLSO -->
+  <div id="modalReembolso" class="modal-container">
+    <div class="modal-content bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+      <div class="p-6">
+        <div class="flex justify-between items-center mb-4">
+          <h3 class="text-xl font-bold">Solicitar reembolso</h3>
+          <button class="close-modal text-gray-500 hover:text-gray-700">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        
+        <div class="mb-6 p-4 bg-blue-50 rounded-lg">
+          <p class="text-sm text-blue-800">Reserva: <strong>Habitación Deluxe con Vista al Mar</strong></p>
+          <p class="text-sm text-blue-800">Código: <strong>HC123456</strong></p>
+          <p class="text-sm text-blue-800">Importe total: <strong>S/ 650.00</strong></p>
+        </div>
+        
+        <form id="reembolsoForm">
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Motivo del reembolso</label>
+            <select class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent" required>
+              <option value="">Selecciona un motivo</option>
+              <option value="emergencia">Emergencia personal/familiar</option>
+              <option value="viaje">Problemas de viaje</option>
+              <option value="duplicado">Reserva duplicada</option>
+              <option value="otro">Otro motivo</option>
+            </select>
+          </div>
+          
+          <div class="mb-4">
+            <label class="block text-sm font-medium text-gray-700 mb-1">Explicación adicional</label>
+            <textarea rows="3" class="w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent" placeholder="Describe brevemente tu situación..."></textarea>
+          </div>
+          
+          <div class="mb-4 p-3 bg-yellow-50 rounded-lg">
+            <p class="text-sm text-yellow-800">ℹ️ Tu solicitud será revisada por nuestro equipo. El reembolso está sujeto a nuestras políticas y puede aplicar una penalización del 20%.</p>
+          </div>
+          
+          <div class="flex justify-end gap-3">
+            <button type="button" class="close-modal px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg">
+              Cancelar
+            </button>
+            <button type="submit" class="px-4 py-2 bg-verde hover:bg-green-700 text-white rounded-lg font-medium">
+              Enviar solicitud
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+  <!-- NOTIFICACIÓN TOAST -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-verde text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 transition-transform duration-300 z-50 hidden">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMessage">Operación realizada correctamente</span>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    const $ = (s, p = document) => p.querySelector(s);
+    const $$ = (s, p = document) => p.querySelectorAll(s);
+
+    // User menu
+    const userBtn = $('#userMenuButton');
+    const userMenu = $('#userMenu');
+
+    function openMenu(menu, btn) {
+      menu.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.add('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu(menu, btn) {
+      menu.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.remove('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'false');
+    }
+
+    userBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
+      if (isOpen) closeMenu(userMenu, userBtn); else openMenu(userMenu, userBtn);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+        closeMenu(userMenu, userBtn);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu(userMenu, userBtn);
+    });
+
+    // Mobile menu
+    const mobileBtn = $('#mobileMenuButton');
+    const mobileMenu = $('#mobileMenu');
+
+    mobileBtn?.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Funcionalidad de modales
+    const modalCambioFecha = $('#modalCambioFecha');
+    const modalReembolso = $('#modalReembolso');
+    const closeModalButtons = $$('.close-modal');
+    const cambiarFechaButtons = $$('.cambiar-fecha-btn');
+    const solicitarReembolsoButtons = $$('.solicitar-reembolso-btn');
+    
+    // Función para mostrar notificación toast
+    function showToast(message) {
+      const toast = $('#toast');
+      const toastMessage = $('#toastMessage');
+      
+      toastMessage.textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.remove('translate-y-20');
+      toast.classList.add('translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0');
+        toast.classList.add('translate-y-20');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+    
+    // Abrir modal de cambio de fecha
+    cambiarFechaButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        modalCambioFecha.classList.add('open');
+      });
+    });
+    
+    // Abrir modal de reembolso
+    solicitarReembolsoButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        modalReembolso.classList.add('open');
+      });
+    });
+    
+    // Cerrar modales
+    closeModalButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        modalCambioFecha.classList.remove('open');
+        modalReembolso.classList.remove('open');
+      });
+    });
+    
+    // Cerrar modal al hacer clic fuera del contenido
+    [modalCambioFecha, modalReembolso].forEach(modal => {
+      modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+          modal.classList.remove('open');
+        }
+      });
+    });
+    
+    // Envío de formularios
+    $('#cambioFechaForm').addEventListener('submit', (e) => {
+    e.preventDefault();
+
+    const f = $('#nuevoCheckinFecha').value;
+    const h = $('#nuevoCheckinHora').value;
+    const motivo = ($('#motivoCambio').value || '').trim();
+
+    if (!f || !h) {
+      // Validación mínima
+      alert('Ingresa la nueva fecha y hora de check-in.');
+      return;
+    }
+
+    // (Opcional) Validar que no sea pasado respecto a ahora:
+    const nuevaFechaHora = new Date(`${f}T${h}`);
+    const ahora = new Date();
+    if (nuevaFechaHora < ahora) {
+      alert('La nueva fecha/hora de check-in no puede ser en el pasado.');
+      return;
+    }
+
+    // Cierra modal y muestra toast
+    modalCambioFecha.classList.remove('open');
+    showToast('Solicitud de cambio enviada. Te confirmaremos por correo.');
+
+    // Aquí puedes enviar al backend (fetch) los datos:
+    // fetch('/api/cambio-checkin', { method:'POST', body: JSON.stringify({ fecha:f, hora:h, motivo }) })
+  });
+    
+    $('#reembolsoForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      modalReembolso.classList.remove('open');
+      showToast('Solicitud de reembolso enviada. Te contactaremos pronto.');
+    });
+
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+  </script>
+</body>
+</html>

@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Perfil — Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.3s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .input-edit {
+      transition: all 0.3s ease;
+    }
+    .save-pulse {
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+  <!-- HEADER (idéntico al de index.html) -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="index.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="index.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Menú de usuario -->
+        <div class="relative">
+          <button id="userMenuButton" type="button" aria-haspopup="menu" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-3 rounded-2xl bg-white/10 hover:bg-white/15 active:bg-white/20 px-2.5 py-1.5 transition ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300">
+            <img src="assets/avatar.png" alt="Avatar de usuario" class="w-9 h-9 rounded-full border-2 border-white/70">
+            <span class="hidden lg:block">Carlos Pérez</span>
+            <i class="fa-solid fa-chevron-down text-sm"></i>
+          </button>
+          <!-- Dropdown -->
+          <div id="userMenu" role="menu" aria-labelledby="userMenuButton" class="absolute right-0 mt-2 w-60 origin-top-right rounded-2xl bg-white/95 backdrop-blur ring-1 ring-black/5 shadow-xl p-2 opacity-0 scale-95 pointer-events-none transition transform">
+            <div class="px-3 py-2 flex items-center gap-3">
+              <img src="assets/avatar.png" alt="Avatar" class="w-10 h-10 rounded-full">
+              <div>
+                <p class="font-semibold text-gray-800 leading-tight">Carlos Pérez</p>
+                <p class="text-xs text-gray-500">carlos@example.com</p>
+              </div>
+            </div>
+            <hr class="my-2 border-gray-100">
+            <a href="perfil.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl bg-green-50 text-verde">
+              <i class="fa-regular fa-user"></i>
+              <span>Mi perfil</span>
+            </a>
+            <a href="reservas.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-regular fa-clipboard"></i>
+              <span>Mis reservas</span>
+            </a>
+            <a href="ajustes.html" role="menuitem" class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">
+              <i class="fa-solid fa-gear"></i>
+              <span>Ajustes</span>
+            </a>
+            <!-- En el dropdown de usuario (DESKTOP) -->
+            <button id="logoutInline" role="menuitem" type="button"
+              class="flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-red-50 text-red-600 w-full text-left">
+              <i class="fa-solid fa-right-from-bracket"></i>
+              <span>Cerrar sesión</span>
+            </button>
+          </div>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- SECCIÓN PERFIL MEJORADA -->
+  <main class="max-w-6xl mx-auto px-4 md:px-6 py-8">
+    <!-- Encabezado con modo edición -->
+    <div class="flex justify-between items-center mb-6">
+      <h1 class="text-2xl md:text-3xl font-bold text-gray-900">Mi Perfil</h1>
+      <div class="flex items-center gap-3">
+        <span id="editStatus" class="text-sm text-gray-500 hidden">Modo edición activado</span>
+        <button id="toggleEditBtn" class="bg-verde hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition flex items-center gap-2">
+          <i class="fas fa-pen"></i> <span>Editar Perfil</span>
+        </button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <!-- Columna izquierda: Información de perfil -->
+      <div class="lg:col-span-2 space-y-6">
+        <!-- Tarjeta de información personal -->
+        <div class="bg-white rounded-2xl shadow-md p-6 fade-in">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <i class="fas fa-user-circle text-verde"></i> Información Personal
+            </h2>
+            <span id="personalEditStatus" class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 hidden">Editando</span>
+          </div>
+          
+          <form id="personalInfoForm" class="space-y-4">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                <input type="text" name="nombre" value="Carlos" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                <input type="text" name="apellido" value="Pérez" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+              <input type="email" name="email" value="carlos.perez@example.com" disabled 
+                class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Teléfono</label>
+              <input type="tel" name="telefono" value="+51 987 654 321" disabled 
+                class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Tipo de documento</label>
+                <select name="tipoDocumento" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+                  <option value="dni" selected>DNI</option>
+                  <option value="ce">Carnet de Extranjería</option>
+                  <option value="passport">Pasaporte</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Número de documento</label>
+                <input type="text" name="numeroDocumento" value="12345678" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+            </div>
+            
+            <div id="personalFormActions" class="flex justify-end gap-3 pt-4 border-t border-gray-100 hidden">
+              <button type="button" id="cancelPersonalEdit" class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg">
+                Cancelar
+              </button>
+              <button type="submit" class="bg-verde hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition save-pulse">
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Tarjeta de dirección -->
+        <div class="bg-white rounded-2xl shadow-md p-6 fade-in">
+          <div class="flex items-center justify-between mb-4">
+            <h2 class="text-xl font-bold flex items-center gap-2">
+              <i class="fas fa-map-marker-alt text-verde"></i> Dirección
+            </h2>
+            <span id="addressEditStatus" class="text-xs px-2 py-1 rounded-full bg-blue-100 text-blue-800 hidden">Editando</span>
+          </div>
+          
+          <form id="addressForm" class="space-y-4">
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">Dirección</label>
+              <input type="text" name="direccion" value="Av. Los Olivos 456" disabled 
+                class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+            </div>
+            
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Ciudad</label>
+                <input type="text" name="ciudad" value="Lima" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Región</label>
+                <input type="text" name="region" value="Lima Metropolitana" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">Código Postal</label>
+                <input type="text" name="codigoPostal" value="15302" disabled 
+                  class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">País</label>
+              <select name="pais" disabled 
+                class="input-edit w-full border border-gray-300 rounded-lg px-4 py-2 focus:ring-2 focus:ring-verde focus:border-transparent disabled:bg-gray-100">
+                <option value="pe" selected>Perú</option>
+                <option value="ar">Argentina</option>
+                <option value="cl">Chile</option>
+                <option value="co">Colombia</option>
+                <option value="mx">México</option>
+                <option value="es">España</option>
+                <option value="us">Estados Unidos</option>
+              </select>
+            </div>
+            
+            <div id="addressFormActions" class="flex justify-end gap-3 pt-4 border-t border-gray-100 hidden">
+              <button type="button" id="cancelAddressEdit" class="px-4 py-2 text-gray-600 hover:text-gray-800 rounded-lg">
+                Cancelar
+              </button>
+              <button type="submit" class="bg-verde hover:bg-green-700 text-white px-4 py-2 rounded-lg shadow transition save-pulse">
+                Guardar cambios
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Columna derecha: Avatar, preferencias y reservas -->
+      <div class="space-y-6">
+        <!-- Avatar y subida de imagen -->
+        <div class="bg-white rounded-2xl shadow-md p-6 text-center fade-in">
+          <div class="relative inline-block mb-4">
+            <img id="profileAvatar" src="assets/avatar.png" alt="Foto de perfil" class="w-32 h-32 rounded-full border-4 border-verde shadow-md mx-auto">
+            <label for="avatarUpload" class="absolute bottom-0 right-0 bg-verde text-white p-2 rounded-full cursor-pointer shadow-md hover:bg-green-700 transition">
+              <i class="fas fa-camera"></i>
+              <input type="file" id="avatarUpload" accept="image/*" class="hidden">
+            </label>
+          </div>
+          <h2 class="text-xl font-bold text-gray-900">Carlos Pérez</h2>
+          <p class="text-gray-600">Miembro desde Enero 2023</p>
+          
+          <div id="avatarUploadStatus" class="mt-3 text-sm hidden"></div>
+        </div>
+
+        <!-- Preferencias -->
+        <div class="bg-white rounded-2xl shadow-md p-6 fade-in">
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-sliders-h text-verde"></i> Preferencias
+          </h2>
+          
+          <div class="space-y-4">
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium">Modo oscuro</p>
+                <p class="text-sm text-gray-500">Activar interfaz oscura</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="darkModeToggle" class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-verde"></div>
+              </label>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium">Notificaciones por email</p>
+                <p class="text-sm text-gray-500">Recibir promociones y novedades</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="emailNotifications" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-verde"></div>
+              </label>
+            </div>
+            
+            <div class="flex items-center justify-between">
+              <div>
+                <p class="font-medium">Notificaciones push</p>
+                <p class="text-sm text-gray-500">Alertas sobre reservas</p>
+              </div>
+              <label class="relative inline-flex items-center cursor-pointer">
+                <input type="checkbox" id="pushNotifications" checked class="sr-only peer">
+                <div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-verde"></div>
+              </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reservas recientes -->
+        <div class="bg-white rounded-2xl shadow-md p-6 fade-in">
+          <h2 class="text-xl font-bold mb-4 flex items-center gap-2">
+            <i class="fas fa-calendar-check text-verde"></i> Reservas Recientes
+          </h2>
+          
+          <div class="space-y-3">
+            <div class="border-l-4 border-verde pl-3 py-1">
+              <p class="font-medium">Habitación 204</p>
+              <p class="text-sm text-gray-600">12 Feb 2025 (2 noches)</p>
+            </div>
+            
+            <div class="border-l-4 border-verde pl-3 py-1">
+              <p class="font-medium">Habitación 305</p>
+              <p class="text-sm text-gray-600">28 Ene 2025 (6 horas)</p>
+            </div>
+            
+            <div class="border-l-4 border-verde pl-3 py-1">
+              <p class="font-medium">Habitación 110</p>
+              <p class="text-sm text-gray-600">10 Ene 2025 (1 noche)</p>
+            </div>
+          </div>
+          
+          <a href="reservas.html" class="mt-4 inline-block text-verde hover:text-green-700 font-medium">
+            Ver todas las reservas <i class="fas fa-arrow-right ml-1"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Notificación toast -->
+  <div id="toast" class="fixed bottom-4 right-4 bg-verde text-white px-6 py-3 rounded-lg shadow-lg transform translate-y-20 transition-transform duration-300 z-50 hidden">
+    <div class="flex items-center gap-2">
+      <i class="fas fa-check-circle"></i>
+      <span id="toastMessage">Cambios guardados correctamente</span>
+    </div>
+  </div>
+
+  <!-- MODAL DE CIERRE DE SESIÓN -->
+<div id="logoutModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+  <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+    <div class="p-6 text-center">
+      <div class="w-16 h-16 mx-auto mb-4 bg-red-100 rounded-full flex items-center justify-center">
+        <i class="fas fa-sign-out-alt text-red-500 text-2xl"></i>
+      </div>
+      <h3 class="text-xl font-bold mb-2">Cerrando sesión...</h3>
+      <p class="text-gray-600 mb-6">Estás saliendo de tu cuenta. Serás redirigido a la página de inicio.</p>
+      <div class="w-full bg-gray-200 rounded-full h-2 mb-2">
+        <div id="progressBar" class="bg-verde h-2 rounded-full transition-all" style="width: 0%"></div>
+      </div>
+      <p id="progressText" class="text-xs text-gray-500">0%</p>
+    </div>
+  </div>
+</div>
+
+  <!-- JS -->
+  <script>
+    const $ = (s, p = document) => p.querySelector(s);
+    const $$ = (s, p = document) => p.querySelectorAll(s);
+
+    // User menu
+    const userBtn = $('#userMenuButton');
+    const userMenu = $('#userMenu');
+
+    function openMenu(menu, btn) {
+      menu.classList.remove('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.add('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'true');
+    }
+
+    function closeMenu(menu, btn) {
+      menu.classList.add('pointer-events-none', 'opacity-0', 'scale-95');
+      menu.classList.remove('opacity-100', 'scale-100');
+      btn?.setAttribute('aria-expanded', 'false');
+    }
+
+    userBtn?.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = userBtn.getAttribute('aria-expanded') === 'true';
+      if (isOpen) closeMenu(userMenu, userBtn); else openMenu(userMenu, userBtn);
+    });
+
+    document.addEventListener('click', (e) => {
+      if (!userMenu.contains(e.target) && !userBtn.contains(e.target)) {
+        closeMenu(userMenu, userBtn);
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') closeMenu(userMenu, userBtn);
+    });
+
+    // Mobile menu
+    const mobileBtn = $('#mobileMenuButton');
+    const mobileMenu = $('#mobileMenu');
+
+    mobileBtn?.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Funcionalidad de edición de perfil
+    let isEditing = false;
+    const toggleEditBtn = $('#toggleEditBtn');
+    const editStatus = $('#editStatus');
+    
+    // Formularios
+    const personalInfoForm = $('#personalInfoForm');
+    const addressForm = $('#addressForm');
+    
+    // Botones de acción
+    const personalFormActions = $('#personalFormActions');
+    const addressFormActions = $('#addressFormActions');
+    
+    // Estados de edición
+    const personalEditStatus = $('#personalEditStatus');
+    const addressEditStatus = $('#addressEditStatus');
+    
+    // Botones de cancelar
+    const cancelPersonalEdit = $('#cancelPersonalEdit');
+    const cancelAddressEdit = $('#cancelAddressEdit');
+    
+    // Inputs
+    const personalInputs = $$('input, select', personalInfoForm);
+    const addressInputs = $$('input, select', addressForm);
+    
+    // Función para mostrar notificación toast
+    function showToast(message) {
+      const toast = $('#toast');
+      const toastMessage = $('#toastMessage');
+      
+      toastMessage.textContent = message;
+      toast.classList.remove('hidden');
+      toast.classList.remove('translate-y-20');
+      toast.classList.add('translate-y-0');
+      
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0');
+        toast.classList.add('translate-y-20');
+        setTimeout(() => toast.classList.add('hidden'), 300);
+      }, 3000);
+    }
+    
+    // Alternar modo edición
+    toggleEditBtn.addEventListener('click', () => {
+      isEditing = !isEditing;
+      
+      if (isEditing) {
+        // Activar modo edición
+        toggleEditBtn.innerHTML = '<i class="fas fa-times"></i> <span>Cancelar Edición</span>';
+        toggleEditBtn.classList.remove('bg-verde');
+        toggleEditBtn.classList.add('bg-vino');
+        editStatus.classList.remove('hidden');
+        
+        // Habilitar inputs
+        personalInputs.forEach(input => input.disabled = false);
+        addressInputs.forEach(input => input.disabled = false);
+        
+        // Mostrar botones de acción
+        personalFormActions.classList.remove('hidden');
+        addressFormActions.classList.remove('hidden');
+        
+        // Mostrar estados de edición
+        personalEditStatus.classList.remove('hidden');
+        addressEditStatus.classList.remove('hidden');
+        
+      } else {
+        // Desactivar modo edición
+        toggleEditBtn.innerHTML = '<i class="fas fa-pen"></i> <span>Editar Perfil</span>';
+        toggleEditBtn.classList.remove('bg-vino');
+        toggleEditBtn.classList.add('bg-verde');
+        editStatus.classList.add('hidden');
+        
+        // Deshabilitar inputs
+        personalInputs.forEach(input => input.disabled = true);
+        addressInputs.forEach(input => input.disabled = true);
+        
+        // Ocultar botones de acción
+        personalFormActions.classList.add('hidden');
+        addressFormActions.classList.add('hidden');
+        
+        // Ocultar estados de edición
+        personalEditStatus.classList.add('hidden');
+        addressEditStatus.classList.add('hidden');
+      }
+    });
+    
+    // Cancelar edición de formularios individuales
+    cancelPersonalEdit.addEventListener('click', () => {
+      personalInfoForm.reset();
+    });
+    
+    cancelAddressEdit.addEventListener('click', () => {
+      addressForm.reset();
+    });
+    
+    // Envío de formularios
+    personalInfoForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Simular guardado
+      setTimeout(() => {
+        showToast('Información personal actualizada correctamente');
+      }, 500);
+    });
+    
+    addressForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      // Simular guardado
+      setTimeout(() => {
+        showToast('Dirección actualizada correctamente');
+      }, 500);
+    });
+    
+    // Subida de avatar
+    const avatarUpload = $('#avatarUpload');
+    const avatarUploadStatus = $('#avatarUploadStatus');
+    const profileAvatar = $('#profileAvatar');
+    
+    avatarUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (file) {
+        if (file.size > 2 * 1024 * 1024) {
+          avatarUploadStatus.textContent = 'La imagen debe ser menor a 2MB';
+          avatarUploadStatus.classList.remove('hidden');
+          avatarUploadStatus.classList.remove('text-green-600');
+          avatarUploadStatus.classList.add('text-red-600');
+          return;
+        }
+        
+        if (!file.type.match('image.*')) {
+          avatarUploadStatus.textContent = 'Solo se permiten archivos de imagen';
+          avatarUploadStatus.classList.remove('hidden');
+          avatarUploadStatus.classList.remove('text-green-600');
+          avatarUploadStatus.classList.add('text-red-600');
+          return;
+        }
+        
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          profileAvatar.src = e.target.result;
+          avatarUploadStatus.textContent = 'Imagen actualizada correctamente';
+          avatarUploadStatus.classList.remove('hidden');
+          avatarUploadStatus.classList.remove('text-red-600');
+          avatarUploadStatus.classList.add('text-green-600');
+          
+          // Ocultar mensaje después de 3 segundos
+          setTimeout(() => {
+            avatarUploadStatus.classList.add('hidden');
+          }, 3000);
+        };
+        reader.readAsDataURL(file);
+      }
+    });
+    
+    // Preferencias
+    const darkModeToggle = $('#darkModeToggle');
+    const emailNotifications = $('#emailNotifications');
+    const pushNotifications = $('#pushNotifications');
+    
+    darkModeToggle.addEventListener('change', () => {
+      document.body.classList.toggle('bg-gray-900');
+      document.body.classList.toggle('text-white');
+      showToast(`Modo oscuro ${darkModeToggle.checked ? 'activado' : 'desactivado'}`);
+    });
+    
+    emailNotifications.addEventListener('change', () => {
+      showToast(`Notificaciones por email ${emailNotifications.checked ? 'activadas' : 'desactivadas'}`);
+    });
+    
+    pushNotifications.addEventListener('change', () => {
+      showToast(`Notificaciones push ${pushNotifications.checked ? 'activadas' : 'desactivadas'}`);
+    });
+
+
+
+    // --- Cierre de sesión inline (modal + redirección) ---
+(function(){
+  const $ = (s, p=document) => p.querySelector(s);
+  const userBtn   = $('#userMenuButton');
+  const userMenu  = $('#userMenu');
+  const btnDesk   = $('#logoutInline');
+  const btnMobile = $('#logoutInlineMobile');
+  const modal     = $('#logoutModal');
+  const bar       = $('#progressBar');
+  const txt       = $('#progressText');
+
+  function closeUserMenu(){
+    if (userMenu && userBtn) {
+      userMenu.classList.add('pointer-events-none','opacity-0','scale-95');
+      userMenu.classList.remove('opacity-100','scale-100');
+      userBtn.setAttribute('aria-expanded','false');
+    }
+  }
+
+  function startLogout(){
+    // Cerrar el menú de usuario
+    closeUserMenu();
+
+    // Mostrar modal
+    modal.classList.remove('hidden'); 
+    modal.classList.add('flex');
+
+    // Animar barra (≈3s) y redirigir
+    let w = 0;
+    const step = 30; // ms
+    const timer = setInterval(()=>{
+      w = Math.min(100, w + 1);
+      bar.style.width = w + '%';
+      if (txt) txt.textContent = w + '%';
+      if (w >= 100){
+        clearInterval(timer);
+        setTimeout(()=>{ window.location.href = 'indexpublico.html'; }, 300);
+      }
+    }, step);
+  }
+
+  btnDesk?.addEventListener('click', startLogout);
+  btnMobile?.addEventListener('click', startLogout);
+
+  // (Opcional) Cerrar modal si clic fuera
+  modal?.addEventListener('click', (e)=>{
+    if (e.target === modal){
+      modal.classList.add('hidden');
+      modal.classList.remove('flex');
+      bar.style.width = '0%';
+      if (txt) txt.textContent = '0%';
+    }
+  });
+})();
+  </script>
+</body>
+</html>

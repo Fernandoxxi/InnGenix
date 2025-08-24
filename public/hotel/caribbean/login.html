@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Iniciar Sesión - Hotel Caribbean</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            azul: '#1B2A41',
+            verde: '#2E5339',
+            vino: '#6A1E2D'
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    .fade-in {
+      animation: fadeIn 0.5s ease-in-out;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    .login-card {
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .login-card:hover {
+      transform: translateY(-5px);
+      box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    .input-focus:focus {
+      box-shadow: 0 0 0 3px rgba(46, 83, 57, 0.2);
+    }
+  </style>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col">
+
+  <!-- HEADER PÚBLICO -->
+  <header class="sticky top-0 z-[60] bg-azul/95 text-white shadow-lg backdrop-blur supports-[backdrop-filter]:bg-azul/90 isolation-auto">
+    <div class="max-w-7xl mx-auto px-4 md:px-6 py-3 flex items-center justify-between">
+      <!-- Brand -->
+      <a href="indexpublico.html" class="flex items-center gap-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/70 rounded-xl">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h1 class="text-xl md:text-2xl font-bold tracking-tight">Hotel Caribbean</h1>
+      </a>
+
+      <!-- Desktop nav -->
+      <nav class="hidden md:flex items-center gap-6">
+        <a href="indexpublico.html" class="hover:text-green-400 transition">Inicio</a>
+        <a href="habitaciones.html" class="hover:text-green-400 transition">Habitaciones</a>
+        <a href="promociones.html" class="hover:text-green-400 transition">Promociones</a>
+        <a href="contacto.html" class="hover:text-green-400 transition">Contacto</a>
+
+        <!-- Botones de acceso -->
+        <div class="flex items-center gap-3">
+          <a href="login.html" class="px-4 py-2 bg-white/10 hover:bg-white/15 text-white rounded-lg transition">
+            Iniciar Sesión
+          </a>
+          <a href="registro-cliente.html" class="px-4 py-2 bg-verde hover:bg-green-700 text-white rounded-lg transition">
+            Registrarse
+          </a>
+        </div>
+      </nav>
+
+      <!-- Mobile toggles -->
+      <div class="md:hidden flex items-center gap-2">
+        <a href="login.html" class="px-3 py-2 rounded-lg bg-white/10 hover:bg-white/15 transition">
+          <i class="fas fa-sign-in-alt"></i>
+        </a>
+        <button id="mobileMenuButton" aria-controls="mobileMenu" aria-expanded="false" class="inline-flex items-center justify-center w-10 h-10 rounded-xl bg-white/10 hover:bg-white/15 active:bg-white/20 ring-1 ring-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-green-300" aria-label="Abrir menú">
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
+    </div>
+
+    <!-- Mobile panel -->
+    <div id="mobileMenu" class="md:hidden max-w-7xl mx-auto px-4 md:px-6 pb-4 hidden">
+      <div class="mt-2 rounded-2xl bg-white/95 backdrop-blur shadow ring-1 ring-black/5 overflow-hidden">
+        <nav class="p-4 grid gap-2">
+          <a href="indexpublico.html" class="px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800 font-medium">Inicio</a>
+          <a href="habitaciones.html" class="px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">Habitaciones</a>
+          <a href="promociones.html" class="px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">Promociones</a>
+          <a href="contacto.html" class="px-3 py-2 rounded-xl hover:bg-gray-100 text-gray-800">Contacto</a>
+          <div class="border-t border-gray-200 mt-2 pt-3 grid grid-cols-2 gap-2">
+            <a href="login.html" class="px-3 py-2 text-center rounded-xl bg-gray-100 hover:bg-gray-200 text-gray-800">
+              Iniciar Sesión
+            </a>
+            <a href="registro-cliente.html" class="px-3 py-2 text-center rounded-xl bg-verde hover:bg-green-700 text-white">
+              Registrarse
+            </a>
+          </div>
+        </nav>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="flex-grow flex items-center justify-center py-12 px-4">
+    <div class="w-full max-w-md">
+      <!-- Tarjeta de Login -->
+      <div class="login-card bg-white rounded-2xl shadow-md p-8 fade-in">
+        <div class="text-center mb-8">
+          <div class="w-16 h-16 mx-auto mb-4 bg-verde rounded-full flex items-center justify-center">
+            <i class="fas fa-user-lock text-white text-2xl"></i>
+          </div>
+          <h1 class="text-2xl font-bold text-gray-900">Iniciar Sesión</h1>
+          <p class="text-gray-600 mt-2">Accede a tu cuenta para gestionar tus reservas</p>
+        </div>
+
+        <form id="loginForm" class="space-y-5">
+          <div>
+            <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Correo electrónico</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-envelope text-gray-400"></i>
+              </div>
+              <input type="email" id="email" name="email" required 
+                     class="input-focus w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-verde focus:border-transparent"
+                     placeholder="tu@email.com">
+            </div>
+          </div>
+
+          <div>
+            <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Contraseña</label>
+            <div class="relative">
+              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                <i class="fas fa-lock text-gray-400"></i>
+              </div>
+              <input type="password" id="password" name="password" required 
+                     class="input-focus w-full pl-10 pr-3 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-verde focus:border-transparent"
+                     placeholder="••••••••">
+              <button type="button" id="togglePassword" class="absolute inset-y-0 right-0 pr-3 flex items-center">
+                <i class="fas fa-eye text-gray-400 hover:text-gray-600"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <input type="checkbox" id="remember" name="remember" class="h-4 w-4 text-verde focus:ring-verde border-gray-300 rounded">
+              <label for="remember" class="ml-2 block text-sm text-gray-700">Recordarme</label>
+            </div>
+            <a href="recuperar.html" class="text-sm text-verde hover:text-green-700">¿Olvidaste tu contraseña?</a>
+          </div>
+
+          <button type="submit" class="w-full py-3 px-4 bg-verde hover:bg-green-700 text-white rounded-lg font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-verde">
+            Iniciar Sesión
+          </button>
+        </form>
+
+        <div class="mt-6 text-center">
+          <p class="text-sm text-gray-600">
+            ¿No tienes una cuenta?
+            <a href="registro-cliente.html" class="font-medium text-verde hover:text-green-700">Regístrate ahora</a>
+          </p>
+        </div>
+
+        <div class="mt-8 pt-6 border-t border-gray-200">
+          <div class="relative">
+            <div class="absolute inset-0 flex items-center">
+              <div class="w-full border-t border-gray-300"></div>
+            </div>
+            <div class="relative flex justify-center text-sm">
+              <span class="px-2 bg-white text-gray-500">O continúa con</span>
+            </div>
+          </div>
+
+          <div class="mt-4 grid grid-cols-2 gap-3">
+            <button type="button" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <i class="fab fa-google text-red-500"></i>
+              <span class="ml-2">Google</span>
+            </button>
+            <button type="button" class="w-full inline-flex justify-center py-2 px-4 border border-gray-300 rounded-md shadow-sm bg-white text-sm font-medium text-gray-700 hover:bg-gray-50">
+              <i class="fab fa-facebook text-blue-600"></i>
+              <span class="ml-2">Facebook</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Mensaje de bienvenida -->
+      <div class="mt-8 text-center fade-in">
+        <p class="text-gray-600">Al iniciar sesión, aceptas nuestros <a href="#" class="text-verde hover:text-green-700">Términos de Servicio</a> y <a href="#" class="text-verde hover:text-green-700">Política de Privacidad</a>.</p>
+      </div>
+    </div>
+  </main>
+
+   <!-- FOOTER -->
+  <footer class="bg-azul text-white py-8 mt-12">
+    <div class="max-w-7xl mx-auto px-6 text-center">
+      <div class="flex justify-center items-center gap-3 mb-4">
+        <i class="fas fa-hotel text-green-400 text-2xl"></i>
+        <h4 class="text-xl font-bold">Hotel Caribbean</h4>
+      </div>
+      <p class="text-white/80 text-sm mb-4">Tu refugio de confort y lujo en el corazón de la ciudad.</p>
+      <div class="border-t border-white/20 pt-4 text-center text-sm text-white/60">
+        <p>© 2025 Hotel Caribbean - Todos los derechos reservados</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- MODAL DE BIENVENIDA -->
+  <div id="welcomeModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl shadow-lg w-full max-w-md overflow-hidden">
+      <div class="p-6 text-center">
+        <div class="w-16 h-16 mx-auto mb-4 bg-green-100 rounded-full flex items-center justify-center">
+          <i class="fas fa-check-circle text-green-600 text-2xl"></i>
+        </div>
+        
+        <h3 class="text-xl font-bold mb-2">¡Bienvenido de nuevo!</h3>
+        <p class="text-gray-600 mb-6">Has iniciado sesión correctamente. Serás redirigido a tu cuenta.</p>
+        
+        <div class="w-full bg-gray-200 rounded-full h-2 mb-6">
+          <div id="loginProgressBar" class="bg-verde h-2 rounded-full transition-all duration-1000" style="width: 0%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script>
+    const $ = (s, p = document) => p.querySelector(s);
+    const $$ = (s, p = document) => p.querySelectorAll(s);
+
+    // Mobile menu
+    const mobileBtn = $('#mobileMenuButton');
+    const mobileMenu = $('#mobileMenu');
+
+    mobileBtn?.addEventListener('click', () => {
+      const expanded = mobileBtn.getAttribute('aria-expanded') === 'true';
+      mobileBtn.setAttribute('aria-expanded', String(!expanded));
+      mobileMenu.classList.toggle('hidden');
+    });
+
+    // Cerrar menú al hacer clic fuera de él
+    document.addEventListener('click', (e) => {
+      if (!mobileMenu.contains(e.target) && !mobileBtn.contains(e.target)) {
+        mobileMenu.classList.add('hidden');
+        mobileBtn.setAttribute('aria-expanded', 'false');
+      }
+    });
+
+    // Mostrar/ocultar contraseña
+    const togglePassword = $('#togglePassword');
+    const passwordInput = $('#password');
+
+    togglePassword?.addEventListener('click', () => {
+      const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+      passwordInput.setAttribute('type', type);
+      
+      // Cambiar icono
+      const icon = togglePassword.querySelector('i');
+      if (type === 'text') {
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+      } else {
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+      }
+    });
+
+    // Envío del formulario
+    const loginForm = $('#loginForm');
+    const welcomeModal = $('#welcomeModal');
+    const loginProgressBar = $('#loginProgressBar');
+
+    loginForm?.addEventListener('submit', (e) => {
+      e.preventDefault();
+      
+      // Simular proceso de login
+      welcomeModal.classList.remove('hidden');
+      welcomeModal.classList.add('flex');
+      
+      // Animar barra de progreso
+      let width = 0;
+      const interval = setInterval(() => {
+        if (width >= 100) {
+          clearInterval(interval);
+          // Redirigir al index principal después de completar
+          setTimeout(() => {
+            window.location.href = 'index.html';
+          }, 300);
+        } else {
+          width += 2;
+          loginProgressBar.style.width = width + '%';
+        }
+      }, 20);
+    });
+
+    // Cerrar modal si se hace clic fuera
+    welcomeModal.addEventListener('click', (e) => {
+      if (e.target === welcomeModal) {
+        welcomeModal.classList.add('hidden');
+        welcomeModal.classList.remove('flex');
+      }
+    });
+  </script>
+</body>
+</html>
