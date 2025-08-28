@@ -38,8 +38,8 @@ con enfoque en usabilidad y navegación.
 
 ## 🌐 Demo Online
 
-- **CLIENTE**: https://symphonious-sprinkles-da7e8f.netlify.app/public/hotel/caribbean/indexpublico.html
-- **RECEPCION O ADMIN**: https://symphonious-sprinkles-da7e8f.netlify.app/empresa/hotel/caribbean/login.html
+- **CLIENTE**: https://inngenix.netlify.app/public/hotel/caribbean/indexpublico.html
+- **RECEPCION O ADMIN**: https://inngenix.netlify.app/empresa/hotel/caribbean/login.html
 
     - **Credenciales Cliente**:
         - **USER**: No validado (Cualquier Usuario)
