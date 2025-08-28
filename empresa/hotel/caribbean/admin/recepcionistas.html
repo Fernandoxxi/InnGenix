@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Recepcionistas - Hotel Caribbean</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
@@ -28,10 +27,10 @@
     <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
       <nav class="space-y-2 text-slate-700">
         <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
-        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
+        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
         <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
         <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
-        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
         <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-gear text-gray-500"></i> Configuración</a>
       </nav>
     </aside>
@@ -42,165 +41,226 @@
       <!-- HEADER DE SECCION -->
       <div class="flex justify-between items-center">
         <h2 class="text-xl font-bold text-slate-800">Gestión de Recepcionistas</h2>
-        <button onclick="openModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
-          <i class="fa-solid fa-plus"></i> Agregar Recepcionista
+      </div>
+
+            <!-- FILTROS -->
+      <div class="grid grid-cols-7 gap-4 bg-white p-4 rounded-xl shadow mb-4 items-center">
+        <input id="filtroCodigo" placeholder="Código" class="p-2 border rounded">
+        <input id="filtroDni" placeholder="DNI" class="p-2 border rounded">
+        <input id="filtroNombre" placeholder="Nombre" class="p-2 border rounded">
+        <select id="filtroEstado" class="p-2 border rounded">
+          <option value="">Estado</option>
+          <option>Activo</option>
+          <option>Libre</option>
+          <option>Suspendido</option>
+          <option>Vacaciones</option>
+          <option>Inactivo</option>
+        </select>
+        <select id="filtroTurno" class="p-2 border rounded">
+          <option value="">Turno</option>
+          <option>Mañana</option>
+          <option>Tarde</option>
+          <option>Noche</option>
+        </select>
+        <select id="filtroSede" class="p-2 border rounded">
+          <option value="">Sede</option>
+          <option>Los Olivos</option>
+          <option>Lima Centro</option>
+          <option>Miraflores</option>
+          <option>San Isidro</option>
+        </select>
+        <button onclick="aplicarFiltros()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 justify-self-end">
+          Buscar
         </button>
       </div>
 
-      <!-- TABLA RECEPCIONISTAS -->
-      <div class="bg-white rounded shadow p-4">
-        <h3 class="font-semibold mb-3">Listado</h3>
-        <table id="tablaRecepcionistas" class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
+      <!-- BOTONES PRINCIPALES (ahora debajo de filtros, alineados a la izquierda) -->
+      <div class="flex gap-4 mb-4">
+        <button onclick="openModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+          <i class="fa-solid fa-plus"></i> Registrar Recepcionista
+        </button>
+        <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+          <i class="fa-solid fa-file-pdf"></i> Exportar PDF
+        </button>
+        <button onclick="exportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+          <i class="fa-solid fa-file-excel"></i> Exportar Excel
+        </button>
+      </div>
+
+      <!-- TABLA -->
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <table class="w-full text-left text-sm" id="tablaRecepcionistas">
+          <thead class="bg-gray-200">
             <tr>
-              <th class="p-2 text-left">Nombre</th>
-              <th class="p-2 text-left">Documento</th>
-              <th class="p-2 text-left">Turno</th>
-              <th class="p-2 text-left">Estado</th>
-              <th class="p-2 text-left">Último Acceso</th>
-              <th class="p-2 text-center">Acciones</th>
+              <th class="p-3">Código</th>
+              <th class="p-3">DNI</th>
+              <th class="p-3">Nombre</th>
+              <th class="p-3">Turno</th>
+              <th class="p-3">Estado</th>
+              <th class="p-3">Último acceso</th>
+              <th class="p-3">Sede</th>
+              <th class="p-3">Acciones</th>
             </tr>
           </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Fernando Manrique</td>
-              <td class="p-2">DNI: 12345678</td>
-              <td class="p-2">8AM - 8PM</td>
-              <td class="p-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Activo</span></td>
-              <td class="p-2">04/08/2025 08:05</td>
-              <td class="p-2 text-center space-x-2">
-                <button class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen"></i></button>
-                <button class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Rosa Pérez</td>
-              <td class="p-2">DNI: 87654321</td>
-              <td class="p-2">8PM - 8AM</td>
-              <td class="p-2"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Vacaciones</span></td>
-              <td class="p-2">03/08/2025 20:00</td>
-              <td class="p-2 text-center space-x-2">
-                <button class="text-blue-600 hover:text-blue-800"><i class="fa-solid fa-pen"></i></button>
-                <button class="text-red-600 hover:text-red-800"><i class="fa-solid fa-trash"></i></button>
-              </td>
-            </tr>
-          </tbody>
+          <tbody id="tbodyRecepcionistas"></tbody>
         </table>
       </div>
 
-      <!-- HISTORIAL DE TURNOS -->
-      <div class="bg-white rounded shadow p-4">
-        <h3 class="font-semibold mb-3">Historial de Turnos</h3>
-        <div class="flex gap-4 mb-3">
-          <input type="date" class="border rounded px-2 py-1 text-sm">
-          <input type="date" class="border rounded px-2 py-1 text-sm">
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-3 py-1 rounded text-sm"><i class="fa-solid fa-search"></i> Buscar</button>
-        </div>
-        <table class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Fecha</th>
-              <th class="p-2 text-left">Recepcionista</th>
-              <th class="p-2 text-left">Turno</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">04/08/2025</td>
-              <td class="p-2">Fernando Manrique</td>
-              <td class="p-2">8AM - 8PM</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">03/08/2025</td>
-              <td class="p-2">Rosa Pérez</td>
-              <td class="p-2">8PM - 8AM</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
-
-      <!-- REPORTES -->
-      <div class="bg-white rounded shadow p-4">
-        <div class="flex justify-between items-center mb-3">
-          <h3 class="font-semibold">Reportes de Recepcionistas</h3>
-          <div class="space-x-2">
-            <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-1 rounded text-sm"><i class="fa-solid fa-file-excel"></i> Excel</button>
-            <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-sm"><i class="fa-solid fa-file-pdf"></i> PDF</button>
-          </div>
-        </div>
-        <table id="tablaReportes" class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Recepcionista</th>
-              <th class="p-2 text-left">Horas Trabajadas</th>
-              <th class="p-2 text-left">Check-ins Realizados</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Fernando Manrique</td>
-              <td class="p-2">180h</td>
-              <td class="p-2">120</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Rosa Pérez</td>
-              <td class="p-2">160h</td>
-              <td class="p-2">110</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- PAGINACION -->
+      <div class="flex justify-end gap-2 mt-4">
+        <button class="px-3 py-1 border rounded hover:bg-gray-100">Anterior</button>
+        <button class="px-3 py-1 border rounded hover:bg-gray-100">Siguiente</button>
       </div>
 
     </main>
   </div>
 
-  <!-- MODAL AGREGAR RECEPCIONISTA -->
+  <!-- MODAL -->
   <div id="modalRecep" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-lg p-6">
-      <h3 class="font-semibold text-lg mb-4">Agregar Recepcionista</h3>
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
+      <h3 id="modalTitle" class="font-semibold text-lg mb-4">Registrar Recepcionista</h3>
       <div class="space-y-3">
-        <input type="text" placeholder="Nombre completo" class="w-full border rounded px-3 py-2 text-sm">
-        <input type="text" placeholder="Documento (DNI/CE)" class="w-full border rounded px-3 py-2 text-sm">
-        <select class="w-full border rounded px-3 py-2 text-sm">
-          <option>Turno Día (8AM-8PM)</option>
-          <option>Turno Noche (8PM-8AM)</option>
+        <input id="formCodigo" placeholder="Código" class="w-full border rounded px-3 py-2 text-sm">
+        <input id="formDni" placeholder="DNI" class="w-full border rounded px-3 py-2 text-sm">
+        <input id="formNombre" placeholder="Nombre completo" class="w-full border rounded px-3 py-2 text-sm">
+        <select id="formTurno" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="">Seleccione Turno</option>
+          <option>Mañana</option>
+          <option>Tarde</option>
+          <option>Noche</option>
         </select>
-        <select class="w-full border rounded px-3 py-2 text-sm">
+        <select id="formEstado" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="">Seleccione Estado</option>
           <option>Activo</option>
           <option>Libre</option>
           <option>Suspendido</option>
           <option>Vacaciones</option>
+          <option>Inactivo</option>
+        </select>
+        <select id="formSede" class="w-full border rounded px-3 py-2 text-sm">
+          <option value="">Seleccione Sede</option>
+          <option>Los Olivos</option>
+          <option>Lima Centro</option>
+          <option>Miraflores</option>
+          <option>San Isidro</option>
         </select>
       </div>
       <div class="flex justify-end gap-2 mt-4">
         <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-        <button class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Guardar</button>
+        <button onclick="guardarRecepcionista()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Guardar</button>
       </div>
     </div>
   </div>
 
   <script>
-    function logout(){ window.location.href = "../login.html"; }
+    let recepcionistas = [
+      {codigo:"R001", dni:"12345678", nombre:"Juan Pérez", turno:"Mañana", estado:"Activo", ultimoAcceso:"25/08/2025", sede:"Lima Centro"},
+      {codigo:"R002", dni:"87654321", nombre:"Ana Torres", turno:"Noche", estado:"Vacaciones", ultimoAcceso:"20/08/2025", sede:"Miraflores"}
+    ];
+    let editIndex = null;
 
-    // MODAL
-    function openModal(){ document.getElementById('modalRecep').classList.remove('hidden'); document.getElementById('modalRecep').classList.add('flex'); }
-    function closeModal(){ document.getElementById('modalRecep').classList.add('hidden'); }
+    function renderTabla(lista=recepcionistas){
+      const tbody = document.getElementById("tbodyRecepcionistas");
+      tbody.innerHTML = "";
+      lista.forEach((r,i)=>{
+        tbody.innerHTML += `
+          <tr class="border-b hover:bg-gray-50">
+            <td class="p-3">${r.codigo}</td>
+            <td class="p-3">${r.dni}</td>
+            <td class="p-3">${r.nombre}</td>
+            <td class="p-3">${r.turno}</td>
+            <td class="p-3">${r.estado}</td>
+            <td class="p-3">${r.ultimoAcceso}</td>
+            <td class="p-3">${r.sede}</td>
+            <td class="p-3 flex gap-2">
+              <button onclick="editarRecepcionista(${i})" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Actualizar</button>
+            </td>
+          </tr>`;
+      });
+    }
 
-    // EXPORTAR
+    function aplicarFiltros(){
+      const f = {
+        codigo: document.getElementById("filtroCodigo").value.toLowerCase(),
+        dni: document.getElementById("filtroDni").value.toLowerCase(),
+        nombre: document.getElementById("filtroNombre").value.toLowerCase(),
+        estado: document.getElementById("filtroEstado").value,
+        turno: document.getElementById("filtroTurno").value,
+        sede: document.getElementById("filtroSede").value
+      };
+      const lista = recepcionistas.filter(r =>
+        r.codigo.toLowerCase().includes(f.codigo) &&
+        r.dni.toLowerCase().includes(f.dni) &&
+        r.nombre.toLowerCase().includes(f.nombre) &&
+        (f.estado ? r.estado===f.estado : true) &&
+        (f.turno ? r.turno===f.turno : true) &&
+        (f.sede ? r.sede===f.sede : true)
+      );
+      renderTabla(lista);
+    }
+
+    function openModal(){
+      document.getElementById("modalTitle").innerText = editIndex!==null ? "Actualizar Recepcionista":"Registrar Recepcionista";
+      document.getElementById("modalRecep").classList.remove("hidden");
+      document.getElementById("modalRecep").classList.add("flex");
+    }
+    function closeModal(){ document.getElementById("modalRecep").classList.add("hidden"); }
+
+    function guardarRecepcionista(){
+      const nuevo = {
+        codigo: document.getElementById("formCodigo").value,
+        dni: document.getElementById("formDni").value,
+        nombre: document.getElementById("formNombre").value,
+        turno: document.getElementById("formTurno").value,
+        estado: document.getElementById("formEstado").value,
+        ultimoAcceso: new Date().toLocaleDateString(),
+        sede: document.getElementById("formSede").value
+      };
+      if(!nuevo.nombre || !nuevo.dni){ alert("Nombre y DNI son obligatorios"); return; }
+
+      if(editIndex!==null){
+        recepcionistas[editIndex] = nuevo;
+        editIndex=null;
+        alert("Recepcionista actualizado con éxito");
+      } else {
+        recepcionistas.push(nuevo);
+        alert("Recepcionista registrado con éxito");
+      }
+      renderTabla();
+      closeModal();
+    }
+
+    function editarRecepcionista(i){
+      editIndex = i;
+      const r = recepcionistas[i];
+      document.getElementById("formCodigo").value=r.codigo;
+      document.getElementById("formDni").value=r.dni;
+      document.getElementById("formNombre").value=r.nombre;
+      document.getElementById("formTurno").value=r.turno;
+      document.getElementById("formEstado").value=r.estado;
+      document.getElementById("formSede").value=r.sede;
+      openModal();
+    }
+
     function exportExcel(){
-      const tabla = document.getElementById("tablaReportes");
+      const tabla = document.getElementById("tablaRecepcionistas");
       const wb = XLSX.utils.book_new();
       const ws = XLSX.utils.table_to_sheet(tabla);
-      XLSX.utils.book_append_sheet(wb, ws, "Reportes");
-      XLSX.writeFile(wb, "Reportes_Recepcionistas.xlsx");
+      XLSX.utils.book_append_sheet(wb, ws, "Recepcionistas");
+      XLSX.writeFile(wb, "Recepcionistas.xlsx");
     }
 
     function exportPDF(){
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF();
-      doc.text("Reporte de Recepcionistas", 20, 20);
-      doc.save("Reportes_Recepcionistas.pdf");
+      doc.text("Listado de Recepcionistas", 20, 20);
+      doc.save("Recepcionistas.pdf");
     }
+
+    function logout(){ window.location.href="../login.html"; }
+
+    // Inicial
+    renderTabla();
   </script>
 
 </body>
