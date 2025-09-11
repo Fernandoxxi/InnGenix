@@ -7,16 +7,64 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/autonumeric/4.6.0/autoNumeric.min.js"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-align: center;
+    }
+    .skeleton {
+      background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+      background-size: 200% 100%;
+      animation: loading 1.5s infinite;
+      border-radius: 4px;
+    }
+    @keyframes loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+    [data-tooltip] { position: relative; }
+    [data-tooltip]:before {
+      content: attr(data-tooltip);
+      position: absolute;
+      bottom: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      padding: 5px 10px;
+      background-color: #333;
+      color: #fff;
+      border-radius: 4px;
+      font-size: 12px;
+      white-space: nowrap;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.2s, visibility 0.2s;
+      z-index: 100;
+    }
+    [data-tooltip]:hover:before { opacity: 1; visibility: visible; }
+    /* Toast */
+    #toast {
+      position: fixed; right: 1rem; bottom: 1rem; z-index: 9999;
+      display: none; min-width: 260px;
+    }
+  </style>
 </head>
 <body class="bg-gray-100 font-sans">
+
+  <!-- TOAST -->
+  <div id="toast" class="rounded-lg shadow-lg p-4 text-white"></div>
 
   <!-- HEADER -->
   <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
     <h1 class="text-lg font-bold flex items-center gap-2">
       <i class="fa-solid fa-hotel text-cyan-400"></i> Hotel Caribbean
     </h1>
-    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
+    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2 transition-colors">
       <i class="fa-solid fa-right-from-bracket"></i>Salir
     </button>
   </header>
@@ -26,12 +74,12 @@
     <!-- SIDEBAR -->
     <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
       <nav class="space-y-2 text-slate-700">
-        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
+        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 transition-colors"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
         <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
-        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
-        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
-        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
-        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-gear text-gray-500"></i> Configuración</a>
+        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 transition-colors"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
+        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 transition-colors"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 transition-colors"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 transition-colors"><i class="fa-solid fa-gear text-gray-500"></i> Configuración</a>
       </nav>
     </aside>
 
@@ -40,114 +88,212 @@
 
       <!-- HEADER DE SECCION -->
       <div class="flex justify-between items-center">
-        <h2 class="text-xl font-bold text-slate-800">Gestión de Recepcionistas</h2>
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Gestión de Recepcionistas</h2>
+          <p class="text-sm text-gray-500 mt-1">Administra el personal de recepción de todas las sedes</p>
+        </div>
+        <div class="flex items-center gap-2">
+          <span class="text-sm text-gray-500" id="contadorResultados">2 recepcionistas</span>
+        </div>
       </div>
 
-            <!-- FILTROS -->
-      <div class="grid grid-cols-7 gap-4 bg-white p-4 rounded-xl shadow mb-4 items-center">
-        <input id="filtroCodigo" placeholder="Código" class="p-2 border rounded">
-        <input id="filtroDni" placeholder="DNI" class="p-2 border rounded">
-        <input id="filtroNombre" placeholder="Nombre" class="p-2 border rounded">
-        <select id="filtroEstado" class="p-2 border rounded">
-          <option value="">Estado</option>
-          <option>Activo</option>
-          <option>Libre</option>
-          <option>Suspendido</option>
-          <option>Vacaciones</option>
-          <option>Inactivo</option>
-        </select>
-        <select id="filtroTurno" class="p-2 border rounded">
-          <option value="">Turno</option>
-          <option>Mañana</option>
-          <option>Tarde</option>
-          <option>Noche</option>
-        </select>
-        <select id="filtroSede" class="p-2 border rounded">
-          <option value="">Sede</option>
-          <option>Los Olivos</option>
-          <option>Lima Centro</option>
-          <option>Miraflores</option>
-          <option>San Isidro</option>
-        </select>
-        <button onclick="aplicarFiltros()" class="bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700 justify-self-end">
-          Buscar
-        </button>
+      <!-- FILTROS MEJORADOS -->
+      <div class="bg-white p-5 rounded-xl shadow mb-4">
+        <div class="grid grid-cols-1 md:grid-cols-7 gap-4 items-end">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Código</label>
+            <input id="filtroCodigo" placeholder="Ej: R001" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">DNI</label>
+            <input id="filtroDni" placeholder="Ej: 12345678" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+            <input id="filtroNombre" placeholder="Ej: Juan Pérez" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+            <select id="filtroEstado" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Todos</option>
+              <option>Activo</option>
+              <option>Libre</option>
+              <option>Suspendido</option>
+              <option>Vacaciones</option>
+              <option>Inactivo</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Turno</label>
+            <select id="filtroTurno" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Todos</option>
+              <option>Mañana</option>
+              <option>Tarde</option>
+              <option>Noche</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Sede</label>
+            <select id="filtroSede" class="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Todas</option>
+              <option>Los Olivos</option>
+              <option>Lima Centro</option>
+              <option>Miraflores</option>
+              <option>San Isidro</option>
+            </select>
+          </div>
+          <div class="flex gap-4">
+            <button onclick="aplicarFiltros()" class="bg-indigo-600 text-white px-4 py-3 rounded-md hover:bg-indigo-700 transition-colors flex items-center justify-center" data-tooltip="Buscar">
+              <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+            <button onclick="limpiarFiltros()" class="bg-gray-200 text-gray-700 px-3 py-3 rounded-md hover:bg-gray-300 transition-colors flex items-center" data-tooltip="Limpiar filtros">
+              <i class="fa-solid fa-eraser"></i>
+            </button>
+          </div>
+        </div>
       </div>
 
-      <!-- BOTONES PRINCIPALES (ahora debajo de filtros, alineados a la izquierda) -->
-      <div class="flex gap-4 mb-4">
-        <button onclick="openModal()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
-          <i class="fa-solid fa-plus"></i> Registrar Recepcionista
+      <!-- BOTONES PRINCIPALES -->
+      <div class="flex gap-3 mb-4">
+        <button onclick="nuevoRecepcionista()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
+          <i class="fa-solid fa-plus"></i> Nuevo Recepcionista
         </button>
-        <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm">
+        <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
           <i class="fa-solid fa-file-pdf"></i> Exportar PDF
         </button>
-        <button onclick="exportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">
+        <button onclick="exportExcel()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2.5 rounded-md text-sm font-semibold flex items-center gap-2 transition-colors">
           <i class="fa-solid fa-file-excel"></i> Exportar Excel
         </button>
       </div>
 
-      <!-- TABLA -->
+      <!-- TABLA MEJORADA -->
       <div class="bg-white rounded-xl shadow overflow-hidden">
-        <table class="w-full text-left text-sm" id="tablaRecepcionistas">
-          <thead class="bg-gray-200">
-            <tr>
-              <th class="p-3">Código</th>
-              <th class="p-3">DNI</th>
-              <th class="p-3">Nombre</th>
-              <th class="p-3">Turno</th>
-              <th class="p-3">Estado</th>
-              <th class="p-3">Último acceso</th>
-              <th class="p-3">Sede</th>
-              <th class="p-3">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="tbodyRecepcionistas"></tbody>
-        </table>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm" id="tablaRecepcionistas">
+            <thead class="bg-slate-100 text-slate-700">
+              <tr>
+                <th class="p-4 font-semibold">Código</th>
+                <th class="p-4 font-semibold">DNI</th>
+                <th class="p-4 font-semibold">Nombre</th>
+                <th class="p-4 font-semibold">Turno</th>
+                <th class="p-4 font-semibold">Estado</th>
+                <th class="p-4 font-semibold">Último acceso</th>
+                <th class="p-4 font-semibold">Sede</th>
+                <th class="p-4 font-semibold text-center">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyRecepcionistas" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+        <div id="sinResultados" class="hidden p-8 text-center">
+          <i class="fa-solid fa-user-slash text-4xl text-gray-300 mb-3"></i>
+          <p class="text-gray-500 font-medium">No se encontraron recepcionistas</p>
+          <p class="text-sm text-gray-400 mt-1">Intenta ajustar los filtros o agregar un nuevo recepcionista</p>
+        </div>
       </div>
 
-      <!-- PAGINACION -->
-      <div class="flex justify-end gap-2 mt-4">
-        <button class="px-3 py-1 border rounded hover:bg-gray-100">Anterior</button>
-        <button class="px-3 py-1 border rounded hover:bg-gray-100">Siguiente</button>
+      <!-- PAGINACION MEJORADA -->
+      <div class="flex justify-between items-center mt-4">
+        <div class="text-sm text-gray-500" id="infoPaginacion">Mostrando 1-2 de 2 resultados</div>
+        <div class="flex gap-2">
+          <button id="btnAnterior" class="px-4 py-2 border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <i class="fa-solid fa-chevron-left"></i> Anterior
+          </button>
+          <div class="flex gap-1" id="numerosPagina"></div>
+          <button id="btnSiguiente" class="px-4 py-2 border rounded-md hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            Siguiente <i class="fa-solid fa-chevron-right"></i>
+          </button>
+        </div>
       </div>
 
     </main>
   </div>
 
-  <!-- MODAL -->
-  <div id="modalRecep" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
-    <div class="bg-white rounded-lg shadow-xl w-full max-w-md p-6">
-      <h3 id="modalTitle" class="font-semibold text-lg mb-4">Registrar Recepcionista</h3>
-      <div class="space-y-3">
-        <input id="formCodigo" placeholder="Código" class="w-full border rounded px-3 py-2 text-sm">
-        <input id="formDni" placeholder="DNI" class="w-full border rounded px-3 py-2 text-sm">
-        <input id="formNombre" placeholder="Nombre completo" class="w-full border rounded px-3 py-2 text-sm">
-        <select id="formTurno" class="w-full border rounded px-3 py-2 text-sm">
-          <option value="">Seleccione Turno</option>
-          <option>Mañana</option>
-          <option>Tarde</option>
-          <option>Noche</option>
-        </select>
-        <select id="formEstado" class="w-full border rounded px-3 py-2 text-sm">
-          <option value="">Seleccione Estado</option>
-          <option>Activo</option>
-          <option>Libre</option>
-          <option>Suspendido</option>
-          <option>Vacaciones</option>
-          <option>Inactivo</option>
-        </select>
-        <select id="formSede" class="w-full border rounded px-3 py-2 text-sm">
-          <option value="">Seleccione Sede</option>
-          <option>Los Olivos</option>
-          <option>Lima Centro</option>
-          <option>Miraflores</option>
-          <option>San Isidro</option>
-        </select>
+  <!-- MODAL MEJORADO -->
+  <div id="modalRecep" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="flex justify-between items-center p-5 border-b">
+        <h3 id="modalTitle" class="font-semibold text-lg text-slate-800">Registrar Recepcionista</h3>
+        <button onclick="closeModal()" class="text-gray-400 hover:text-gray-600">
+          <i class="fa-solid fa-times text-xl"></i>
+        </button>
       </div>
-      <div class="flex justify-end gap-2 mt-4">
-        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 rounded">Cancelar</button>
-        <button onclick="guardarRecepcionista()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded">Guardar</button>
+      <div class="p-5 space-y-4">
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Código <span class="text-red-500">*</span></label>
+          <input id="formCodigo" placeholder="Ej: R001" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="text-xs text-red-500 hidden mt-1" id="errorCodigo">El código es requerido</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">DNI <span class="text-red-500">*</span></label>
+          <input id="formDni" placeholder="Ej: 12345678" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="text-xs text-red-500 hidden mt-1" id="errorDni">El DNI es requerido y debe tener 8 dígitos</p>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Nombre completo <span class="text-red-500">*</span></label>
+          <input id="formNombre" placeholder="Ej: Juan Pérez" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+          <p class="text-xs text-red-500 hidden mt-1" id="errorNombre">El nombre es requerido</p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Turno <span class="text-red-500">*</span></label>
+            <select id="formTurno" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Seleccione Turno</option>
+              <option>Mañana</option>
+              <option>Tarde</option>
+              <option>Noche</option>
+            </select>
+            <p class="text-xs text-red-500 hidden mt-1" id="errorTurno">Seleccione un turno</p>
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1">Estado <span class="text-red-500">*</span></label>
+            <select id="formEstado" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+              <option value="">Seleccione Estado</option>
+              <option>Activo</option>
+              <option>Libre</option>
+              <option>Suspendido</option>
+              <option>Vacaciones</option>
+              <option>Inactivo</option>
+            </select>
+            <p class="text-xs text-red-500 hidden mt-1" id="errorEstado">Seleccione un estado</p>
+          </div>
+        </div>
+        <div>
+          <label class="block text-sm font-medium text-gray-700 mb-1">Sede <span class="text-red-500">*</span></label>
+          <select id="formSede" class="w-full p-2.5 border rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500">
+            <option value="">Seleccione Sede</option>
+            <option>Los Olivos</option>
+            <option>Lima Centro</option>
+            <option>Miraflores</option>
+            <option>San Isidro</option>
+          </select>
+          <p class="text-xs text-red-500 hidden mt-1" id="errorSede">Seleccione una sede</p>
+        </div>
+      </div>
+      <div class="flex justify-end gap-3 p-5 border-t">
+        <button onclick="closeModal()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+        <button onclick="guardarRecepcionista()" class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-md transition-colors flex items-center gap-2">
+          <i class="fa-solid fa-save"></i> Guardar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL DE CONFIRMACIÓN -->
+  <div id="modalConfirmacion" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="p-5 border-b">
+        <h3 class="font-semibold text-lg text-slate-800">Confirmar eliminación</h3>
+      </div>
+      <div class="p-5">
+        <p class="text-gray-700">¿Estás seguro de que deseas eliminar al recepcionista <span id="nombreEliminar" class="font-semibold"></span>?</p>
+        <p class="text-sm text-gray-500 mt-2">Esta acción no se puede deshacer.</p>
+      </div>
+      <div class="flex justify-end gap-3 p-5 border-t">
+        <button onclick="cerrarConfirmacion()" class="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition-colors">Cancelar</button>
+        <button onclick="confirmarEliminacion()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-md transition-colors flex items-center gap-2">
+          <i class="fa-solid fa-trash"></i> Eliminar
+        </button>
       </div>
     </div>
   </div>
@@ -155,31 +301,179 @@
   <script>
     let recepcionistas = [
       {codigo:"R001", dni:"12345678", nombre:"Juan Pérez", turno:"Mañana", estado:"Activo", ultimoAcceso:"25/08/2025", sede:"Lima Centro"},
-      {codigo:"R002", dni:"87654321", nombre:"Ana Torres", turno:"Noche", estado:"Vacaciones", ultimoAcceso:"20/08/2025", sede:"Miraflores"}
+      {codigo:"R002", dni:"87654321", nombre:"Ana Torres", turno:"Noche", estado:"Vacaciones", ultimoAcceso:"20/08/2025", sede:"Miraflores"},
+      {codigo:"R003", dni:"45678912", nombre:"Carlos López", turno:"Tarde", estado:"Activo", ultimoAcceso:"24/08/2025", sede:"San Isidro"},
+      {codigo:"R004", dni:"78912345", nombre:"María García", turno:"Mañana", estado:"Libre", ultimoAcceso:"23/08/2025", sede:"Los Olivos"},
+      {codigo:"R005", dni:"32165497", nombre:"Roberto Silva", turno:"Noche", estado:"Suspendido", ultimoAcceso:"22/08/2025", sede:"Lima Centro"}
     ];
     let editIndex = null;
+    let deleteIndex = null;
+    let currentPage = 1;
+    const itemsPerPage = 3;
+    let filteredData = recepcionistas.slice(); // por defecto todo
 
-    function renderTabla(lista=recepcionistas){
+    /* Utilitarios */
+    function showNotification(msg, type="success"){
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = "";
+      toast.id = "toast";
+      toast.style.display = "block";
+      const color = type === "success" ? "bg-emerald-600" : (type === "error" ? "bg-red-600" : "bg-slate-700");
+      toast.classList.add(color, "rounded-lg", "shadow-lg", "p-4", "text-white");
+      setTimeout(()=> toast.style.display = "none", 2200);
+    }
+
+    function logout(){
+      showNotification("Sesión cerrada.", "success");
+      // Aquí podrías redirigir: window.location.href = "login.html";
+    }
+
+    function parseDMY(str){
+      // Espera formato dd/mm/yyyy
+      const [d,m,y] = str.split("/");
+      return new Date(+y, +m-1, +d);
+    }
+
+    function timeAgo(fechaDMY){
+      const d = parseDMY(fechaDMY);
+      const diffMs = new Date() - d;
+      const days = Math.floor(diffMs / (1000*60*60*24));
+      if (days <= 0) return "Hoy";
+      if (days === 1) return "Hace 1 día";
+      return `Hace ${days} días`;
+    }
+
+    // Función para obtener la clase CSS según el estado
+    function getEstadoClass(estado) {
+      const classes = {
+        'Activo': 'bg-green-100 text-green-800',
+        'Libre': 'bg-blue-100 text-blue-800',
+        'Suspendido': 'bg-red-100 text-red-800',
+        'Vacaciones': 'bg-yellow-100 text-yellow-800',
+        'Inactivo': 'bg-gray-100 text-gray-800'
+      };
+      return classes[estado] || 'bg-gray-100 text-gray-800';
+    }
+
+    // Función para obtener el ícono según el turno
+    function getTurnoIcon(turno) {
+      const icons = {
+        'Mañana': 'fa-sun',
+        'Tarde': 'fa-cloud-sun',
+        'Noche': 'fa-moon'
+      };
+      return icons[turno] || 'fa-clock';
+    }
+
+    function renderTabla(lista = recepcionistas) {
       const tbody = document.getElementById("tbodyRecepcionistas");
+      const sinResultados = document.getElementById("sinResultados");
+
+      if (lista.length === 0) {
+        tbody.innerHTML = "";
+        sinResultados.classList.remove("hidden");
+        updatePaginationControls(0);
+        updateResultsCounter(0);
+        return;
+      }
+
+      sinResultados.classList.add("hidden");
       tbody.innerHTML = "";
-      lista.forEach((r,i)=>{
+
+      // Calcular datos paginados
+      const startIndex = (currentPage - 1) * itemsPerPage;
+      const endIndex = startIndex + itemsPerPage;
+      const paginatedList = lista.slice(startIndex, endIndex);
+
+      paginatedList.forEach((r) => {
+        const originalIndex = recepcionistas.findIndex(item => item.codigo === r.codigo);
         tbody.innerHTML += `
-          <tr class="border-b hover:bg-gray-50">
-            <td class="p-3">${r.codigo}</td>
-            <td class="p-3">${r.dni}</td>
-            <td class="p-3">${r.nombre}</td>
-            <td class="p-3">${r.turno}</td>
-            <td class="p-3">${r.estado}</td>
-            <td class="p-3">${r.ultimoAcceso}</td>
-            <td class="p-3">${r.sede}</td>
-            <td class="p-3 flex gap-2">
-              <button onclick="editarRecepcionista(${i})" class="bg-yellow-500 text-white px-3 py-1 rounded hover:bg-yellow-600">Actualizar</button>
+          <tr class="hover:bg-slate-50 transition-colors">
+            <td class="p-4 font-medium">${r.codigo}</td>
+            <td class="p-4">${r.dni}</td>
+            <td class="p-4">
+              <div class="font-medium">${r.nombre}</div>
+              <div class="text-xs text-gray-500">${r.sede}</div>
+            </td>
+            <td class="p-4">
+              <div class="flex items-center gap-2">
+                <i class="fa-solid ${getTurnoIcon(r.turno)} text-cyan-600"></i>
+                ${r.turno}
+              </div>
+            </td>
+            <td class="p-4">
+              <span class="badge ${getEstadoClass(r.estado)}">${r.estado}</span>
+            </td>
+            <td class="p-4">
+              <div>${r.ultimoAcceso}</div>
+              <div class="text-xs text-gray-500">${timeAgo(r.ultimoAcceso)}</div>
+            </td>
+            <td class="p-4">${r.sede}</td>
+            <td class="p-4">
+              <div class="flex justify-center gap-2">
+                <button onclick="editarRecepcionista(${originalIndex})" class="bg-blue-100 text-blue-700 p-2 rounded-md hover:bg-blue-200 transition-colors" data-tooltip="Editar">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="eliminarRecepcionista(${originalIndex})" class="bg-red-100 text-red-700 p-2 rounded-md hover:bg-red-200 transition-colors" data-tooltip="Eliminar">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
             </td>
           </tr>`;
       });
+
+      // Actualizar controles de paginación
+      updatePaginationControls(lista.length);
+      updateResultsCounter(lista.length);
     }
 
-    function aplicarFiltros(){
+    function updateResultsCounter(total) {
+      const contador = document.getElementById("contadorResultados");
+      contador.textContent = `${total} recepcionista${total !== 1 ? 's' : ''}`;
+    }
+
+    function updatePaginationControls(totalItems) {
+      const totalPages = Math.ceil((totalItems || 0) / itemsPerPage) || 1;
+      const infoPaginacion = document.getElementById("infoPaginacion");
+      const btnAnterior = document.getElementById("btnAnterior");
+      const btnSiguiente = document.getElementById("btnSiguiente");
+      const numerosPagina = document.getElementById("numerosPagina");
+
+      // Corregir currentPage si se queda fuera de rango
+      if (currentPage > totalPages) currentPage = totalPages;
+
+      // Actualizar información de paginación
+      const startItem = totalItems === 0 ? 0 : ((currentPage - 1) * itemsPerPage + 1);
+      const endItem = Math.min(currentPage * itemsPerPage, totalItems);
+      infoPaginacion.textContent = `Mostrando ${startItem}-${endItem} de ${totalItems} resultados`;
+
+      // Habilitar/deshabilitar botones
+      btnAnterior.disabled = currentPage === 1 || totalItems === 0;
+      btnSiguiente.disabled = currentPage === totalPages || totalItems === 0;
+
+      // Generar números de página
+      numerosPagina.innerHTML = '';
+      for (let i = 1; i <= totalPages; i++) {
+        if (i === currentPage) {
+          numerosPagina.innerHTML += `<button class="px-3 py-1 bg-blue-600 text-white rounded-md">${i}</button>`;
+        } else {
+          numerosPagina.innerHTML += `<button onclick="goToPage(${i})" class="px-3 py-1 border rounded-md hover:bg-gray-100">${i}</button>`;
+        }
+      }
+
+      // Event listeners
+      btnAnterior.onclick = () => { if (currentPage > 1) goToPage(currentPage - 1); };
+      btnSiguiente.onclick = () => { if (currentPage < totalPages) goToPage(currentPage + 1); };
+    }
+
+    function goToPage(page) {
+      currentPage = page;
+      // recalcula usando los filtros actuales pero sin resetear a página 1
+      aplicarFiltros(false);
+    }
+
+    function aplicarFiltros(resetPage = true){
       const f = {
         codigo: document.getElementById("filtroCodigo").value.toLowerCase(),
         dni: document.getElementById("filtroDni").value.toLowerCase(),
@@ -188,58 +482,215 @@
         turno: document.getElementById("filtroTurno").value,
         sede: document.getElementById("filtroSede").value
       };
-      const lista = recepcionistas.filter(r =>
+
+      filteredData = recepcionistas.filter(r =>
         r.codigo.toLowerCase().includes(f.codigo) &&
         r.dni.toLowerCase().includes(f.dni) &&
         r.nombre.toLowerCase().includes(f.nombre) &&
-        (f.estado ? r.estado===f.estado : true) &&
-        (f.turno ? r.turno===f.turno : true) &&
-        (f.sede ? r.sede===f.sede : true)
+        (f.estado ? r.estado === f.estado : true) &&
+        (f.turno ? r.turno === f.turno : true) &&
+        (f.sede ? r.sede === f.sede : true)
       );
-      renderTabla(lista);
+
+      if (resetPage) currentPage = 1; // <- solo resetea si viene de filtros/buscar
+      renderTabla(filteredData);
+    }
+
+    function limpiarFiltros() {
+      document.getElementById("filtroCodigo").value = "";
+      document.getElementById("filtroDni").value = "";
+      document.getElementById("filtroNombre").value = "";
+      document.getElementById("filtroEstado").value = "";
+      document.getElementById("filtroTurno").value = "";
+      document.getElementById("filtroSede").value = "";
+      filteredData = recepcionistas.slice();
+      currentPage = 1;
+      renderTabla(filteredData);
+    }
+
+    function nuevoRecepcionista(){
+      editIndex = null;
+
+      // Autogenera y bloquea el código
+      const inputCodigo = document.getElementById("formCodigo");
+      inputCodigo.value = getNextCodigo();
+      inputCodigo.readOnly = true;
+      inputCodigo.classList.add("bg-gray-100", "cursor-not-allowed");
+
+      // Limpia el resto del formulario
+      document.getElementById("formDni").value = "";
+      document.getElementById("formNombre").value = "";
+      document.getElementById("formTurno").value = "";
+      document.getElementById("formEstado").value = "";
+      document.getElementById("formSede").value = "";
+
+      openModal();
+    }
+
+    function getNextCodigo() {
+      if (!recepcionistas.length) return "R001";
+
+      // Busca el mayor número entre todos los códigos existentes
+      let maxNum = 0;
+      let prefix = "R";
+      let width = 3; // cantidad de dígitos con cero a la izquierda
+
+      recepcionistas.forEach(r => {
+        const m = String(r.codigo).match(/^([A-Za-z]*)(\d+)$/);
+        if (m) {
+          const [, pre, numStr] = m;
+          const num = parseInt(numStr, 10);
+          if (num > maxNum) {
+            maxNum = num;
+            prefix = pre || "R";
+            width = numStr.length; // respeta el ancho actual, p.ej. 3 -> R005
+          }
+        }
+      });
+
+      const next = (maxNum + 1).toString().padStart(width, "0");
+      return `${prefix}${next}`;
     }
 
     function openModal(){
-      document.getElementById("modalTitle").innerText = editIndex!==null ? "Actualizar Recepcionista":"Registrar Recepcionista";
+      // Limpiar errores
+      document.querySelectorAll('[id^="error"]').forEach(el => el.classList.add('hidden'));
+      document.getElementById("modalTitle").innerText = editIndex !== null ? "Actualizar Recepcionista" : "Registrar Recepcionista";
       document.getElementById("modalRecep").classList.remove("hidden");
       document.getElementById("modalRecep").classList.add("flex");
     }
-    function closeModal(){ document.getElementById("modalRecep").classList.add("hidden"); }
+
+    function closeModal(){
+      document.getElementById("modalRecep").classList.add("hidden");
+    }
+
+    function validarFormulario() {
+      let isValid = true;
+
+      // Validar código
+      if (!document.getElementById("formCodigo").value.trim()) {
+        document.getElementById("errorCodigo").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorCodigo").classList.add("hidden");
+      }
+
+      // Validar DNI (8 dígitos)
+      const dni = document.getElementById("formDni").value.trim();
+      if (!dni || !/^\d{8}$/.test(dni)) {
+        document.getElementById("errorDni").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorDni").classList.add("hidden");
+      }
+
+      // Validar nombre
+      if (!document.getElementById("formNombre").value.trim()) {
+        document.getElementById("errorNombre").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorNombre").classList.add("hidden");
+      }
+
+      // Validar turno
+      if (!document.getElementById("formTurno").value) {
+        document.getElementById("errorTurno").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorTurno").classList.add("hidden");
+      }
+
+      // Validar estado
+      if (!document.getElementById("formEstado").value) {
+        document.getElementById("errorEstado").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorEstado").classList.add("hidden");
+      }
+
+      // Validar sede
+      if (!document.getElementById("formSede").value) {
+        document.getElementById("errorSede").classList.remove("hidden");
+        isValid = false;
+      } else {
+        document.getElementById("errorSede").classList.add("hidden");
+      }
+
+      return isValid;
+    }
 
     function guardarRecepcionista(){
+      if (!validarFormulario()) return;
+
       const nuevo = {
-        codigo: document.getElementById("formCodigo").value,
-        dni: document.getElementById("formDni").value,
-        nombre: document.getElementById("formNombre").value,
+        codigo: document.getElementById("formCodigo").value.trim(),
+        dni: document.getElementById("formDni").value.trim(),
+        nombre: document.getElementById("formNombre").value.trim(),
         turno: document.getElementById("formTurno").value,
         estado: document.getElementById("formEstado").value,
-        ultimoAcceso: new Date().toLocaleDateString(),
+        ultimoAcceso: new Date().toLocaleDateString(), // dd/mm/aaaa segun locale
         sede: document.getElementById("formSede").value
       };
-      if(!nuevo.nombre || !nuevo.dni){ alert("Nombre y DNI son obligatorios"); return; }
 
-      if(editIndex!==null){
+      if(editIndex !== null){
+        // Verificar código duplicado si cambió
+        const codExiste = recepcionistas.some((r, idx) => r.codigo === nuevo.codigo && idx !== editIndex);
+        if (codExiste) {
+          showNotification("El código ya existe. Use un código único.", "error");
+          return;
+        }
         recepcionistas[editIndex] = nuevo;
-        editIndex=null;
-        alert("Recepcionista actualizado con éxito");
+        editIndex = null;
+        showNotification("Recepcionista actualizado con éxito", "success");
       } else {
+        if (recepcionistas.some(r => r.codigo === nuevo.codigo)) {
+          showNotification("El código ya existe. Use un código único.", "error");
+          return;
+        }
         recepcionistas.push(nuevo);
-        alert("Recepcionista registrado con éxito");
+        showNotification("Recepcionista registrado con éxito", "success");
       }
-      renderTabla();
+
+      aplicarFiltros();
       closeModal();
     }
 
     function editarRecepcionista(i){
       editIndex = i;
       const r = recepcionistas[i];
-      document.getElementById("formCodigo").value=r.codigo;
-      document.getElementById("formDni").value=r.dni;
-      document.getElementById("formNombre").value=r.nombre;
-      document.getElementById("formTurno").value=r.turno;
-      document.getElementById("formEstado").value=r.estado;
-      document.getElementById("formSede").value=r.sede;
+      const inputCodigo = document.getElementById("formCodigo");
+
+      inputCodigo.value = r.codigo;
+      inputCodigo.readOnly = true; // mantener bloqueado al editar
+      inputCodigo.classList.add("bg-gray-100", "cursor-not-allowed");
+
+      document.getElementById("formDni").value = r.dni;
+      document.getElementById("formNombre").value = r.nombre;
+      document.getElementById("formTurno").value = r.turno;
+      document.getElementById("formEstado").value = r.estado;
+      document.getElementById("formSede").value = r.sede;
       openModal();
+    }
+
+    function eliminarRecepcionista(i){
+      deleteIndex = i;
+      document.getElementById("nombreEliminar").textContent = recepcionistas[i].nombre;
+      document.getElementById("modalConfirmacion").classList.remove("hidden");
+      document.getElementById("modalConfirmacion").classList.add("flex");
+    }
+
+    function cerrarConfirmacion(){
+      document.getElementById("modalConfirmacion").classList.add("hidden");
+      deleteIndex = null;
+    }
+
+    function confirmarEliminacion(){
+      if (deleteIndex !== null) {
+        recepcionistas.splice(deleteIndex, 1);
+        showNotification("Recepcionista eliminado con éxito", "success");
+        aplicarFiltros();
+        cerrarConfirmacion();
+      }
     }
 
     function exportExcel(){
@@ -248,20 +699,89 @@
       const ws = XLSX.utils.table_to_sheet(tabla);
       XLSX.utils.book_append_sheet(wb, ws, "Recepcionistas");
       XLSX.writeFile(wb, "Recepcionistas.xlsx");
+      showNotification("Archivo Excel exportado con éxito", "success");
+    }
+
+    function drawPdfHeader(doc, y){
+      doc.setFontSize(18);
+      doc.text("Listado de Recepcionistas - Hotel Caribbean", 20, y);
+      doc.setFontSize(10);
+      doc.text(`Exportado el: ${new Date().toLocaleDateString()}`, 20, y + 10);
+
+      // Encabezados de tabla
+      let headerY = y + 20;
+      doc.setFillColor(61, 81, 181);
+      doc.setTextColor(255, 255, 255);
+      doc.rect(20, headerY, 170, 10, 'F');
+
+      doc.setFontSize(11);
+      doc.text("Código", 22, headerY + 7);
+      doc.text("Nombre", 50, headerY + 7);
+      doc.text("Turno", 100, headerY + 7);
+      doc.text("Estado", 130, headerY + 7);
+      doc.text("Sede", 160, headerY + 7);
+
+      return headerY + 12; // posición inicial filas
     }
 
     function exportPDF(){
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Listado de Recepcionistas", 20, 20);
+      const doc = new jsPDF({ unit: "mm", format: "a4" }); // 210 x 297 mm
+
+      let y = drawPdfHeader(doc, 15);
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+
+      const rows = (filteredData.length > 0 ? filteredData : recepcionistas).map(r => ({
+        codigo: r.codigo,
+        nombre: r.nombre,
+        turno: r.turno,
+        estado: r.estado,
+        sede: r.sede
+      }));
+
+      const rowHeight = 8;
+      const bottomMargin = 20;
+
+      rows.forEach((r, idx) => {
+        // Salto de página si es necesario
+        if (y + rowHeight > (297 - bottomMargin)) {
+          doc.addPage();
+          y = drawPdfHeader(doc, 15);
+          doc.setTextColor(0,0,0);
+          doc.setFontSize(10);
+        }
+
+        // Líneas guía (opcional)
+        doc.setDrawColor(230);
+        doc.line(20, y + rowHeight, 190, y + rowHeight);
+
+        // Celdas (texto)
+        doc.setTextColor(0,0,0);
+        doc.text(String(r.codigo), 22, y + 5);
+        doc.text(String(r.nombre), 50, y + 5);
+        doc.text(String(r.turno), 100, y + 5);
+        doc.text(String(r.estado), 130, y + 5);
+        doc.text(String(r.sede), 160, y + 5);
+
+        y += rowHeight;
+      });
+
       doc.save("Recepcionistas.pdf");
+      showNotification("Archivo PDF exportado con éxito", "success");
     }
 
-    function logout(){ window.location.href="../login.html"; }
+    /* Accesos rápidos: Enter = Buscar, Esc = Cerrar modal/confirmación */
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') aplicarFiltros();
+      if (e.key === 'Escape') {
+        closeModal();
+        cerrarConfirmacion();
+      }
+    });
 
-    // Inicial
-    renderTabla();
+    // Inicializar
+    aplicarFiltros(); // Render inicial con datos por defecto
   </script>
-
 </body>
 </html>

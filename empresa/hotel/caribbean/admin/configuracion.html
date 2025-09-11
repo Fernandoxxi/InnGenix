@@ -1,138 +1,649 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" class="h-full">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Configuración - Hotel Caribbean</title>
+  <script>
+    // Tailwind: activar dark mode por clase
+    window.tailwind = { config: { darkMode: 'class' } };
+  </script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .sticky-th th { position: sticky; top: 0; z-index: 1; }
+    .ring-focus { outline: none; box-shadow: 0 0 0 3px rgba(37,99,235,.35); }
+    .dropzone { border: 2px dashed #cbd5e1; }
+    .dropzone.dragover { border-color: #3b82f6; background-color: #eff6ff; }
+  </style>
 </head>
-<body class="bg-gray-100 font-sans">
+<body class="bg-gray-100 dark:bg-slate-900 dark:text-slate-100 font-sans h-full">
+
+  <!-- TOAST -->
+  <div id="toast" class="hidden fixed right-4 bottom-4 z-[9999] rounded-lg px-4 py-3 text-white shadow-lg"></div>
 
   <!-- HEADER -->
   <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
     <h1 class="text-lg font-bold flex items-center gap-2">
       <i class="fa-solid fa-hotel text-cyan-400"></i> Hotel Caribbean
     </h1>
-    <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
-      <i class="fa-solid fa-right-from-bracket"></i>Salir
-    </button>
+    <div class="flex items-center gap-3">
+      <button id="btnTheme" class="bg-slate-900">
+      </button>
+      <button onclick="logout()" class="bg-red-600 hover:bg-red-700 px-4 py-1.5 rounded font-semibold text-sm flex items-center gap-2">
+        <i class="fa-solid fa-right-from-bracket"></i>Salir
+      </button>
+    </div>
   </header>
 
   <div class="flex">
+
     <!-- SIDEBAR -->
-    <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
-      <nav class="space-y-2 text-slate-700">
-        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
-        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
-        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
-        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
-        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
-        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 font-semibold"><i class="fa-solid fa-gear text-gray-600"></i> Configuración</a>
+    <aside class="w-60 bg-white dark:bg-slate-800 dark:text-slate-100 border-r dark:border-slate-700 min-h-screen shadow-sm p-4 space-y-4">
+      <nav class="space-y-2 text-slate-700 dark:text-slate-200">
+        <a href="dashboard.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/40"><i class="fa-solid fa-chart-line text-cyan-500"></i> Dashboard</a>
+        <a href="recepcionistas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/40"><i class="fa-solid fa-users text-emerald-600"></i> Recepcionistas</a>
+        <a href="reportes.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/40"><i class="fa-solid fa-file-lines text-amber-500"></i> Reportes</a>
+        <a href="finanzas.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/40"><i class="fa-solid fa-coins text-yellow-500"></i> Finanzas</a>
+        <a href="gestionar-reembolsos.html" class="flex items-center gap-2 px-3 py-2 rounded hover:bg-slate-100 dark:hover:bg-slate-700/40"><i class="fa-solid fa-money-bill-transfer text-green-600"></i> Reembolsos</a>
+        <a href="configuracion.html" class="flex items-center gap-2 px-3 py-2 rounded bg-slate-100 dark:bg-slate-700/60 font-semibold"><i class="fa-solid fa-gear text-gray-600"></i> Configuración</a>
       </nav>
     </aside>
 
     <!-- MAIN -->
     <main class="flex-1 p-6 space-y-6 overflow-y-auto">
-      <h2 class="text-2xl font-bold mb-4 flex items-center gap-2">
-        <i class="fa-solid fa-gear text-slate-600"></i> Configuración
-      </h2>
 
-      <!-- PERFIL -->
-      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
-          <i class="fa-solid fa-user text-blue-500"></i> Perfil del Administrador
-        </h3>
-        <div class="flex gap-6 items-center">
-          <img src="https://i.pravatar.cc/100" class="w-24 h-24 rounded-full shadow">
-          <div class="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label class="block text-sm text-gray-600 font-medium">Nombre</label>
-              <input type="text" value="Fernando Manrique" class="w-full border rounded px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-sm text-gray-600 font-medium">Correo</label>
-              <input type="email" value="admin@hotelcaribbean.com" class="w-full border rounded px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-sm text-gray-600 font-medium">Usuario</label>
-              <input type="text" value="admin01" class="w-full border rounded px-3 py-2 text-sm">
-            </div>
-            <div>
-              <label class="block text-sm text-gray-600 font-medium">Teléfono</label>
-              <input type="text" value="+51 987 654 321" class="w-full border rounded px-3 py-2 text-sm">
-            </div>
-          </div>
-        </div>
-        <div class="flex justify-end">
-          <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
-            <i class="fa-solid fa-save"></i> Guardar Cambios
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <h2 class="text-2xl font-bold flex items-center gap-2">
+          <i class="fa-solid fa-gear text-slate-600 dark:text-slate-300"></i> Configuración
+        </h2>
+        <div class="flex gap-2">
+          <button id="btnReset" class="bg-slate-200 hover:bg-slate-300 dark:bg-slate-700 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-100 px-4 py-2 rounded text-sm">
+            Restablecer
+          </button>
+          <button id="btnSaveAll" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 disabled:opacity-50" disabled>
+            <i class="fa-solid fa-save"></i> Guardar todo
           </button>
         </div>
-      </section>
+      </div>
 
-      <!-- SEGURIDAD -->
-      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
-          <i class="fa-solid fa-key text-amber-500"></i> Seguridad
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Contraseña Actual</label>
-            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Nueva Contraseña</label>
-            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Confirmar Contraseña</label>
-            <input type="password" class="w-full border rounded px-3 py-2 text-sm">
-          </div>
+      <!-- TABS -->
+      <div class="bg-white dark:bg-slate-800 rounded-xl shadow-md">
+        <div class="border-b dark:border-slate-700 px-4">
+          <nav class="flex flex-wrap">
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-blue-600 text-blue-600" data-tab="perfil"><i class="fa-solid fa-user mr-2"></i>Perfil</button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-blue-600" data-tab="seguridad"><i class="fa-solid fa-key mr-2"></i>Seguridad</button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-blue-600" data-tab="sistema"><i class="fa-solid fa-sliders mr-2"></i>Sistema</button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-blue-600" data-tab="preferencias"><i class="fa-solid fa-wand-magic-sparkles mr-2"></i>Preferencias</button>
+            <button class="tab-btn px-4 py-3 text-sm font-medium border-b-2 border-transparent hover:text-blue-600" data-tab="auditoria"><i class="fa-solid fa-clipboard-list mr-2"></i>Auditoría</button>
+          </nav>
         </div>
-        <div class="flex justify-end">
-          <button class="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
-            <i class="fa-solid fa-lock"></i> Cambiar Contraseña
-          </button>
-        </div>
-      </section>
 
-      <!-- CONFIGURACIÓN DEL SISTEMA -->
-      <section class="bg-white p-6 rounded-xl shadow-md space-y-4">
-        <h3 class="text-lg font-semibold border-b pb-2 flex items-center gap-2">
-          <i class="fa-solid fa-sliders text-purple-600"></i> Configuración del Sistema
-        </h3>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Nombre del Hotel</label>
-            <input type="text" value="Hotel Caribbean" class="w-full border rounded px-3 py-2 text-sm">
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Moneda Base</label>
-            <select class="w-full border rounded px-3 py-2 text-sm">
-              <option>Soles (PEN)</option>
-              <option>Dólares (USD)</option>
-              <option>Euros (EUR)</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-sm font-medium text-gray-600">Logo</label>
-            <input type="file" class="w-full border rounded px-3 py-2 text-sm">
-          </div>
+        <!-- CONTENIDOS -->
+        <div class="p-6 space-y-6">
+
+          <!-- PERFIL -->
+          <section id="tab-perfil" class="tab-panel grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-1 bg-slate-50 dark:bg-slate-900/30 rounded-xl p-4">
+              <h3 class="text-sm font-semibold mb-3">Foto de perfil</h3>
+              <div class="flex items-center gap-4">
+                <img id="avatarPreview" src="https://i.pravatar.cc/120" class="w-24 h-24 rounded-full shadow object-cover" alt="avatar">
+                <div class="flex-1 space-y-2">
+                  <label class="inline-flex items-center gap-2 px-3 py-1.5 text-sm bg-white dark:bg-slate-800 border dark:border-slate-700 rounded cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-700">
+                    <i class="fa-solid fa-upload"></i> Subir
+                    <input id="avatarInput" type="file" accept="image/*" class="hidden">
+                  </label>
+                  <button id="avatarRemove" class="text-xs text-red-600 hover:underline">Quitar</button>
+                  <p class="text-xs text-slate-500">PNG/JPG &lt; 1MB</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-slate-300 font-medium">Nombre</label>
+                  <input id="admNombre" type="text" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="Nombre y apellidos">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-slate-300 font-medium">Correo</label>
+                  <input id="admCorreo" type="email" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="correo@hotel.com">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-slate-300 font-medium">Usuario</label>
+                  <input id="admUsuario" type="text" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="usuario">
+                </div>
+                <div>
+                  <label class="block text-sm text-gray-600 dark:text-slate-300 font-medium">Teléfono</label>
+                  <input id="admTelefono" type="tel" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="+51 999 999 999">
+                </div>
+              </div>
+              <div class="flex justify-end mt-4">
+                <button class="btn-save-section bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm" data-section="perfil">
+                  Guardar Perfil
+                </button>
+              </div>
+            </div>
+          </section>
+
+          <!-- SEGURIDAD -->
+          <section id="tab-seguridad" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 space-y-4">
+              <h3 class="text-lg font-semibold">Cambio de contraseña</h3>
+              <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium">Contraseña actual</label>
+                  <div class="relative">
+                    <input id="pwdActual" type="password" class="w-full border rounded px-3 py-2 text-sm pr-10 dark:bg-slate-900 dark:border-slate-700">
+                    <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400" onclick="togglePwd('pwdActual', this)"></i>
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">Nueva contraseña</label>
+                  <div class="relative">
+                    <input id="pwdNueva" type="password" class="w-full border rounded px-3 py-2 text-sm pr-10 dark:bg-slate-900 dark:border-slate-700" oninput="passwordStrength()">
+                    <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400" onclick="togglePwd('pwdNueva', this)"></i>
+                  </div>
+                  <div class="mt-2 h-2 bg-slate-200 dark:bg-slate-700 rounded">
+                    <div id="pwdStrength" class="h-2 rounded bg-red-500 w-0"></div>
+                  </div>
+                  <p id="pwdMsg" class="text-xs mt-1 text-slate-500"></p>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">Confirmar</label>
+                  <div class="relative">
+                    <input id="pwdConfirm" type="password" class="w-full border rounded px-3 py-2 text-sm pr-10 dark:bg-slate-900 dark:border-slate-700">
+                    <i class="fa-regular fa-eye absolute right-3 top-1/2 -translate-y-1/2 cursor-pointer text-slate-400" onclick="togglePwd('pwdConfirm', this)"></i>
+                  </div>
+                </div>
+              </div>
+              <div class="flex items-center gap-2">
+                <input id="chk2fa" type="checkbox" class="w-4 h-4">
+                <label for="chk2fa" class="text-sm">Activar verificación en dos pasos (2FA)</label>
+              </div>
+              <div class="flex justify-end">
+                <button class="btn-save-section bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded text-sm" data-section="seguridad">
+                  Actualizar Seguridad
+                </button>
+              </div>
+            </div>
+            <div class="bg-slate-50 dark:bg-slate-900/30 rounded-xl p-4">
+              <h4 class="text-sm font-semibold mb-2">Recomendaciones</h4>
+              <ul class="text-sm space-y-1 list-disc list-inside text-slate-600 dark:text-slate-300">
+                <li>Usa 12+ caracteres.</li>
+                <li>Mezcla mayúsculas, minúsculas, números y símbolos.</li>
+                <li>Evita reutilizar contraseñas.</li>
+              </ul>
+            </div>
+          </section>
+
+          <!-- SISTEMA -->
+          <section id="tab-sistema" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 space-y-4">
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium">Nombre del Hotel</label>
+                  <input id="sysHotel" type="text" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="Hotel Caribbean">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">Moneda Base</label>
+                  <select id="sysMoneda" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700">
+                    <option value="PEN">Soles (PEN)</option>
+                    <option value="USD">Dólares (USD)</option>
+                    <option value="EUR">Euros (EUR)</option>
+                  </select>
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">RUC / NIF</label>
+                  <input id="sysRuc" type="text" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="20123456789">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">% IGV / VAT</label>
+                  <input id="sysIgv" type="number" min="0" max="100" step="0.01" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="18">
+                </div>
+                <div>
+                  <label class="block text-sm font-medium">Prefijo comprobantes</label>
+                  <input id="sysPrefijo" type="text" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="HC-">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label class="block text-sm font-medium">Check-in</label>
+                    <input id="sysCheckIn" type="time" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" value="14:00">
+                  </div>
+                  <div>
+                    <label class="block text-sm font-medium">Check-out</label>
+                    <input id="sysCheckOut" type="time" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" value="12:00">
+                  </div>
+                </div>
+                <div class="md:col-span-2">
+                  <label class="block text-sm font-medium">Política de cancelación</label>
+                  <textarea id="sysPolitica" rows="3" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700" placeholder="Ej: Cancelación sin cargo hasta 48h antes."></textarea>
+                </div>
+              </div>
+              <div class="flex justify-end">
+                <button class="btn-save-section bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm" data-section="sistema">
+                  Guardar Sistema
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-900/30 rounded-xl p-4 space-y-3">
+              <h3 class="text-sm font-semibold">Logo del hotel</h3>
+              <div id="logoDrop" class="dropzone rounded-xl p-4 text-center cursor-pointer">
+                <p class="text-sm text-slate-500 mb-2"><i class="fa-regular fa-image mr-1"></i> Arrastra tu logo aquí o haz clic</p>
+                <img id="logoPreview" src="" alt="logo" class="mx-auto max-h-24 hidden object-contain">
+                <input id="logoInput" type="file" accept="image/*" class="hidden">
+              </div>
+              <div class="flex justify-between">
+                <button id="logoRemove" class="text-xs text-red-600 hover:underline">Quitar logo</button>
+                <span id="logoName" class="text-xs text-slate-500"></span>
+              </div>
+            </div>
+          </section>
+
+          <!-- PREFERENCIAS -->
+          <section id="tab-preferencias" class="tab-panel hidden grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700 p-4 space-y-3">
+              <h3 class="text-lg font-semibold">Aplicación</h3>
+              <div class="flex items-center justify-between">
+                <span class="text-sm">Tema oscuro</span>
+                <label class="inline-flex items-center cursor-pointer">
+                  <input id="prefDark" type="checkbox" class="sr-only peer">
+                  <div class="w-11 h-6 bg-slate-200 peer-checked:bg-blue-600 rounded-full relative after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:w-5 after:h-5 after:bg-white after:rounded-full after:transition peer-checked:after:translate-x-5"></div>
+                </label>
+              </div>
+              <div>
+                <label class="block text-sm font-medium">Idioma</label>
+                <select id="prefLang" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700">
+                  <option value="es">Español</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-sm font-medium">Zona horaria</label>
+                <select id="prefTz" class="w-full border rounded px-3 py-2 text-sm dark:bg-slate-900 dark:border-slate-700">
+                  <option value="America/Lima">America/Lima (GMT-5)</option>
+                  <option value="America/Bogota">America/Bogota (GMT-5)</option>
+                  <option value="America/Mexico_City">America/Mexico_City (GMT-6)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+              <div class="flex items-center gap-2">
+                <input id="prefNotif" type="checkbox" class="w-4 h-4">
+                <label class="text-sm" for="prefNotif">Notificaciones por correo</label>
+              </div>
+              <div class="flex justify-end">
+                <button class="btn-save-section bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm" data-section="preferencias">
+                  Guardar Preferencias
+                </button>
+              </div>
+            </div>
+
+            <div class="bg-slate-50 dark:bg-slate-900/30 rounded-xl p-4 space-y-2">
+              <h4 class="text-sm font-semibold">Atajos</h4>
+              <p class="text-xs text-slate-500">Enter = Guardar sección, Esc = Cancelar/limpiar campos activos.</p>
+            </div>
+          </section>
+
+          <!-- AUDITORÍA -->
+          <section id="tab-auditoria" class="tab-panel hidden">
+            <div class="bg-white dark:bg-slate-800 rounded-xl border dark:border-slate-700">
+              <div class="p-4 flex items-center justify-between">
+                <h3 class="text-lg font-semibold">Registro de cambios</h3>
+                <button id="btnClearAudit" class="text-sm text-red-600 hover:underline">Limpiar auditoría</button>
+              </div>
+              <div class="overflow-auto max-h-[360px]">
+                <table class="w-full text-sm border-collapse">
+                  <thead class="bg-slate-100 dark:bg-slate-700 sticky-th">
+                    <tr>
+                      <th class="p-2 text-left">Fecha</th>
+                      <th class="p-2 text-left">Sección</th>
+                      <th class="p-2 text-left">Detalle</th>
+                    </tr>
+                  </thead>
+                  <tbody id="auditBody" class="divide-y divide-gray-100 dark:divide-slate-700"></tbody>
+                </table>
+              </div>
+            </div>
+          </section>
+
         </div>
-        <div class="flex justify-end">
-          <button class="bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
-            <i class="fa-solid fa-gear"></i> Guardar Configuración
-          </button>
-        </div>
-      </section>
+      </div>
+
     </main>
   </div>
 
   <script>
-    function logout(){
-      window.location.href = "../login.html";
+    const LS_KEY = 'hc_settings_v2';
+    const LS_AUDIT = 'hc_audit_log';
+    let settings = null;
+    let dirty = false;
+
+    // ====== Helpers ======
+    const $ = sel => document.querySelector(sel);
+    function showToast(msg, type='success'){
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = '';
+      el.classList.add('fixed','right-4','bottom-4','z-[9999]','rounded-lg','px-4','py-3','text-white','shadow-lg');
+      el.classList.add(type==='success' ? 'bg-emerald-600' : type==='error' ? 'bg-red-600' : 'bg-slate-700');
+      el.classList.remove('hidden');
+      setTimeout(()=> el.classList.add('hidden'), 1800);
     }
+    function markDirty(){ dirty = true; $('#btnSaveAll').disabled = false; }
+    function addAudit(section, detail){
+      const log = JSON.parse(localStorage.getItem(LS_AUDIT) || '[]');
+      log.unshift({ ts: new Date().toLocaleString(), section, detail });
+      localStorage.setItem(LS_AUDIT, JSON.stringify(log));
+      renderAudit();
+    }
+    function renderAudit(){
+      const log = JSON.parse(localStorage.getItem(LS_AUDIT) || '[]');
+      const tbody = $('#auditBody');
+      tbody.innerHTML = '';
+      if (log.length === 0){
+        tbody.innerHTML = `<tr><td class="p-2 text-slate-500" colspan="3">Sin registros.</td></tr>`;
+        return;
+      }
+      log.forEach(r=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td class="p-2">${r.ts}</td>
+          <td class="p-2">${r.section}</td>
+          <td class="p-2">${r.detail}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    // ====== Tabs ======
+    document.querySelectorAll('.tab-btn').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        document.querySelectorAll('.tab-btn').forEach(b=>{ b.classList.remove('text-blue-600','border-blue-600'); b.classList.add('border-transparent'); });
+        btn.classList.add('text-blue-600','border-blue-600');
+        const id = btn.dataset.tab;
+        document.querySelectorAll('.tab-panel').forEach(p=> p.classList.add('hidden'));
+        document.getElementById('tab-'+id).classList.remove('hidden');
+      });
+    });
+
+    // ====== Theme toggle ======
+    function applyTheme(dark){
+      document.documentElement.classList.toggle('dark', dark);
+      $('#prefDark').checked = dark;
+      localStorage.setItem('hc_dark', dark ? '1':'0');
+    }
+    document.getElementById('btnTheme').addEventListener('click', ()=> {
+      const isDark = !document.documentElement.classList.contains('dark');
+      applyTheme(isDark);
+    });
+
+    // ====== Avatar ======
+    $('#avatarInput').addEventListener('change', e=>{
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.size > 1024*1024) { showToast('Imagen > 1MB', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = ev => { $('#avatarPreview').src = ev.target.result; settings.perfil.avatar = ev.target.result; markDirty(); };
+      reader.readAsDataURL(file);
+    });
+    $('#avatarRemove').addEventListener('click', ()=>{
+      $('#avatarPreview').src = 'https://i.pravatar.cc/120';
+      settings.perfil.avatar = '';
+      markDirty();
+    });
+
+    // ====== Logo (drag & drop) ======
+    const dz = $('#logoDrop'), logoInput = $('#logoInput');
+    dz.addEventListener('click', ()=> logoInput.click());
+    dz.addEventListener('dragover', e=>{ e.preventDefault(); dz.classList.add('dragover'); });
+    dz.addEventListener('dragleave', ()=> dz.classList.remove('dragover'));
+    dz.addEventListener('drop', e=>{
+      e.preventDefault(); dz.classList.remove('dragover');
+      const file = e.dataTransfer.files[0]; handleLogo(file);
+    });
+    logoInput.addEventListener('change', e=> handleLogo(e.target.files[0]));
+    function handleLogo(file){
+      if (!file) return;
+      if (file.size > 1024*1024) { showToast('Logo > 1MB', 'error'); return; }
+      const reader = new FileReader();
+      reader.onload = ev => {
+        $('#logoPreview').src = ev.target.result;
+        $('#logoPreview').classList.remove('hidden');
+        $('#logoName').textContent = file.name;
+        settings.sistema.logo = ev.target.result;
+        markDirty();
+      };
+      reader.readAsDataURL(file);
+    }
+    $('#logoRemove').addEventListener('click', ()=>{
+      $('#logoPreview').src = '';
+      $('#logoPreview').classList.add('hidden');
+      $('#logoName').textContent = '';
+      settings.sistema.logo = '';
+      markDirty();
+    });
+
+    // ====== Seguridad ======
+    function togglePwd(id, icon){
+      const input = document.getElementById(id);
+      input.type = input.type === 'password' ? 'text' : 'password';
+      icon.classList.toggle('fa-eye');
+      icon.classList.toggle('fa-eye-slash');
+    }
+    window.togglePwd = togglePwd;
+
+    function genPwd(){
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*?";
+      let p = '';
+      for (let i=0;i<14;i++){ p += chars[Math.floor(Math.random()*chars.length)]; }
+      $('#pwdNueva').value = p;
+      $('#pwdConfirm').value = p;
+      passwordStrength();
+      markDirty();
+    }
+    window.genPwd = genPwd;
+
+    function passwordStrength(){
+      const val = $('#pwdNueva').value || '';
+      let score = 0;
+      if (val.length >= 12) score++;
+      if (/[A-Z]/.test(val)) score++;
+      if (/[a-z]/.test(val)) score++;
+      if (/\d/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val)) score++;
+      const w = Math.min(100, score*20);
+      const bar = $('#pwdStrength');
+      bar.style.width = w+'%';
+      bar.className = 'h-2 rounded ' + (w<40?'bg-red-500':w<70?'bg-yellow-500':'bg-emerald-500');
+      $('#pwdMsg').textContent = w<40 ? 'Débil' : w<70 ? 'Media' : 'Fuerte';
+    }
+    window.passwordStrength = passwordStrength;
+
+    // ====== Guardar secciones ======
+    document.querySelectorAll('.btn-save-section').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const section = btn.dataset.section;
+        if (section === 'perfil'){
+          settings.perfil.nombre  = $('#admNombre').value.trim();
+          settings.perfil.correo  = $('#admCorreo').value.trim();
+          settings.perfil.usuario = $('#admUsuario').value.trim();
+          settings.perfil.telefono= $('#admTelefono').value.trim();
+          // Validaciones rápidas
+          if (settings.perfil.correo && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(settings.perfil.correo)){
+            showToast('Correo inválido', 'error'); return;
+          }
+          addAudit('Perfil','Perfil actualizado');
+        }
+        if (section === 'seguridad'){
+          const nueva = $('#pwdNueva').value, conf = $('#pwdConfirm').value;
+          if (nueva || conf || $('#pwdActual').value){
+            if (nueva !== conf){ showToast('Las contraseñas no coinciden', 'error'); return; }
+            if ((nueva||'').length < 8){ showToast('Mínimo 8 caracteres', 'error'); return; }
+            // Aquí harías el request al backend
+            $('#pwdActual').value = $('#pwdNueva').value = $('#pwdConfirm').value = '';
+          }
+          settings.seguridad.twofa = $('#chk2fa').checked;
+          addAudit('Seguridad','Cambios de seguridad aplicados');
+        }
+        if (section === 'sistema'){
+          settings.sistema.hotel   = $('#sysHotel').value.trim();
+          settings.sistema.moneda  = $('#sysMoneda').value;
+          settings.sistema.ruc     = $('#sysRuc').value.trim();
+          settings.sistema.igv     = parseFloat($('#sysIgv').value || '0');
+          settings.sistema.prefijo = $('#sysPrefijo').value.trim();
+          settings.sistema.checkIn = $('#sysCheckIn').value;
+          settings.sistema.checkOut= $('#sysCheckOut').value;
+          settings.sistema.politica= $('#sysPolitica').value.trim();
+          addAudit('Sistema','Parámetros de sistema guardados');
+        }
+        if (section === 'preferencias'){
+          settings.pref.dark  = $('#prefDark').checked;
+          settings.pref.lang  = $('#prefLang').value;
+          settings.pref.tz    = $('#prefTz').value;
+          settings.pref.notif = $('#prefNotif').checked;
+          applyTheme(settings.pref.dark);
+          addAudit('Preferencias','Preferencias de usuario guardadas');
+        }
+        persist();
+        showToast('Cambios guardados');
+      });
+    });
+
+    // Guardar Todo
+    $('#btnSaveAll').addEventListener('click', ()=>{
+      // Disparar guardado de cada sección con las lecturas actuales
+      document.querySelectorAll('.btn-save-section').forEach(b=>b.click());
+      $('#btnSaveAll').disabled = true;
+    });
+
+    // Restablecer
+    $('#btnReset').addEventListener('click', ()=>{
+      if (!confirm('¿Restablecer configuración a valores recomendados?')) return;
+      localStorage.removeItem(LS_KEY);
+      localStorage.removeItem('hc_dark');
+      init(true);
+      showToast('Valores restablecidos');
+    });
+
+    // Limpiar auditoría
+    $('#btnClearAudit').addEventListener('click', ()=>{
+      localStorage.removeItem(LS_AUDIT);
+      renderAudit();
+      showToast('Auditoría limpiada');
+    });
+
+    // Preferencias rápidas
+    $('#prefDark').addEventListener('change', e=> applyTheme(e.target.checked));
+    ['admNombre','admCorreo','admUsuario','admTelefono','sysHotel','sysMoneda','sysRuc','sysIgv','sysPrefijo','sysCheckIn','sysCheckOut','sysPolitica','prefLang','prefTz']
+      .forEach(id=> document.getElementById(id).addEventListener('input', markDirty));
+    ['chk2fa','prefNotif'].forEach(id=> document.getElementById(id).addEventListener('change', markDirty));
+
+    // ====== Persistencia ======
+    function persist(){
+      localStorage.setItem(LS_KEY, JSON.stringify(settings));
+      dirty = false;
+      $('#btnSaveAll').disabled = true;
+    }
+
+    function loadDefaults(){
+      return {
+        perfil: {
+          avatar: '',
+          nombre: 'Fernando Manrique',
+          correo: 'admin@hotelcaribbean.com',
+          usuario: 'admin01',
+          telefono: '+51 987 654 321'
+        },
+        seguridad: {
+          twofa: false
+        },
+        sistema: {
+          hotel: 'Hotel Caribbean',
+          moneda: 'PEN',
+          ruc: '',
+          igv: 18,
+          prefijo: 'HC-',
+          checkIn: '14:00',
+          checkOut: '12:00',
+          politica: '',
+          logo: ''
+        },
+        pref: {
+          dark: false,
+          lang: 'es',
+          tz: 'America/Lima',
+          notif: true
+        }
+      };
+    }
+
+    function fillForm(){
+      // Perfil
+      $('#avatarPreview').src = settings.perfil.avatar || 'https://i.pravatar.cc/120';
+      $('#admNombre').value   = settings.perfil.nombre || '';
+      $('#admCorreo').value   = settings.perfil.correo || '';
+      $('#admUsuario').value  = settings.perfil.usuario || '';
+      $('#admTelefono').value = settings.perfil.telefono || '';
+      // Seguridad
+      $('#chk2fa').checked = !!settings.seguridad.twofa;
+      // Sistema
+      $('#sysHotel').value   = settings.sistema.hotel || '';
+      $('#sysMoneda').value  = settings.sistema.moneda || 'PEN';
+      $('#sysRuc').value     = settings.sistema.ruc || '';
+      $('#sysIgv').value     = settings.sistema.igv ?? 18;
+      $('#sysPrefijo').value = settings.sistema.prefijo || 'HC-';
+      $('#sysCheckIn').value = settings.sistema.checkIn || '14:00';
+      $('#sysCheckOut').value= settings.sistema.checkOut || '12:00';
+      $('#sysPolitica').value= settings.sistema.politica || '';
+      if (settings.sistema.logo){
+        $('#logoPreview').src = settings.sistema.logo;
+        $('#logoPreview').classList.remove('hidden');
+        $('#logoName').textContent = 'logo.png';
+      } else {
+        $('#logoPreview').classList.add('hidden');
+        $('#logoName').textContent = '';
+      }
+      // Preferencias
+      $('#prefDark').checked = !!settings.pref.dark;
+      $('#prefLang').value   = settings.pref.lang || 'es';
+      $('#prefTz').value     = settings.pref.tz   || 'America/Lima';
+      $('#prefNotif').checked= !!settings.pref.notif;
+
+      // Theme
+      applyTheme(!!settings.pref.dark);
+    }
+
+    function init(forceDefaults=false){
+      const saved = localStorage.getItem(LS_KEY);
+      settings = forceDefaults || !saved ? loadDefaults() : JSON.parse(saved);
+      fillForm();
+      renderAudit();
+      // abrir tab perfil por defecto
+      document.querySelector('[data-tab="perfil"]').click();
+      $('#btnSaveAll').disabled = true;
+    }
+
+    // ====== Misc ======
+    function logout(){ window.location.href = "../login.html"; }
+    window.logout = logout;
+
+    // Keyboard helpers
+    document.addEventListener('keydown', (e)=>{
+      if (e.key === 'Enter'){
+        // Guardar sección visible
+        const visibleBtn = document.querySelector('.tab-panel:not(.hidden) .btn-save-section');
+        if (visibleBtn) visibleBtn.click();
+      }
+      if (e.key === 'Escape'){
+        // Limpiar campos sensibles de seguridad
+        ['pwdActual','pwdNueva','pwdConfirm'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+      }
+    });
+
+    // Cargar theme si existía
+    applyTheme(localStorage.getItem('hc_dark') === '1');
+    // Iniciar
+    init();
   </script>
 </body>
 </html>
