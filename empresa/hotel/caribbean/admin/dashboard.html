@@ -37,40 +37,91 @@
     <!-- MAIN CONTENT -->
     <main class="flex-1 p-6 space-y-6 overflow-y-auto">
 
-      <!-- KPI CARDS -->
-      <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
-          <i class="fa-solid fa-wallet text-emerald-600 text-2xl"></i>
-          <div>
+      <!-- KPI CARDS - MEJORADO -->
+      <section>
+        <div class="flex justify-between items-center mb-4">
+          <h2 class="text-lg font-semibold text-slate-700">Indicadores Clave</h2>
+          <div class="flex items-center gap-2">
+            <span class="text-sm text-gray-500">Período:</span>
+            <select id="periodoKPI" class="text-sm border rounded px-2 py-1" onchange="actualizarKPIs()">
+              <option value="hoy">Hoy</option>
+              <option value="semana" selected>Esta semana</option>
+              <option value="mes">Este mes</option>
+              <option value="trimestre">Este trimestre</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <!-- Tarjeta de Ingresos -->
+          <div class="bg-white p-5 rounded-xl shadow flex flex-col gap-2 relative hover:shadow-md transition-shadow cursor-pointer" onclick="mostrarDetalles('ingresos')">
+            <div class="flex items-center justify-between">
+              <i class="fa-solid fa-wallet text-emerald-600 text-3xl"></i>
+              <span id="tendencia-ingresos" class="text-xs text-green-600 bg-green-100 px-2 py-1 rounded flex items-center gap-1">
+                <i class="fa-solid fa-caret-up"></i>+12%
+              </span>
+            </div>
             <p class="text-sm text-gray-500">Ingresos</p>
-            <h2 class="text-xl font-bold">S/ 12,500</h2>
+            <h2 class="text-2xl font-bold" id="valor-ingresos">S/ 12,500</h2>
+            <div class="text-xs text-gray-400 mt-2" id="meta-ingresos">Meta: S/ 15,000 (83%)</div>
+            <div class="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+              <div class="bg-green-600 h-1.5 rounded-full" style="width: 83%"></div>
+            </div>
           </div>
-        </div>
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
-          <i class="fa-solid fa-calendar-check text-blue-600 text-2xl"></i>
-          <div>
+          
+          <!-- Tarjeta de Reservas -->
+          <div class="bg-white p-5 rounded-xl shadow flex flex-col gap-2 relative hover:shadow-md transition-shadow cursor-pointer" onclick="mostrarDetalles('reservas')">
+            <div class="flex items-center justify-between">
+              <i class="fa-solid fa-calendar-check text-blue-600 text-3xl"></i>
+              <span id="tendencia-reservas" class="text-xs text-blue-600 bg-blue-100 px-2 py-1 rounded flex items-center gap-1">
+                <i class="fa-solid fa-caret-up"></i>+8%
+              </span>
+            </div>
             <p class="text-sm text-gray-500">Reservas</p>
-            <h2 class="text-xl font-bold">320</h2>
+            <h2 class="text-2xl font-bold" id="valor-reservas">320</h2>
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span id="checkins-hoy">Check-ins: 12</span>
+              <span id="checkouts-hoy">Check-outs: 8</span>
+            </div>
           </div>
-        </div>
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
-          <i class="fa-solid fa-bed text-purple-600 text-2xl"></i>
-          <div>
+          
+          <!-- Tarjeta de Ocupación -->
+          <div class="bg-white p-5 rounded-xl shadow flex flex-col gap-2 relative hover:shadow-md transition-shadow cursor-pointer" onclick="mostrarDetalles('ocupacion')">
+            <div class="flex items-center justify-between">
+              <i class="fa-solid fa-bed text-purple-600 text-3xl"></i>
+              <span id="tendencia-ocupacion" class="text-xs text-purple-600 bg-purple-100 px-2 py-1 rounded flex items-center gap-1">
+                <i class="fa-solid fa-caret-up"></i>+3%
+              </span>
+            </div>
             <p class="text-sm text-gray-500">Ocupación</p>
-            <h2 class="text-xl font-bold">78%</h2>
+            <h2 class="text-2xl font-bold" id="valor-ocupacion">78%</h2>
+            <div class="flex justify-between text-xs text-gray-400 mt-2">
+              <span id="habitaciones-ocupadas">Ocupadas: 62/80</span>
+              <span id="habitaciones-disponibles">Disponibles: 18</span>
+            </div>
           </div>
-        </div>
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
-          <i class="fa-solid fa-receipt text-red-500 text-2xl"></i>
-          <div>
+          
+          <!-- Tarjeta de Gastos -->
+          <div class="bg-white p-5 rounded-xl shadow flex flex-col gap-2 relative hover:shadow-md transition-shadow cursor-pointer" onclick="mostrarDetalles('gastos')">
+            <div class="flex items-center justify-between">
+              <i class="fa-solid fa-receipt text-red-500 text-3xl"></i>
+              <span id="tendencia-gastos" class="text-xs text-red-600 bg-red-100 px-2 py-1 rounded flex items-center gap-1">
+                <i class="fa-solid fa-caret-down"></i>-2%
+              </span>
+            </div>
             <p class="text-sm text-gray-500">Gastos</p>
-            <h2 class="text-xl font-bold">S/ 2,300</h2>
+            <h2 class="text-2xl font-bold" id="valor-gastos">S/ 2,300</h2>
+            <div class="text-xs text-gray-400 mt-2 flex justify-between">
+              <span id="categoria-mayor-gasto">Mayor: Suministros</span>
+              <span id="porcentaje-gasto">42% del presupuesto</span>
+            </div>
           </div>
         </div>
-      </div>
+      </section>
 
       <!-- GRAFICOS -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <section>
+        <h2 class="text-lg font-semibold text-slate-700 mb-4">Gráficos de Gestión</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="bg-white p-4 rounded shadow">
           <h3 class="font-semibold mb-2">Ingresos por Mes</h3>
           <canvas id="chartIngresos"></canvas>
@@ -80,74 +131,131 @@
           <canvas id="chartOcupacion"></canvas>
         </div>
       </div>
-
-      <!-- TABLA DE USUARIOS -->
-      <div class="bg-white p-4 rounded shadow">
-        <h3 class="font-semibold mb-4">Usuarios del Sistema</h3>
-        <table class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Nombre</th>
-              <th class="p-2 text-left">Rol</th>
-              <th class="p-2 text-left">Estado</th>
-              <th class="p-2 text-left">Último Acceso</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Fernando Manrique</td>
-              <td class="p-2">Administrador</td>
-              <td class="p-2"><span class="bg-green-100 text-green-700 px-2 py-1 rounded text-xs">Activo</span></td>
-              <td class="p-2">04/08/2025 23:11</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Rosa Pérez</td>
-              <td class="p-2">Recepcionista</td>
-              <td class="p-2"><span class="bg-yellow-100 text-yellow-700 px-2 py-1 rounded text-xs">Pendiente</span></td>
-              <td class="p-2">04/08/2025 21:05</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">Carlos Gómez</td>
-              <td class="p-2">Supervisor</td>
-              <td class="p-2"><span class="bg-red-100 text-red-700 px-2 py-1 rounded text-xs">Inactivo</span></td>
-              <td class="p-2">03/08/2025 19:40</td>
-            </tr>
-          </tbody>
-        </table>
-      </div>
+      </section>
 
     </main>
   </div>
 
   <script>
-    // Gráfico de Ingresos
-    new Chart(document.getElementById('chartIngresos'), {
-      type: 'bar',
-      data: {
-        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
-        datasets: [{
-          label: 'Ingresos (S/)',
-          data: [1200, 1500, 1800, 1400, 2000, 2500, 2100],
-          backgroundColor: '#0ea5e9'
-        }]
+    // Datos de ejemplo para los KPIs (en una aplicación real, estos vendrían de una API)
+    const kpiData = {
+      hoy: {
+        ingresos: { valor: 1850, tendencia: 5, meta: 2000 },
+        reservas: { valor: 15, tendencia: 10, checkins: 12, checkouts: 8 },
+        ocupacion: { valor: 72, tendencia: 2, ocupadas: 58, total: 80 },
+        gastos: { valor: 420, tendencia: -3, categoria: "Suministros", presupuesto: 1000 }
       },
-      options: { responsive: true, plugins: { legend: { display: false } } }
-    });
+      semana: {
+        ingresos: { valor: 12500, tendencia: 12, meta: 15000 },
+        reservas: { valor: 320, tendencia: 8, checkins: 45, checkouts: 38 },
+        ocupacion: { valor: 78, tendencia: 3, ocupadas: 62, total: 80 },
+        gastos: { valor: 2300, tendencia: -2, categoria: "Suministros", presupuesto: 5500 }
+      },
+      mes: {
+        ingresos: { valor: 48500, tendencia: 15, meta: 50000 },
+        reservas: { valor: 1250, tendencia: 12, checkins: 180, checkouts: 165 },
+        ocupacion: { valor: 82, tendencia: 5, ocupadas: 66, total: 80 },
+        gastos: { valor: 8900, tendencia: -5, categoria: "Nómina", presupuesto: 20000 }
+      },
+      trimestre: {
+        ingresos: { valor: 142500, tendencia: 18, meta: 150000 },
+        reservas: { valor: 3820, tendencia: 15, checkins: 520, checkouts: 485 },
+        ocupacion: { valor: 79, tendencia: 7, ocupadas: 63, total: 80 },
+        gastos: { valor: 26500, tendencia: -3, categoria: "Mantenimiento", presupuesto: 60000 }
+      }
+    };
 
-    // Gráfico de Ocupación
-    new Chart(document.getElementById('chartOcupacion'), {
-      type: 'line',
-      data: {
-        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
-        datasets: [{
-          label: 'Ocupación %',
-          data: [70, 65, 80, 75, 85, 90, 78],
-          borderColor: '#9333ea',
-          fill: false,
-          tension: 0.3
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+    // Función para formatear números con separadores de miles
+    function formatoNumero(num) {
+      return new Intl.NumberFormat('es-PE').format(num);
+    }
+
+    // Función para actualizar los KPIs según el período seleccionado
+    function actualizarKPIs() {
+      const periodo = document.getElementById('periodoKPI').value;
+      const datos = kpiData[periodo];
+      
+      // Actualizar tarjeta de ingresos
+      document.getElementById('valor-ingresos').textContent = `S/ ${formatoNumero(datos.ingresos.valor)}`;
+      document.getElementById('tendencia-ingresos').innerHTML = 
+        `<i class="fa-solid fa-caret-${datos.ingresos.tendencia >= 0 ? 'up' : 'down'}"></i>${Math.abs(datos.ingresos.tendencia)}%`;
+      document.getElementById('tendencia-ingresos').className = 
+        `text-xs ${datos.ingresos.tendencia >= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'} px-2 py-1 rounded flex items-center gap-1`;
+      
+      const porcentajeMeta = Math.min(100, Math.round((datos.ingresos.valor / datos.ingresos.meta) * 100));
+      document.getElementById('meta-ingresos').textContent = `Meta: S/ ${formatoNumero(datos.ingresos.meta)} (${porcentajeMeta}%)`;
+      document.querySelector('#meta-ingresos + div > div').style.width = `${porcentajeMeta}%`;
+      document.querySelector('#meta-ingresos + div > div').className = 
+        `${datos.ingresos.tendencia >= 0 ? 'bg-green-600' : 'bg-red-600'} h-1.5 rounded-full`;
+      
+      // Actualizar tarjeta de reservas
+      document.getElementById('valor-reservas').textContent = formatoNumero(datos.reservas.valor);
+      document.getElementById('tendencia-reservas').innerHTML = 
+        `<i class="fa-solid fa-caret-${datos.reservas.tendencia >= 0 ? 'up' : 'down'}"></i>${Math.abs(datos.reservas.tendencia)}%`;
+      document.getElementById('tendencia-reservas').className = 
+        `text-xs ${datos.reservas.tendencia >= 0 ? 'text-blue-600 bg-blue-100' : 'text-red-600 bg-red-100'} px-2 py-1 rounded flex items-center gap-1`;
+      document.getElementById('checkins-hoy').textContent = `Check-ins: ${datos.reservas.checkins}`;
+      document.getElementById('checkouts-hoy').textContent = `Check-outs: ${datos.reservas.checkouts}`;
+      
+      // Actualizar tarjeta de ocupación
+      document.getElementById('valor-ocupacion').textContent = `${datos.ocupacion.valor}%`;
+      document.getElementById('tendencia-ocupacion').innerHTML = 
+        `<i class="fa-solid fa-caret-${datos.ocupacion.tendencia >= 0 ? 'up' : 'down'}"></i>${Math.abs(datos.ocupacion.tendencia)}%`;
+      document.getElementById('tendencia-ocupacion').className = 
+        `text-xs ${datos.ocupacion.tendencia >= 0 ? 'text-purple-600 bg-purple-100' : 'text-red-600 bg-red-100'} px-2 py-1 rounded flex items-center gap-1`;
+      document.getElementById('habitaciones-ocupadas').textContent = `Ocupadas: ${datos.ocupacion.ocupadas}/${datos.ocupacion.total}`;
+      document.getElementById('habitaciones-disponibles').textContent = `Disponibles: ${datos.ocupacion.total - datos.ocupacion.ocupadas}`;
+      
+      // Actualizar tarjeta de gastos
+      document.getElementById('valor-gastos').textContent = `S/ ${formatoNumero(datos.gastos.valor)}`;
+      document.getElementById('tendencia-gastos').innerHTML = 
+        `<i class="fa-solid fa-caret-${datos.gastos.tendencia >= 0 ? 'up' : 'down'}"></i>${Math.abs(datos.gastos.tendencia)}%`;
+      document.getElementById('tendencia-gastos').className = 
+        `text-xs ${datos.gastos.tendencia <= 0 ? 'text-green-600 bg-green-100' : 'text-red-600 bg-red-100'} px-2 py-1 rounded flex items-center gap-1`;
+      document.getElementById('categoria-mayor-gasto').textContent = `Mayor: ${datos.gastos.categoria}`;
+      
+      const porcentajePresupuesto = Math.round((datos.gastos.valor / datos.gastos.presupuesto) * 100);
+      document.getElementById('porcentaje-gasto').textContent = `${porcentajePresupuesto}% del presupuesto`;
+    }
+
+    // Función para mostrar detalles (simulada)
+    function mostrarDetalles(tipo) {
+      alert(`Aquí se mostrarían los detalles de ${tipo}. En una aplicación real, esto abriría un modal o llevaría a otra página.`);
+    }
+
+    // Inicializar KPIs al cargar la página
+    document.addEventListener('DOMContentLoaded', function() {
+      actualizarKPIs();
+      
+      // Gráfico de Ingresos
+      new Chart(document.getElementById('chartIngresos'), {
+        type: 'bar',
+        data: {
+          labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
+          datasets: [{
+            label: 'Ingresos (S/)',
+            data: [1200, 1500, 1800, 1400, 2000, 2500, 2100],
+            backgroundColor: '#0ea5e9'
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { display: false } } }
+      });
+
+      // Gráfico de Ocupación
+      new Chart(document.getElementById('chartOcupacion'), {
+        type: 'line',
+        data: {
+          labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
+          datasets: [{
+            label: 'Ocupación %',
+            data: [70, 65, 80, 75, 85, 90, 78],
+            borderColor: '#9333ea',
+            fill: false,
+            tension: 0.3
+          }]
+        },
+        options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+      });
     });
 
     // Logout redirige a login

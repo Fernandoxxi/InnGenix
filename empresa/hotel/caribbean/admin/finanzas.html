@@ -8,7 +8,17 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .sticky-th th { position: sticky; top: 0; z-index: 1; }
+    .skeleton {
+      background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: loading 1.2s infinite;
+    }
+    @keyframes loading { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
@@ -38,152 +48,442 @@
     <!-- MAIN -->
     <main class="flex-1 p-6 space-y-6">
 
-      <!-- FILTROS -->
-      <div class="bg-white p-4 rounded shadow flex flex-wrap gap-4 items-end">
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Fecha Desde</label>
-          <input type="date" class="border rounded p-2 text-sm">
+      <!-- FILTROS (MODO + VALIDACIONES) -->
+      <div class="bg-white p-5 rounded-xl shadow space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-slate-800">Finanzas</h2>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Fecha Hasta</label>
-          <input type="date" class="border rounded p-2 text-sm">
+
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
+          <!-- Modo -->
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Modo</label>
+            <select id="modo" class="w-full border rounded px-2 py-2 text-sm" onchange="cambiarModo()">
+              <option value="turno" selected>Por Turno</option>
+              <option value="dia">Por Día</option>
+              <option value="mes">Por Mes</option>
+            </select>
+          </div>
+
+          <!-- Día -->
+          <div id="filtroFecha" class="hidden">
+            <label class="text-xs font-semibold text-slate-600">Seleccionar Fecha</label>
+            <input type="date" id="fechaDia" class="w-full border rounded px-2 py-2 text-sm" oninput="validateFilters()">
+            <p id="warnDia" class="text-xs text-red-600 mt-1 hidden">Solo se permiten fechas hasta hoy.</p>
+          </div>
+
+          <!-- Mes -->
+          <div id="filtroMes" class="hidden">
+            <label class="text-xs font-semibold text-slate-600">Seleccionar Mes</label>
+            <input type="month" id="fechaMes" class="w-full border rounded px-2 py-2 text-sm" oninput="validateFilters()">
+            <p id="warnMes" class="text-xs text-red-600 mt-1 hidden">Solo se permiten meses completos (hasta el mes anterior).</p>
+          </div>
+
+          <!-- Turno -->
+          <div id="filtroTurno">
+            <label class="text-xs font-semibold text-slate-600">Turno</label>
+            <select id="turno" class="w-full border rounded px-2 py-2 text-sm" onchange="validateFilters()">
+              <option selected>Día (8AM - 8PM)</option>
+              <option>Noche (8PM - 8AM)</option>
+            </select>
+          </div>
+
+          <!-- Botones -->
+          <div class="flex flex-wrap gap-2 md:col-span-2">
+            <button id="btnBuscar" onclick="filtrar()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed">
+              <i class="fa-solid fa-search"></i> Buscar
+            </button>
+            <button onclick="exportarExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+              <i class="fa-solid fa-file-excel"></i> Excel
+            </button>
+            <button onclick="exportarPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
+              <i class="fa-solid fa-file-pdf"></i> PDF
+            </button>
+          </div>
         </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Turno</label>
-          <select class="border rounded p-2 text-sm">
-            <option>Todos</option>
-            <option>Día (8AM - 8PM)</option>
-            <option>Noche (8PM - 8AM)</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs font-semibold text-gray-600">Mes</label>
-          <select class="border rounded p-2 text-sm">
-            <option>Enero</option><option>Febrero</option><option>Marzo</option>
-            <option>Abril</option><option>Mayo</option><option>Junio</option>
-            <option>Julio</option><option>Agosto</option><option>Septiembre</option>
-            <option>Octubre</option><option>Noviembre</option><option>Diciembre</option>
-          </select>
-        </div>
-        <button class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded flex items-center gap-2">
-          <i class="fa-solid fa-search"></i> Filtrar
-        </button>
-        <button onclick="exportarExcel()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded flex items-center gap-2">
-          <i class="fa-solid fa-file-excel"></i> Excel
-        </button>
-        <button onclick="exportarPDF()" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded flex items-center gap-2">
-          <i class="fa-solid fa-file-pdf"></i> PDF
-        </button>
       </div>
 
       <!-- KPI CARDS -->
       <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+        <div class="bg-white p-4 rounded-xl shadow flex items-center gap-4">
           <i class="fa-solid fa-sack-dollar text-emerald-600 text-2xl"></i>
           <div>
             <p class="text-sm text-gray-500">Ingresos</p>
-            <h2 class="text-2xl font-bold">S/ 15,400</h2>
+            <h2 id="kpiIngresos" class="text-2xl font-bold">S/ 0</h2>
           </div>
         </div>
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+        <div class="bg-white p-4 rounded-xl shadow flex items-center gap-4">
           <i class="fa-solid fa-credit-card text-red-500 text-2xl"></i>
           <div>
             <p class="text-sm text-gray-500">Gastos</p>
-            <h2 class="text-2xl font-bold">S/ 3,200</h2>
+            <h2 id="kpiGastos" class="text-2xl font-bold">S/ 0</h2>
           </div>
         </div>
-        <div class="bg-white p-4 rounded shadow flex items-center gap-4">
+        <div class="bg-white p-4 rounded-xl shadow flex items-center gap-4">
           <i class="fa-solid fa-scale-balanced text-blue-600 text-2xl"></i>
           <div>
             <p class="text-sm text-gray-500">Balance</p>
-            <h2 class="text-2xl font-bold text-green-600">S/ 12,200</h2>
+            <h2 id="kpiBalance" class="text-2xl font-bold">S/ 0</h2>
           </div>
         </div>
       </div>
 
       <!-- GRAFICOS -->
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-        <div class="bg-white p-4 rounded shadow">
-          <h3 class="font-semibold mb-2">Ingresos vs Gastos</h3>
-          <canvas id="chartFinanzas"></canvas>
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="bg-white p-4 rounded-xl shadow">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Ingresos vs Gastos</h3>
+            <span id="subtitleBar" class="text-xs text-slate-500"></span>
+          </div>
+          <div class="relative h-80">
+            <canvas id="chartFinanzas" class="!w-full !h-full"></canvas>
+          </div>
         </div>
-        <div class="bg-white p-4 rounded shadow">
-          <h3 class="font-semibold mb-2">Balance Mensual</h3>
-          <canvas id="chartBalance"></canvas>
+        <div class="bg-white p-4 rounded-xl shadow">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Balance</h3>
+            <span id="subtitleLine" class="text-xs text-slate-500"></span>
+          </div>
+          <div class="relative h-80">
+            <canvas id="chartBalance" class="!w-full !h-full"></canvas>
+          </div>
         </div>
       </div>
 
-      <!-- TABLA DETALLE -->
-      <div class="bg-white p-4 rounded shadow">
-        <h3 class="font-semibold mb-4">Movimientos Financieros</h3>
-        <table id="tablaFinanzas" class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Fecha</th>
-              <th class="p-2 text-left">Tipo</th>
-              <th class="p-2 text-left">Descripción</th>
-              <th class="p-2 text-left">Monto (S/)</th>
-              <th class="p-2 text-left">Turno</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">04/08/2025</td>
-              <td class="p-2">Ingreso</td>
-              <td class="p-2">Alquiler Habitación 101</td>
-              <td class="p-2">120</td>
-              <td class="p-2">Día</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">04/08/2025</td>
-              <td class="p-2">Gasto</td>
-              <td class="p-2">Compra de Insumos</td>
-              <td class="p-2">-50</td>
-              <td class="p-2">Día</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">03/08/2025</td>
-              <td class="p-2">Ingreso</td>
-              <td class="p-2">Reserva confirmada</td>
-              <td class="p-2">200</td>
-              <td class="p-2">Noche</td>
-            </tr>
-          </tbody>
-        </table>
+      <!-- TABLA -->
+      <div class="bg-white rounded-xl shadow">
+        <div class="p-4 flex items-center justify-between">
+          <h3 class="font-semibold">Detalle</h3>
+          <span id="rowsCount" class="text-xs text-slate-500">0 filas</span>
+        </div>
+        <div class="overflow-auto max-h-[480px]">
+          <table id="tablaFinanzas" class="w-full min-w-[780px] text-sm border-collapse">
+            <thead class="bg-slate-100 sticky-th">
+              <tr class="text-slate-700">
+                <th class="p-2 text-left">Fecha</th>
+                <th class="p-2 text-left">Turno</th>
+                <th class="p-2 text-left">Sede</th>
+                <th class="p-2 text-right">Ingresos</th>
+                <th class="p-2 text-right">Gastos</th>
+                <th class="p-2 text-right font-bold">Balance</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyFinanzas" class="divide-y divide-gray-100"></tbody>
+            <tfoot>
+              <tr class="bg-slate-50 font-semibold">
+                <td class="p-2" colspan="3">Totales</td>
+                <td id="tIng" class="p-2 text-right">S/ 0</td>
+                <td id="tGas" class="p-2 text-right">S/ 0</td>
+                <td id="tBal" class="p-2 text-right">S/ 0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="loadingTbl" class="hidden p-4">
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded"></div>
+        </div>
       </div>
     </main>
   </div>
 
   <script>
-    // Gráfico Ingresos vs Gastos
-    new Chart(document.getElementById('chartFinanzas'), {
-      type: 'bar',
-      data: {
-        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
-        datasets: [
-          { label: 'Ingresos', data: [1200, 1500, 1800, 1400, 2000, 2500, 2100], backgroundColor: '#10b981' },
-          { label: 'Gastos', data: [500, 600, 700, 800, 900, 1000, 1100], backgroundColor: '#ef4444' }
-        ]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
+    function logout(){ window.location.href = "login.html"; }
 
-    // Gráfico Balance
-    new Chart(document.getElementById('chartBalance'), {
-      type: 'line',
-      data: {
-        labels: ['Ene','Feb','Mar','Abr','May','Jun','Jul'],
-        datasets: [{
-          label: 'Balance',
-          data: [700, 900, 1100, 600, 1100, 1500, 1000],
-          borderColor: '#3b82f6',
-          fill: true,
-          backgroundColor: 'rgba(59,130,246,0.2)',
-          tension: 0.3
-        }]
-      },
-      options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
-    });
+    // ===== Datos de ejemplo (fecha dd/mm/yyyy, turno, sede, ingresos, gastos) =====
+    const finanzasData = [
+      ["01/08/2025","Día","Lima Centro",1200,500],
+      ["01/08/2025","Noche","Lima Centro",900,300],
+      ["02/08/2025","Día","Miraflores",1500,600],
+      ["02/08/2025","Noche","Miraflores",800,350],
+      ["03/08/2025","Día","San Isidro",1800,700],
+      ["03/08/2025","Noche","San Isidro",1100,400],
+      ["04/08/2025","Día","Los Olivos",1400,800],
+      ["04/08/2025","Noche","Los Olivos",1000,420],
+      ["05/08/2025","Día","Lima Centro",2000,900],
+      ["05/08/2025","Noche","Lima Centro",1200,500],
+      ["06/08/2025","Día","Miraflores",2500,1000],
+      ["06/08/2025","Noche","Miraflores",1300,550],
+      ["07/08/2025","Día","San Isidro",2100,1100],
+      ["07/08/2025","Noche","San Isidro",1150,520]
+    ];
+
+    // ===== State / utils =====
+    let filtered = finanzasData.slice();
+    let barChart, lineChart;
+
+    const PEN = new Intl.NumberFormat("es-PE",{ style:"currency", currency:"PEN", maximumFractionDigits:0 });
+    const NUM = new Intl.NumberFormat("es-PE",{ maximumFractionDigits:0 });
+
+    function parseDMY(s){
+      const [d,m,y] = s.split("/").map(Number);
+      return new Date(y, m-1, d);
+    }
+    // Helpers locales (sin desfase UTC)
+    function todayISO(){
+      const d = new Date();
+      const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0"), dd = String(d.getDate()).padStart(2,"0");
+      return `${y}-${m}-${dd}`;
+    }
+    function lastCompletedMonthISO(){ // yyyy-mm del mes anterior
+      const d = new Date();
+      d.setDate(1);            // primer día del mes actual
+      d.setMonth(d.getMonth()-1);
+      const y = d.getFullYear(), m = String(d.getMonth()+1).padStart(2,"0");
+      return `${y}-${m}`;
+    }
+    function toDMYFromInput(iso){ // yyyy-mm-dd -> dd/mm/yyyy
+      const [y,m,d] = iso.split("-");
+      return `${d}/${m}/${y}`;
+    }
+
+    // Mostrar/ocultar filtros por modo y setear máximos válidos
+    function cambiarModo(){
+      const modo = document.getElementById("modo").value;
+      const fDia = document.getElementById("fechaDia");
+      const fMes = document.getElementById("fechaMes");
+
+      document.getElementById("filtroFecha").classList.add("hidden");
+      document.getElementById("filtroMes").classList.add("hidden");
+      document.getElementById("filtroTurno").classList.add("hidden");
+
+      if (modo === "dia") {
+        document.getElementById("filtroFecha").classList.remove("hidden");
+        // Restringir al hoy
+        fDia.max = todayISO();
+        // Autocompletar a hoy si vacío o si estaba en futuro
+        if (!fDia.value || fDia.value > fDia.max) fDia.value = fDia.max;
+      }
+      if (modo === "mes") {
+        document.getElementById("filtroMes").classList.remove("hidden");
+        // Restringir al último mes completo
+        fMes.max = lastCompletedMonthISO();
+        // Autocompletar al último mes completo si vacío o mayor
+        if (!fMes.value || fMes.value > fMes.max) fMes.value = fMes.max;
+      }
+      if (modo === "turno") {
+        document.getElementById("filtroTurno").classList.remove("hidden");
+      }
+
+      validateFilters(); // activa/desactiva Buscar según corresponda
+    }
+
+    // Validación central: desactiva Buscar y muestra aviso si corresponde
+    function validateFilters(){
+      const modo = document.getElementById("modo").value;
+      const btn = document.getElementById("btnBuscar");
+      const fDia = document.getElementById("fechaDia");
+      const fMes = document.getElementById("fechaMes");
+      const warnDia = document.getElementById("warnDia");
+      const warnMes = document.getElementById("warnMes");
+
+      warnDia.classList.add("hidden");
+      warnMes.classList.add("hidden");
+
+      let valid = true;
+
+      if (modo === "dia") {
+        const max = todayISO();
+        if (!fDia.value) valid = false;
+        else if (fDia.value > max) { valid = false; warnDia.classList.remove("hidden"); }
+      }
+
+      if (modo === "mes") {
+        const max = lastCompletedMonthISO();
+        if (!fMes.value) valid = false;
+        else if (fMes.value > max) { valid = false; warnMes.classList.remove("hidden"); }
+      }
+
+      // En modo turno siempre es válido (no hay restricción temporal)
+      btn.disabled = !valid;
+      return valid;
+    }
+
+    // ===== Filtro principal según modo =====
+    function filtrar(){
+      // Si viene por Enter o click forzado, revalidamos
+      if (!validateFilters()) return;
+
+      document.getElementById("loadingTbl").classList.remove("hidden");
+      document.getElementById("tbodyFinanzas").innerHTML = "";
+
+      setTimeout(()=>{
+        const modo = document.getElementById("modo").value;
+        const turnoSel = document.getElementById("turno").value || "";
+        const fechaDia = document.getElementById("fechaDia").value;
+        const fechaMes = document.getElementById("fechaMes").value; // yyyy-mm
+
+        filtered = finanzasData.filter(([f, turno])=>{
+          if (modo === "turno") {
+            return turnoSel.startsWith("Día") ? (turno==="Día") : (turno==="Noche");
+          }
+          if (modo === "dia") {
+            return f === toDMYFromInput(fechaDia);
+          }
+          if (modo === "mes") {
+            const d = parseDMY(f);
+            const [y,m] = fechaMes.split("-").map(Number);
+            return d.getFullYear()===y && (d.getMonth()+1)===m;
+          }
+          return true;
+        });
+
+        renderTabla();
+        updateKpis();
+        updateCharts();
+
+        document.getElementById("loadingTbl").classList.add("hidden");
+      }, 120);
+    }
+
+    function renderTabla(){
+      const tbody = document.getElementById("tbodyFinanzas");
+      tbody.innerHTML = "";
+
+      const rows = [...filtered].sort((a,b)=>{
+        const d = parseDMY(a[0]) - parseDMY(b[0]);
+        if (d !== 0) return d;
+        if (a[1] === b[1]) return 0;
+        return a[1] === "Día" ? -1 : 1; // Día primero
+      });
+
+      let tIng=0, tGas=0, tBal=0;
+      rows.forEach(([fecha, turno, sede, ing, gas])=>{
+        const bal = ing - gas;
+        tIng += ing; tGas += gas; tBal += bal;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 odd:bg-white even:bg-slate-50";
+        tr.innerHTML = `
+          <td class="p-2">${fecha}</td>
+          <td class="p-2">${turno}</td>
+          <td class="p-2">${sede}</td>
+          <td class="p-2 text-right font-mono tabular-nums">S/ ${NUM.format(ing)}</td>
+          <td class="p-2 text-right font-mono tabular-nums">S/ ${NUM.format(gas)}</td>
+          <td class="p-2 text-right font-bold font-mono tabular-nums ${bal>=0?'text-emerald-600':'text-red-600'}">S/ ${NUM.format(bal)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("rowsCount").textContent = `${rows.length} fila${rows.length!==1?'s':''}`;
+      document.getElementById("tIng").textContent = `S/ ${NUM.format(tIng)}`;
+      document.getElementById("tGas").textContent = `S/ ${NUM.format(tGas)}`;
+      document.getElementById("tBal").textContent = `S/ ${NUM.format(tBal)}`;
+    }
+
+    function sums(){
+      return filtered.reduce((acc,[, , , ing, gas])=>{
+        acc.ing += ing; acc.gas += gas; return acc;
+      }, {ing:0, gas:0});
+    }
+
+    function updateKpis(){
+      const s = sums();
+      const bal = s.ing - s.gas;
+      document.getElementById("kpiIngresos").textContent = PEN.format(s.ing);
+      document.getElementById("kpiGastos").textContent  = PEN.format(s.gas);
+      document.getElementById("kpiBalance").textContent = PEN.format(bal);
+    }
+
+    // Helpers de agrupación
+    function groupByDay(rows){
+      const map = new Map(); // dd/mm/yyyy -> {ing,gas}
+      rows.forEach(([f, , , ing, gas])=>{
+        if (!map.has(f)) map.set(f,{ing:0,gas:0});
+        const v = map.get(f); v.ing+=ing; v.gas+=gas;
+      });
+      const labels = [...map.keys()].sort((a,b)=>parseDMY(a)-parseDMY(b));
+      const ing = labels.map(k=>map.get(k).ing);
+      const gas = labels.map(k=>map.get(k).gas);
+      const bal = labels.map((_,i)=> ing[i]-gas[i]);
+      return { labels, ing, gas, bal };
+    }
+
+    function groupByTurno(rows){
+      const map = new Map([["Día",{ing:0,gas:0}],["Noche",{ing:0,gas:0}]]);
+      rows.forEach(([, turno, , ing, gas])=>{
+        if (!map.has(turno)) map.set(turno,{ing:0,gas:0});
+        const v = map.get(turno); v.ing+=ing; v.gas+=gas;
+      });
+      const labels = [...map.keys()];
+      const ing = labels.map(k=>map.get(k).ing);
+      const gas = labels.map(k=>map.get(k).gas);
+      const bal = labels.map((_,i)=> ing[i]-gas[i]);
+      return { labels, ing, gas, bal };
+    }
+
+    function updateCharts(){
+      const modo = document.getElementById("modo").value;
+
+      let g, subBar = "", subLine = "";
+      if (modo === "turno") {
+        // Un turno seleccionado -> series por día
+        g = groupByDay(filtered);
+        subBar = "Agregado por día (turno seleccionado)";
+        subLine = "Balance diario";
+      } else if (modo === "dia") {
+        // Un día seleccionado -> agrupamos por turno (Día/Noche)
+        g = groupByTurno(filtered);
+        subBar = "Comparativo por turno (día seleccionado)";
+        subLine = "Balance por turno";
+      } else {
+        // Un mes seleccionado -> series por día del mes
+        g = groupByDay(filtered);
+        subBar = "Agregado por día (mes seleccionado)";
+        subLine = "Balance diario";
+      }
+
+      document.getElementById("subtitleBar").textContent  = subBar;
+      document.getElementById("subtitleLine").textContent = subLine;
+
+      // BAR
+      const ctxBar = document.getElementById("chartFinanzas").getContext("2d");
+      if (barChart) barChart.destroy();
+      barChart = new Chart(ctxBar, {
+        type: "bar",
+        data: {
+          labels: g.labels,
+          datasets: [
+            { label:"Ingresos", data:g.ing, backgroundColor:"#10b981" },
+            { label:"Gastos",   data:g.gas, backgroundColor:"#ef4444" }
+          ]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          scales:{ y:{ beginAtZero:true, ticks:{ callback:v=>NUM.format(v) } } },
+          plugins:{
+            legend:{ position:"bottom" },
+            tooltip:{ callbacks:{ label:c=>`${c.dataset.label}: ${PEN.format(c.parsed.y)}` } }
+          }
+        }
+      });
+
+      // LINE
+      const ctxLine = document.getElementById("chartBalance").getContext("2d");
+      if (lineChart) lineChart.destroy();
+      lineChart = new Chart(ctxLine, {
+        type: "line",
+        data: {
+          labels: g.labels,
+          datasets: [{
+            label: "Balance",
+            data: g.bal,
+            borderColor:"#3b82f6",
+            backgroundColor:"rgba(59,130,246,0.2)",
+            fill:true, tension:0.3
+          }]
+        },
+        options: {
+          responsive:true, maintainAspectRatio:false,
+          scales:{ y:{ ticks:{ callback:v=>NUM.format(v) } } },
+          plugins:{
+            legend:{ position:"bottom" },
+            tooltip:{ callbacks:{ label:c=>`${c.dataset.label}: ${PEN.format(c.parsed.y)}` } }
+          }
+        }
+      });
+    }
 
     // Exportar a Excel
     function exportarExcel(){
@@ -197,17 +497,38 @@
     // Exportar a PDF
     function exportarPDF(){
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Reporte de Finanzas - Hotel Caribbean", 14, 16);
-      doc.autoTable({ html: '#tablaFinanzas', startY: 25 });
+      const doc = new jsPDF("l","pt","a4");
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(16);
+      doc.text("Reporte de Finanzas - Hotel Caribbean", 40, 40);
+      doc.setFontSize(10);
+      doc.text(`Generado: ${new Date().toLocaleString()}`, 40, 58);
+
+      // Resumen filtros
+      const modo = document.getElementById("modo").value;
+      const turno = document.getElementById("turno").value || "—";
+      const fDia  = document.getElementById("fechaDia").value || "—";
+      const fMes  = document.getElementById("fechaMes").value || "—";
+      doc.text(`Modo: ${modo} | Turno: ${modo==="turno"?turno:"—"} | Día: ${modo==="dia"?fDia:"—"} | Mes: ${modo==="mes"?fMes:"—"}`, 40, 74);
+
+      doc.autoTable({
+        html:"#tablaFinanzas", startY: 90,
+        styles:{ fontSize:9, cellPadding:4 },
+        headStyles:{ fillColor:[51,65,85] },
+        columnStyles:{ 3:{halign:"right"}, 4:{halign:"right"}, 5:{halign:"right"} },
+        didDrawPage: () => {
+          const str = `Página ${doc.internal.getNumberOfPages()}`;
+          doc.text(str, pageWidth-80, doc.internal.pageSize.getHeight()-20);
+        }
+      });
       doc.save("Finanzas_Hotel.pdf");
     }
 
-    // Logout
-    function logout(){
-      window.location.href = "../login.html";
-    }
+    // ===== Init: Modo 'turno' + Turno 'Día' por defecto =====
+    cambiarModo();      // muestra y prepara límites
+    filtrar();          // aplica el filtro inicial
+    document.addEventListener("keydown", e => { if (e.key==="Enter") { if (validateFilters()) filtrar(); } });
   </script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.28/jspdf.plugin.autotable.min.js"></script>
 </body>
 </html>

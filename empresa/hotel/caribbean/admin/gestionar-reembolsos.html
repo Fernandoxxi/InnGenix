@@ -8,8 +8,17 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.19.3/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
+  <style>
+    .sticky-th th { position: sticky; top: 0; z-index: 1; }
+    .skeleton { background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%); background-size: 200% 100%; animation: loading 1.2s infinite; }
+    @keyframes loading { 0% {background-position:200% 0} 100% {background-position:-200% 0} }
+  </style>
 </head>
 <body class="bg-gray-100 font-sans">
+
+  <!-- TOAST -->
+  <div id="toast" class="hidden fixed right-4 bottom-4 z-[9999] rounded-lg px-4 py-3 text-white shadow-lg"></div>
 
   <!-- HEADER -->
   <header class="bg-slate-900 text-white h-16 flex justify-between items-center px-6 shadow">
@@ -37,121 +46,446 @@
     <!-- MAIN CONTENT -->
     <main class="flex-1 p-6 space-y-6 overflow-y-auto">
       <!-- HEADER PAGE -->
-      <div class="flex justify-between items-center">
-        <h2 class="text-2xl font-bold">Gestión de Reembolsos</h2>
+      <div class="flex flex-wrap justify-between items-center gap-3">
+        <div>
+          <h2 class="text-2xl font-bold text-slate-800">Gestión de Reembolsos</h2>
+          <p class="text-sm text-slate-500">Aprueba o rechaza solicitudes y exporta listados</p>
+        </div>
         <div class="flex gap-2">
           <button onclick="exportExcel()" class="bg-green-600 hover:bg-green-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2"><i class="fa-solid fa-file-excel"></i> Excel</button>
           <button onclick="exportPDF()" class="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm flex items-center gap-2"><i class="fa-solid fa-file-pdf"></i> PDF</button>
         </div>
       </div>
 
+      <!-- KPIs -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Solicitudes</div>
+          <div id="kpiTotal" class="text-2xl font-bold mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Pendientes</div>
+          <div id="kpiPend" class="text-2xl font-bold mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Aprobadas</div>
+          <div id="kpiApro" class="text-2xl font-bold mt-1">0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Monto total</div>
+          <div id="kpiMonto" class="text-2xl font-bold mt-1">S/ 0</div>
+        </div>
+      </div>
+
       <!-- FILTROS -->
-      <div class="bg-white p-4 rounded shadow flex flex-wrap gap-3 items-center">
-        <input type="text" id="buscar" placeholder="Buscar por código o cliente..." class="border rounded px-3 py-2 text-sm flex-1">
-        <select id="filtroEstado" class="border rounded px-3 py-2 text-sm">
-          <option value="">Todos</option>
-          <option value="Pendiente">Pendiente</option>
-          <option value="Aprobado">Aprobado</option>
-          <option value="Rechazado">Rechazado</option>
-        </select>
-        <input type="date" id="fechaFiltro" class="border rounded px-3 py-2 text-sm">
-        <button onclick="filtrar()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm">Filtrar</button>
+      <div class="bg-white p-4 rounded-xl shadow">
+        <div class="grid grid-cols-1 lg:grid-cols-6 gap-3 items-end">
+          <div class="lg:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600">Buscar</label>
+            <div class="relative">
+              <i class="fa-solid fa-magnifying-glass absolute left-3 top-1/2 -translate-y-1/2 text-slate-400"></i>
+              <input type="text" id="buscar" placeholder="Código o cliente..." class="w-full border rounded pl-9 pr-3 py-2 text-sm">
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Estado</label>
+            <select id="filtroEstado" class="w-full border rounded px-3 py-2 text-sm">
+              <option value="">Todos</option>
+              <option value="Pendiente">Pendiente</option>
+              <option value="Aprobado">Aprobado</option>
+              <option value="Rechazado">Rechazado</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Fecha desde</label>
+            <input type="date" id="fechaDesde" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-600">Fecha hasta</label>
+            <input type="date" id="fechaHasta" class="w-full border rounded px-3 py-2 text-sm">
+          </div>
+          <div class="flex gap-2">
+            <button onclick="filtrar()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"><i class="fa-solid fa-filter mr-2"></i>Filtrar</button>
+            <button onclick="limpiarFiltros()" class="bg-slate-200 hover:bg-slate-300 text-slate-800 px-4 py-2 rounded text-sm">Limpiar</button>
+          </div>
+        </div>
+        
+        <!-- Chips rápidos -->
+        <div class="mt-3 flex flex-wrap gap-2 text-xs">
+          <button class="px-3 py-1 rounded-full bg-yellow-100 text-yellow-700" onclick="quick('Pendiente')">Pendientes</button>
+          <button class="px-3 py-1 rounded-full bg-green-100 text-green-700" onclick="quick('Aprobado')">Aprobados</button>
+          <button class="px-3 py-1 rounded-full bg-red-100 text-red-700" onclick="quick('Rechazado')">Rechazados</button>
+          <button class="px-3 py-1 rounded-full bg-slate-100 text-slate-700" onclick="quick('')">Todos</button>
+        </div>
+      </div>
+
+      <!-- ACCIONES MASIVAS -->
+      <div class="flex items-center justify-between">
+        <div class="text-sm text-slate-500" id="contadorSeleccion">0 seleccionados</div>
+        <div class="flex gap-2">
+          <button id="btnAprobarSel" onclick="aprobarSeleccion()" class="disabled:opacity-50 disabled:cursor-not-allowed bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-2 rounded text-sm"><i class="fa-solid fa-check mr-2"></i> Aprobar selección</button>
+          <button id="btnRechazarSel" onclick="rechazarSeleccion()" class="disabled:opacity-50 disabled:cursor-not-allowed bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded text-sm"><i class="fa-solid fa-xmark mr-2"></i> Rechazar selección</button>
+        </div>
       </div>
 
       <!-- TABLA DE SOLICITUDES -->
-      <div class="bg-white p-4 rounded shadow overflow-x-auto">
-        <table id="tablaReembolsos" class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Código</th>
-              <th class="p-2 text-left">Cliente</th>
-              <th class="p-2 text-left">Monto</th>
-              <th class="p-2 text-left">Motivo</th>
-              <th class="p-2 text-left">Fecha Solicitud</th>
-              <th class="p-2 text-left">Estado</th>
-              <th class="p-2 text-left">Acciones</th>
-            </tr>
-          </thead>
-          <tbody id="bodyReembolsos">
-            <!-- Se llena dinámicamente -->
-          </tbody>
-        </table>
+      <div class="bg-white rounded-xl shadow overflow-hidden">
+        <div class="overflow-auto max-h-[520px]">
+          <table id="tablaReembolsos" class="w-full min-w-[980px] text-sm border-collapse">
+            <thead class="bg-slate-100 sticky-th select-none">
+              <tr>
+                <th class="p-2 w-10 text-center"><input id="checkAll" type="checkbox"></th>
+                <th class="p-2 text-left cursor-pointer" onclick="sortBy('codigo')">Código <i class="fa-solid fa-sort text-slate-400"></i></th>
+                <th class="p-2 text-left cursor-pointer" onclick="sortBy('cliente')">Cliente <i class="fa-solid fa-sort text-slate-400"></i></th>
+                <th class="p-2 text-right cursor-pointer" onclick="sortBy('monto')">Monto <i class="fa-solid fa-sort text-slate-400"></i></th>
+                <th class="p-2 text-left">Motivo</th>
+                <th class="p-2 text-left cursor-pointer" onclick="sortBy('fecha')">Fecha <i class="fa-solid fa-sort text-slate-400"></i></th>
+                <th class="p-2 text-left cursor-pointer" onclick="sortBy('estado')">Estado <i class="fa-solid fa-sort text-slate-400"></i></th>
+                <th class="p-2 text-left">Acciones</th>
+              </tr>
+            </thead>
+            <tbody id="bodyReembolsos" class="divide-y divide-gray-100"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" class="hidden p-10 text-center">
+          <i class="fa-regular fa-face-frown text-4xl text-slate-300"></i>
+          <p class="mt-2 text-slate-600 font-medium">No hay resultados</p>
+          <p class="text-xs text-slate-500">Ajusta los filtros o limpia la búsqueda</p>
+        </div>
+        <div id="loadingTbl" class="hidden p-4">
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded"></div>
+        </div>
+        
+        <!-- Paginación -->
+        <div class="flex items-center justify-between border-t p-3 text-sm">
+          <div id="infoPaginacion" class="text-slate-500">Mostrando 0–0 de 0</div>
+          <div class="flex gap-2 items-center">
+            <button id="btnAnterior" class="px-3 py-1.5 border rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Anterior</button>
+            <div id="numerosPagina" class="flex gap-1"></div>
+            <button id="btnSiguiente" class="px-3 py-1.5 border rounded hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed">Siguiente</button>
+          </div>
+        </div>
       </div>
     </main>
   </div>
 
+  <!-- MODAL DETALLE -->
+  <div id="modalDetalle" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-xl">
+      <div class="flex justify-between items-center p-4 border-b">
+        <h3 class="font-semibold text-lg">Detalle de reembolso</h3>
+        <button class="text-slate-400 hover:text-slate-600" onclick="closeDetalle()"><i class="fa-solid fa-times text-lg"></i></button>
+      </div>
+      <div class="p-4 space-y-3" id="detalleContenido"></div>
+      <div class="flex justify-end gap-2 border-t p-4">
+        <button onclick="closeDetalle()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded">Cerrar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL APROBAR -->
+  <div id="modalAprobar" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="p-4 border-b"><h3 class="font-semibold text-lg">Confirmar aprobación</h3></div>
+      <div class="p-4 space-y-3">
+        <p class="text-slate-700">¿Deseas aprobar el reembolso <span id="codAprobar" class="font-semibold"></span>?</p>
+        <label class="block text-xs font-semibold text-slate-600">Nota (opcional)</label>
+        <textarea id="notaAprobar" class="w-full border rounded p-2 text-sm" rows="3" placeholder="Comentario interno..."></textarea>
+      </div>
+      <div class="flex justify-end gap-2 border-t p-4">
+        <button onclick="closeAprobar()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded">Cancelar</button>
+        <button onclick="confirmarAprobar()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded"><i class="fa-solid fa-check mr-2"></i> Aprobar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RECHAZAR -->
+  <div id="modalRechazar" class="hidden fixed inset-0 bg-black/50 z-50 items-center justify-center p-4">
+    <div class="bg-white rounded-xl shadow-xl w-full max-w-md">
+      <div class="p-4 border-b"><h3 class="font-semibold text-lg">Confirmar rechazo</h3></div>
+      <div class="p-4 space-y-3">
+        <p class="text-slate-700">Indica el motivo del rechazo para <span id="codRechazar" class="font-semibold"></span>:</p>
+        <textarea id="motivoRechazo" class="w-full border rounded p-2 text-sm" rows="3" placeholder="Motivo del rechazo" required></textarea>
+      </div>
+      <div class="flex justify-end gap-2 border-t p-4">
+        <button onclick="closeRechazar()" class="px-4 py-2 bg-slate-200 text-slate-800 rounded">Cancelar</button>
+        <button onclick="confirmarRechazar()" class="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded"><i class="fa-solid fa-xmark mr-2"></i> Rechazar</button>
+      </div>
+    </div>
+  </div>
+
   <script>
+    // ===== Datos base (incluye "explicacion") =====
     const solicitudes = [
-      {codigo:"HC123456", cliente:"Carlos Pérez", monto:"S/ 650.00", motivo:"Emergencia personal", fecha:"2025-08-15", estado:"Pendiente"},
-      {codigo:"HC789012", cliente:"Ana López", monto:"S/ 420.00", motivo:"Reserva duplicada", fecha:"2025-08-14", estado:"Pendiente"},
-      {codigo:"HC456789", cliente:"Luis Gómez", monto:"S/ 1,200.00", motivo:"Problemas de viaje", fecha:"2025-08-13", estado:"Aprobado"},
+      {codigo:"HC123456", cliente:"Carlos Pérez",  monto:650.00,  motivo:"Emergencia personal",           explicacion:"Tuvo que viajar de urgencia por tema familiar, adjunta constancia.",                       fecha:"2025-08-15", estado:"Pendiente"},
+      {codigo:"HC789012", cliente:"Ana López",     monto:420.00,  motivo:"Reserva duplicada",             explicacion:"Se generó doble cargo por error de conexión en POS.",                                      fecha:"2025-08-14", estado:"Pendiente"},
+      {codigo:"HC456789", cliente:"Luis Gómez",    monto:1200.00, motivo:"Problemas de viaje",            explicacion:"Vuelo cancelado por clima; solicita devolución completa.",                                  fecha:"2025-08-13", estado:"Aprobado"},
+      {codigo:"HC222333", cliente:"María Torres",  monto:330.00,  motivo:"Error de cobro",                explicacion:"Se detectó cobro adicional no reconocido en el checkout.",                                  fecha:"2025-08-12", estado:"Rechazado"},
+      {codigo:"HC112233", cliente:"Jorge Castillo",monto:980.00,  motivo:"Cambio de fechas",              explicacion:"Solicitó cambio fuera de política; propone nota de crédito parcial.",                        fecha:"2025-08-10", estado:"Pendiente"},
+      {codigo:"HC778899", cliente:"Lucía Ramos",   monto:150.00,  motivo:"Cobro indebido",                explicacion:"Factura incluye ítem de minibar que no consumió; adjunta descargo.",                        fecha:"2025-08-09", estado:"Pendiente"},
+      {codigo:"HC998877", cliente:"Pedro Silva",   monto:710.00,  motivo:"Cancelación vuelo",             explicacion:"Perdió conexión internacional por retraso; pide reembolso de noches no usadas.",             fecha:"2025-08-08", estado:"Aprobado"},
+      {codigo:"HC445566", cliente:"Sofía Medina",  monto:540.00,  motivo:"Incidencia habitación",         explicacion:"Ruidos nocturnos por mantenimiento; solicita compensación de una noche.",                    fecha:"2025-08-07", estado:"Pendiente"},
+      {codigo:"HC334455", cliente:"Daniel Rivas",  monto:300.00,  motivo:"Promoción mal aplicada",        explicacion:"La tarifa promo no se aplicó correctamente en el motor de reservas.",                         fecha:"2025-08-06", estado:"Rechazado"},
+      {codigo:"HC667788", cliente:"Elena Díaz",    monto:870.00,  motivo:"Falla de sistema",              explicacion:"Cobro duplicado por caída del sistema; adjunta voucher del banco.",                          fecha:"2025-08-05", estado:"Pendiente"},
+      {codigo:"HC101112", cliente:"Raúl Vargas",   monto:495.00,  motivo:"Cambio de itinerario",          explicacion:"Reprogramación por motivos laborales; solicita reembolso parcial según política.",           fecha:"2025-08-04", estado:"Pendiente"},
+      {codigo:"HC131415", cliente:"Patricia León", monto:1250.00, motivo:"Error en tarjeta",              explicacion:"Tarjeta cobrada con tasa equivocada; adjunta estado de cuenta para verificación.",          fecha:"2025-08-03", estado:"Aprobado"}
     ];
 
-    function renderTabla(data){
-      const tbody = document.getElementById('bodyReembolsos');
-      tbody.innerHTML="";
-      data.forEach(r=>{
-        tbody.innerHTML+=`
-          <tr class="border-b hover:bg-slate-50">
-            <td class="p-2">${r.codigo}</td>
-            <td class="p-2">${r.cliente}</td>
-            <td class="p-2">${r.monto}</td>
-            <td class="p-2">${r.motivo}</td>
-            <td class="p-2">${r.fecha}</td>
-            <td class="p-2">
-              <span class="px-2 py-1 rounded text-xs ${r.estado==='Pendiente'?'bg-yellow-100 text-yellow-700':r.estado==='Aprobado'?'bg-green-100 text-green-700':'bg-red-100 text-red-700'}">${r.estado}</span>
-            </td>
-            <td class="p-2 flex gap-2">
-              ${r.estado==="Pendiente" ? `
-              <button onclick="aprobar('${r.codigo}')" class="bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i> Aprobar</button>
-              <button onclick="rechazar('${r.codigo}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i> Rechazar</button>
-              ` : `<span class="text-gray-500">--</span>`}
-            </td>
-          </tr>`;
-      });
+    // ===== Estado UI =====
+    let filtered = solicitudes.slice();
+    let currentPage = 1;
+    const itemsPerPage = 8;
+    let sortField = 'fecha';
+    let sortDir = 'desc';
+    const selected = new Set(); // codigos seleccionados
+
+    // ===== Utils =====
+    const PEN = new Intl.NumberFormat('es-PE', { style: 'currency', currency: 'PEN', maximumFractionDigits: 2 });
+    function fmtMoney(n){ return PEN.format(n); }
+    function fmtDateDMY(iso){ if(!iso) return ''; const [y,m,d] = iso.split('-'); return `${d}/${m}/${y}`; }
+    function showToast(msg, type='success'){
+      const el = document.getElementById('toast');
+      el.textContent = msg;
+      el.className = '';
+      el.classList.add('fixed','right-4','bottom-4','z-[9999]','rounded-lg','px-4','py-3','text-white','shadow-lg');
+      el.classList.add(type==='success' ? 'bg-emerald-600' : type==='error' ? 'bg-red-600' : 'bg-slate-700');
+      el.classList.remove('hidden');
+      setTimeout(()=> el.classList.add('hidden'), 2000);
     }
 
-    function aprobar(cod){
-      const s=solicitudes.find(x=>x.codigo===cod);
-      if(s){ s.estado="Aprobado"; renderTabla(solicitudes); alert("Reembolso aprobado para "+cod); }
-    }
-    function rechazar(cod){
-      const s=solicitudes.find(x=>x.codigo===cod);
-      if(s){ s.estado="Rechazado"; renderTabla(solicitudes); alert("Reembolso rechazado para "+cod); }
-    }
+    // ===== Filtros =====
     function filtrar(){
-      const texto=document.getElementById('buscar').value.toLowerCase();
-      const estado=document.getElementById('filtroEstado').value;
-      const fecha=document.getElementById('fechaFiltro').value;
-      const filtrado=solicitudes.filter(r=>
-        (r.cliente.toLowerCase().includes(texto) || r.codigo.toLowerCase().includes(texto)) &&
-        (!estado || r.estado===estado) &&
-        (!fecha || r.fecha===fecha)
-      );
-      renderTabla(filtrado);
+      document.getElementById('loadingTbl').classList.remove('hidden');
+      document.getElementById('emptyState').classList.add('hidden');
+      setTimeout(()=>{
+        const q = (document.getElementById('buscar').value || '').toLowerCase();
+        const estado = document.getElementById('filtroEstado').value;
+        const fDesde = document.getElementById('fechaDesde').value;
+        const fHasta = document.getElementById('fechaHasta').value;
+
+        filtered = solicitudes.filter(r=>{
+          const byText = r.codigo.toLowerCase().includes(q) || r.cliente.toLowerCase().includes(q);
+          const byEstado = !estado || r.estado === estado;
+          const byDesde = !fDesde || r.fecha >= fDesde;
+          const byHasta = !fHasta || r.fecha <= fHasta;
+          return byText && byEstado && byDesde && byHasta;
+        });
+
+        currentPage = 1;
+        render();
+        document.getElementById('loadingTbl').classList.add('hidden');
+      }, 150);
+    }
+    function limpiarFiltros(){
+      document.getElementById('buscar').value='';
+      document.getElementById('filtroEstado').value='';
+      document.getElementById('fechaDesde').value='';
+      document.getElementById('fechaHasta').value='';
+      filtrar();
+    }
+    function quick(status){
+      document.getElementById('filtroEstado').value = status;
+      filtrar();
     }
 
+    // ===== Ordenamiento =====
+    function sortBy(field){
+      if (sortField === field) { sortDir = (sortDir === 'asc') ? 'desc' : 'asc'; }
+      else { sortField = field; sortDir = 'asc'; }
+      render();
+    }
+
+    function getSortedRows(){
+      const rows = filtered.slice();
+      rows.sort((a,b)=>{
+        let va=a[sortField], vb=b[sortField];
+        if (sortField === 'monto') { va = Number(va); vb = Number(vb); }
+        if (sortField === 'fecha') { /* iso string compare ok */ }
+        if (va < vb) return sortDir==='asc' ? -1 : 1;
+        if (va > vb) return sortDir==='asc' ? 1 : -1;
+        return 0;
+      });
+      return rows;
+    }
+
+    // ===== Render principal =====
+    function render(){
+      // KPIs
+      const kTotal = solicitudes.length;
+      const kPend = solicitudes.filter(x=>x.estado==='Pendiente').length;
+      const kApro = solicitudes.filter(x=>x.estado==='Aprobado').length;
+      const kMonto = solicitudes.reduce((acc,x)=>acc+x.monto,0);
+      document.getElementById('kpiTotal').textContent = kTotal;
+      document.getElementById('kpiPend').textContent  = kPend;
+      document.getElementById('kpiApro').textContent  = kApro;
+      document.getElementById('kpiMonto').textContent = fmtMoney(kMonto);
+
+      // Tabla + paginación
+      const tbody = document.getElementById('bodyReembolsos');
+      tbody.innerHTML = '';
+
+      const rows = getSortedRows();
+      const total = rows.length;
+      if (total === 0){
+        document.getElementById('emptyState').classList.remove('hidden');
+      } else {
+        document.getElementById('emptyState').classList.add('hidden');
+      }
+
+      const totalPages = Math.max(1, Math.ceil(total / itemsPerPage));
+      if (currentPage > totalPages) currentPage = totalPages;
+      const start = (currentPage - 1) * itemsPerPage;
+      const end = Math.min(start + itemsPerPage, total);
+      const pageRows = rows.slice(start, end);
+
+      pageRows.forEach(r=>{
+        const isPend = r.estado === 'Pendiente';
+        const badge = isPend ? 'bg-yellow-100 text-yellow-700' : (r.estado==='Aprobado' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700');
+        const tr = document.createElement('tr');
+        tr.className = 'hover:bg-slate-50';
+        tr.innerHTML = `
+          <td class="p-2 text-center"><input type="checkbox" ${selected.has(r.codigo)?'checked':''} onchange="toggleSelect('${r.codigo}', this.checked)"></td>
+          <td class="p-2 font-mono">${r.codigo}</td>
+          <td class="p-2">${r.cliente}</td>
+          <td class="p-2 text-right font-mono tabular-nums">${fmtMoney(r.monto)}</td>
+          <td class="p-2">${r.motivo}</td>
+          <td class="p-2">${fmtDateDMY(r.fecha)}</td>
+          <td class="p-2"><span class="px-2 py-1 rounded text-xs ${badge}">${r.estado}</span></td>
+          <td class="p-2 flex flex-wrap gap-2">
+            <button onclick="verDetalle('${r.codigo}')" class="border px-2 py-1 rounded text-xs hover:bg-slate-50"><i class="fa-regular fa-eye mr-1"></i> Ver</button>
+            ${isPend ? `
+              <button onclick="openAprobar('${r.codigo}')" class="bg-emerald-600 hover:bg-emerald-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-check"></i> Aprobar</button>
+              <button onclick="openRechazar('${r.codigo}')" class="bg-red-600 hover:bg-red-700 text-white px-2 py-1 rounded text-xs"><i class="fa-solid fa-xmark"></i> Rechazar</button>
+            ` : `<span class="text-slate-400 text-xs">—</span>`}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      // Info y controles de paginación
+      document.getElementById('infoPaginacion').textContent = `Mostrando ${total===0?0:start+1}–${end} de ${total}`;
+      const btnAnt = document.getElementById('btnAnterior');
+      const btnSig = document.getElementById('btnSiguiente');
+      btnAnt.disabled = currentPage === 1;
+      btnSig.disabled = currentPage === totalPages;
+      btnAnt.onclick = ()=>{ if (currentPage>1) { currentPage--; render(); } };
+      btnSig.onclick = ()=>{ if (currentPage<totalPages) { currentPage++; render(); } };
+
+      const numeros = document.getElementById('numerosPagina');
+      numeros.innerHTML = '';
+      for (let i=1;i<=totalPages;i++){
+        const b = document.createElement('button');
+        b.className = 'px-3 py-1.5 border rounded hover:bg-slate-50';
+        if (i===currentPage){ b.className = 'px-3 py-1.5 rounded bg-blue-600 text-white'; }
+        b.textContent = i;
+        b.onclick = ()=>{ currentPage=i; render(); };
+        numeros.appendChild(b);
+      }
+
+      // checkbox maestro
+      const checkAll = document.getElementById('checkAll');
+      checkAll.checked = pageRows.length>0 && pageRows.every(r=>selected.has(r.codigo));
+      checkAll.onchange = (e)=>{
+        pageRows.forEach(r=> e.target.checked ? selected.add(r.codigo) : selected.delete(r.codigo));
+        render();
+      };
+
+      updateBulkButtons();
+    }
+
+    // ===== Selección masiva =====
+    function toggleSelect(codigo, checked){
+      if (checked) selected.add(codigo); else selected.delete(codigo);
+      updateBulkButtons();
+    }
+    function updateBulkButtons(){
+      const c = selected.size;
+      document.getElementById('contadorSeleccion').textContent = `${c} seleccionado${c!==1?'s':''}`;
+      document.getElementById('btnAprobarSel').disabled = c===0;
+      document.getElementById('btnRechazarSel').disabled = c===0;
+    }
+    function aprobarSeleccion(){
+      const a = [...selected].filter(c=> solicitudes.find(s=>s.codigo===c && s.estado==='Pendiente'));
+      if (a.length===0) { showToast('No hay seleccionados en estado pendiente.', 'error'); return; }
+      a.forEach(c=>{ const s = solicitudes.find(x=>x.codigo===c); if (s) s.estado='Aprobado'; });
+      selected.clear(); render(); showToast('Aprobados masivamente.');
+    }
+    function rechazarSeleccion(){
+      const a = [...selected].filter(c=> solicitudes.find(s=>s.codigo===c && s.estado==='Pendiente'));
+      if (a.length===0) { showToast('No hay seleccionados en estado pendiente.', 'error'); return; }
+      const motivo = prompt('Motivo para rechazo masivo:'); // simple
+      if (motivo===null) return;
+      a.forEach(c=>{ const s = solicitudes.find(x=>x.codigo===c); if (s) s.estado='Rechazado'; });
+      selected.clear(); render(); showToast('Rechazados masivamente.');
+    }
+
+    // ===== Detalle =====
+    function verDetalle(cod){
+      const s = solicitudes.find(x=>x.codigo===cod); if (!s) return;
+      const cont = document.getElementById('detalleContenido');
+      cont.innerHTML = `
+        <div class="grid grid-cols-2 gap-3 text-sm">
+          <div><span class="text-slate-500">Código</span><div class="font-medium">${s.codigo}</div></div>
+          <div><span class="text-slate-500">Cliente</span><div class="font-medium">${s.cliente}</div></div>
+          <div><span class="text-slate-500">Monto</span><div class="font-medium">${fmtMoney(s.monto)}</div></div>
+          <div><span class="text-slate-500">Fecha</span><div class="font-medium">${fmtDateDMY(s.fecha)}</div></div>
+          <div class="col-span-2"><span class="text-slate-500">Motivo</span><div class="font-medium">${s.motivo}</div></div>
+          <div class="col-span-2"><span class="text-slate-500">Explicación adicional</span><div class="font-medium whitespace-pre-wrap">${s.explicacion || '—'}</div></div>
+          <div><span class="text-slate-500">Estado</span><div class="font-medium">${s.estado}</div></div>
+        </div>`;
+      const m = document.getElementById('modalDetalle'); m.classList.remove('hidden'); m.classList.add('flex');
+    }
+    function closeDetalle(){ document.getElementById('modalDetalle').classList.add('hidden'); }
+
+    // ===== Aprobar / Rechazar (individual) =====
+    let targetCode = null;
+    function openAprobar(cod){ targetCode = cod; document.getElementById('codAprobar').textContent = cod; const m=document.getElementById('modalAprobar'); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function closeAprobar(){ document.getElementById('modalAprobar').classList.add('hidden'); document.getElementById('notaAprobar').value=''; }
+    function confirmarAprobar(){ if(!targetCode) return; const s=solicitudes.find(x=>x.codigo===targetCode); if(s){ s.estado='Aprobado'; } targetCode=null; closeAprobar(); render(); showToast('Reembolso aprobado.'); }
+
+    function openRechazar(cod){ targetCode = cod; document.getElementById('codRechazar').textContent = cod; const m=document.getElementById('modalRechazar'); m.classList.remove('hidden'); m.classList.add('flex'); }
+    function closeRechazar(){ document.getElementById('modalRechazar').classList.add('hidden'); document.getElementById('motivoRechazo').value=''; }
+    function confirmarRechazar(){ const motivo = document.getElementById('motivoRechazo').value.trim(); if(!motivo){ showToast('Debes indicar un motivo.', 'error'); return; } const s=solicitudes.find(x=>x.codigo===targetCode); if(s){ s.estado='Rechazado'; } targetCode=null; closeRechazar(); render(); showToast('Reembolso rechazado.'); }
+
+    // ===== Exportar (incluye "Explicación adicional") =====
     function exportExcel(){
-      const tabla=document.getElementById("tablaReembolsos");
-      const wb=XLSX.utils.book_new();
-      const ws=XLSX.utils.table_to_sheet(tabla);
-      XLSX.utils.book_append_sheet(wb, ws, "Reembolsos");
-      XLSX.writeFile(wb, "Reembolsos.xlsx");
+      const rows = getSortedRows().map(r=>[r.codigo, r.cliente, r.monto, r.motivo, r.explicacion || '—', r.fecha, r.estado]);
+      const aoa = [["Código","Cliente","Monto","Motivo","Explicación adicional","Fecha","Estado"], ...rows];
+      const wb = XLSX.utils.book_new();
+      const ws = XLSX.utils.aoa_to_sheet(aoa);
+      // numeric column for Monto (col C)
+      for (let i=2;i<rows.length+2;i++){ const c = ws['C'+i]; if (c){ c.t='n'; } }
+      XLSX.utils.book_append_sheet(wb, ws, 'Reembolsos');
+      XLSX.writeFile(wb, 'Reembolsos.xlsx');
     }
+
     function exportPDF(){
-      const { jsPDF } = window.jspdf;
-      const doc = new jsPDF();
-      doc.text("Reporte de Reembolsos", 14, 20);
-      doc.autoTable({ html: '#tablaReembolsos', startY: 30 });
-      doc.save("Reembolsos.pdf");
+      const { jsPDF } = window.jspdf; const doc = new jsPDF('l','pt','a4');
+      const rows = getSortedRows().map(r=>[r.codigo, r.cliente, fmtMoney(r.monto), r.motivo, r.explicacion || '—', fmtDateDMY(r.fecha), r.estado]);
+      doc.setFontSize(16); doc.text('Reporte de Reembolsos - Hotel Caribbean', 40, 40);
+      doc.setFontSize(10); doc.text('Generado: '+new Date().toLocaleString(), 40, 58);
+      doc.autoTable({
+        startY: 80,
+        head: [["Código","Cliente","Monto","Motivo","Explicación adicional","Fecha","Estado"]],
+        body: rows,
+        styles: { fontSize: 9, cellPadding: 4, overflow: 'linebreak' },
+        headStyles: { fillColor: [51,65,85] },
+        columnStyles: {
+          2: { halign: 'right' },     // Monto
+          4: { cellWidth: 220 }       // Explicación adicional (ancho fijo para envolver)
+        }
+      });
+      doc.save('Reembolsos.pdf');
     }
 
-    function logout(){
-      window.location.href = "../login.html";
-    }
+    // ===== Misc =====
+    function logout(){ window.location.href = '../login.html'; }
+    document.addEventListener('keydown', e=>{ if (e.key==='Enter') filtrar(); if (e.key==='Escape'){ closeDetalle(); closeAprobar(); closeRechazar(); } });
 
-    // Inicial
-    renderTabla(solicitudes);
+    // Init
+    filtrar(); // hace render + KPIs + tabla
   </script>
 </body>
 </html>

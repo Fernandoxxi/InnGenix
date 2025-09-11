@@ -8,7 +8,18 @@
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    canvas { display: block; max-width: 100%; }
+    .sticky-th th { position: sticky; top: 0; z-index: 1; }
+    .skeleton {
+      background: linear-gradient(90deg,#f3f4f6 25%,#e5e7eb 50%,#f3f4f6 75%);
+      background-size: 200% 100%;
+      animation: loading 1.2s infinite;
+    }
+    @keyframes loading { 0% {background-position:200% 0} 100% {background-position:-200% 0} }
+  </style>
 </head>
 <body class="bg-gray-100 font-sans">
 
@@ -23,7 +34,6 @@
   </header>
 
   <div class="flex">
-
     <!-- SIDEBAR -->
     <aside class="w-60 bg-white border-r min-h-screen shadow-sm p-4 space-y-4">
       <nav class="space-y-2 text-slate-700">
@@ -40,34 +50,62 @@
     <main class="flex-1 p-6 space-y-6 overflow-y-auto">
 
       <!-- FILTROS -->
-      <div class="bg-white p-4 rounded shadow">
-        <h2 class="text-lg font-bold text-slate-800 mb-4">Filtros de Reporte</h2>
-        <div class="grid grid-cols-1 md:grid-cols-5 gap-4">
+      <div class="bg-white p-5 rounded-xl shadow space-y-4">
+        <div class="flex items-center justify-between">
+          <h2 class="text-xl font-bold text-slate-800">Filtros de Reporte</h2>
+          <div class="hidden md:flex items-center gap-2">
+            <button class="px-3 py-1.5 text-sm border rounded hover:bg-slate-50" onclick="presetHoy()">Hoy</button>
+            <button class="px-3 py-1.5 text-sm border rounded hover:bg-slate-50" onclick="presetAyer()">Ayer</button>
+            <button class="px-3 py-1.5 text-sm border rounded hover:bg-slate-50" onclick="presetMes()">Este mes</button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-6 gap-4 items-end">
           <div>
             <label class="text-xs font-semibold text-slate-600">Modo</label>
-            <select id="modo" class="w-full border rounded px-2 py-1 text-sm" onchange="cambiarModo()">
-              <option value="turno">Por Turno</option>
+            <select id="modo" class="w-full border rounded px-2 py-2 text-sm" onchange="cambiarModo()">
+              <option value="turno" selected>Por Turno</option>
               <option value="dia">Por Día</option>
               <option value="mes">Por Mes</option>
             </select>
           </div>
+
           <div id="filtroFecha" class="hidden">
             <label class="text-xs font-semibold text-slate-600">Seleccionar Fecha</label>
-            <input type="date" id="fechaDia" class="w-full border rounded px-2 py-1 text-sm">
+            <input type="date" id="fechaDia" class="w-full border rounded px-2 py-2 text-sm">
           </div>
+
           <div id="filtroMes" class="hidden">
             <label class="text-xs font-semibold text-slate-600">Seleccionar Mes</label>
-            <input type="month" id="fechaMes" class="w-full border rounded px-2 py-1 text-sm">
+            <input type="month" id="fechaMes" class="w-full border rounded px-2 py-2 text-sm">
           </div>
+
           <div id="filtroTurno">
             <label class="text-xs font-semibold text-slate-600">Turno</label>
-            <select id="turno" class="w-full border rounded px-2 py-1 text-sm">
-              <option>Día (8AM - 8PM)</option>
+            <select id="turno" class="w-full border rounded px-2 py-2 text-sm">
+              <option selected>Día (8AM - 8PM)</option>
               <option>Noche (8PM - 8AM)</option>
             </select>
           </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Sede</label>
+            <select id="sede" class="w-full border rounded px-2 py-2 text-sm">
+              <option value="">Todas</option>
+              <option>Los Olivos</option>
+              <option>Lima Centro</option>
+              <option>Miraflores</option>
+              <option>San Isidro</option>
+            </select>
+          </div>
+
+          <div>
+            <label class="text-xs font-semibold text-slate-600">Recepcionista</label>
+            <input id="recep" placeholder="Nombre..." class="w-full border rounded px-2 py-2 text-sm">
+          </div>
         </div>
-        <div class="flex justify-end gap-2 mt-4">
+
+        <div class="flex flex-wrap justify-end gap-2">
           <button onclick="filtrar()" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm font-semibold flex items-center gap-2">
             <i class="fa-solid fa-search"></i> Buscar
           </button>
@@ -80,69 +118,369 @@
         </div>
       </div>
 
+      <!-- TARJETAS RESUMEN -->
+      <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Efectivo</div>
+          <div id="cardEfectivo" class="text-2xl font-bold mt-1">S/ 0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Tarjeta</div>
+          <div id="cardTarjeta" class="text-2xl font-bold mt-1">S/ 0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Yape/Plin</div>
+          <div id="cardYape" class="text-2xl font-bold mt-1">S/ 0</div>
+        </div>
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="text-slate-500 text-sm">Total</div>
+          <div id="cardTotal" class="text-2xl font-extrabold mt-1">S/ 0</div>
+        </div>
+      </div>
+
+      <!-- CHARTS EN FILA (barras izquierda, doughnut derecha) -->
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <!-- Barras -->
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Ingresos por período</h3>
+            <span id="chartSubtitle" class="text-xs text-slate-500"></span>
+          </div>
+          <div class="relative h-80">
+            <canvas id="barChart" class="!w-full !h-full"></canvas>
+          </div>
+        </div>
+
+        <!-- Doughnut -->
+        <div class="bg-white rounded-xl shadow p-4">
+          <div class="flex items-center justify-between mb-2">
+            <h3 class="font-semibold">Medios de pago</h3>
+            <span id="pieSubtitle" class="text-xs text-slate-500"></span>
+          </div>
+          <div class="relative h-80">
+            <canvas id="pieChart" class="!w-full !h-full"></canvas>
+          </div>
+        </div>
+      </div>
+
       <!-- TABLA -->
-      <div class="bg-white rounded shadow p-4">
-        <h3 class="font-semibold mb-3">Resultados</h3>
-        <table id="tablaReportes" class="w-full text-sm border-collapse">
-          <thead class="bg-slate-100">
-            <tr>
-              <th class="p-2 text-left">Fecha</th>
-              <th class="p-2 text-left">Turno</th>
-              <th class="p-2 text-left">Recepcionista</th>
-              <th class="p-2 text-left">Efectivo</th>
-              <th class="p-2 text-left">Tarjeta</th>
-              <th class="p-2 text-left">Yape/Plin</th>
-              <th class="p-2 text-left font-bold">Total</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">04/08/2025</td>
-              <td class="p-2">Día</td>
-              <td class="p-2">Fernando Manrique</td>
-              <td class="p-2">100</td>
-              <td class="p-2">50</td>
-              <td class="p-2">20</td>
-              <td class="p-2 font-bold">170</td>
-            </tr>
-            <tr class="border-b hover:bg-slate-50">
-              <td class="p-2">04/08/2025</td>
-              <td class="p-2">Noche</td>
-              <td class="p-2">Rosa Pérez</td>
-              <td class="p-2">120</td>
-              <td class="p-2">80</td>
-              <td class="p-2">40</td>
-              <td class="p-2 font-bold">240</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="bg-white rounded-xl shadow">
+        <div class="p-4 flex items-center justify-between">
+          <h3 class="font-semibold">Resultados</h3>
+          <span id="rowsCount" class="text-xs text-slate-500">0 filas</span>
+        </div>
+        <div class="overflow-auto max-h-[480px]">
+          <table id="tablaReportes" class="w-full min-w-[880px] text-sm border-collapse">
+            <thead class="bg-slate-100 sticky-th">
+              <tr class="text-slate-700">
+                <th class="p-2 text-left">Fecha</th>
+                <th class="p-2 text-left">Turno</th>
+                <th class="p-2 text-left">Sede</th>
+                <th class="p-2 text-left">Recepcionista</th>
+                <th class="p-2 text-right">Efectivo</th>
+                <th class="p-2 text-right">Tarjeta</th>
+                <th class="p-2 text-right">Yape/Plin</th>
+                <th class="p-2 text-right font-bold">Total</th>
+              </tr>
+            </thead>
+            <tbody id="tbodyReportes" class="divide-y divide-gray-100"></tbody>
+            <tfoot>
+              <tr class="bg-slate-50 font-semibold">
+                <td class="p-2" colspan="4">Totales</td>
+                <td id="tEfec" class="p-2 text-right">S/ 0</td>
+                <td id="tTarj" class="p-2 text-right">S/ 0</td>
+                <td id="tYape" class="p-2 text-right">S/ 0</td>
+                <td id="tTotal" class="p-2 text-right">S/ 0</td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
+        <div id="loadingTbl" class="hidden p-4">
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded mb-2"></div>
+          <div class="h-8 w-full skeleton rounded"></div>
+        </div>
       </div>
 
     </main>
   </div>
 
   <script>
-    function logout(){ window.location.href = "../login.html"; }
+    function logout(){ window.location.href = "login.html"; }
 
+    // ======= DATOS DE EJEMPLO =======
+    const data = [
+      // fecha (dd/mm/yyyy), turno, sede, recep, efectivo, tarjeta, yape
+      ["01/08/2025","Día","Lima Centro","Fernando Manrique",120, 80, 40],
+      ["01/08/2025","Noche","Miraflores","Rosa Pérez",150, 60, 30],
+      ["02/08/2025","Día","San Isidro","Carlos López",110, 90, 25],
+      ["02/08/2025","Noche","Los Olivos","Ana Torres",90, 70, 40],
+      ["03/08/2025","Día","Lima Centro","Juan Pérez",140, 120, 50],
+      ["03/08/2025","Noche","Miraflores","María García",130, 85, 35],
+      ["04/08/2025","Día","Lima Centro","Fernando Manrique",100, 50, 20],
+      ["04/08/2025","Noche","Miraflores","Rosa Pérez",120, 80, 40],
+    ];
+
+    // ======= STATE =======
+    let filteredRows = [];
+    let barChart, pieChart;
+
+    // ======= UTILES =======
+    const PEN = new Intl.NumberFormat("es-PE",{style:"currency", currency:"PEN", maximumFractionDigits:0});
+    const NUM = new Intl.NumberFormat("es-PE",{maximumFractionDigits:0});
+
+    function parseDMY(str){
+      const [d,m,y] = str.split("/").map(Number);
+      return new Date(y, m-1, d);
+    }
+
+    // Mostrar/ocultar filtros según modo
     function cambiarModo(){
       const modo = document.getElementById("modo").value;
       document.getElementById("filtroFecha").classList.add("hidden");
       document.getElementById("filtroMes").classList.add("hidden");
       document.getElementById("filtroTurno").classList.add("hidden");
-
       if(modo === "dia") document.getElementById("filtroFecha").classList.remove("hidden");
       if(modo === "mes") document.getElementById("filtroMes").classList.remove("hidden");
       if(modo === "turno") document.getElementById("filtroTurno").classList.remove("hidden");
     }
 
-    function filtrar(){
-      alert("Aplicando filtros... (conexión al backend aquí)");
+    // Presets
+    function presetHoy(){
+      document.getElementById("modo").value = "dia";
+      cambiarModo();
+      const hoy = new Date();
+      document.getElementById("fechaDia").value = hoy.toISOString().slice(0,10);
+      filtrar();
+    }
+    function presetAyer(){
+      document.getElementById("modo").value = "dia";
+      cambiarModo();
+      const d = new Date(); d.setDate(d.getDate()-1);
+      document.getElementById("fechaDia").value = d.toISOString().slice(0,10);
+      filtrar();
+    }
+    function presetMes(){
+      document.getElementById("modo").value = "mes";
+      cambiarModo();
+      const d = new Date();
+      document.getElementById("fechaMes").value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`;
+      filtrar();
     }
 
+    // Filtro principal
+    function filtrar(){
+      // loading
+      document.getElementById("loadingTbl").classList.remove("hidden");
+      document.getElementById("tbodyReportes").innerHTML = "";
+
+      setTimeout(()=>{ // simula latencia / UX
+        const modo = document.getElementById("modo").value;
+        const turnoSel = document.getElementById("turno").value || "";
+        const sede = document.getElementById("sede").value || "";
+        const recep = (document.getElementById("recep").value || "").toLowerCase();
+
+        let fechaDia = null, ym = null;
+        if (modo === "dia") {
+          const f = document.getElementById("fechaDia").value;
+          if (f) { // yyyy-mm-dd -> dd/mm/yyyy
+            const [yy,mm,dd] = f.split("-");
+            fechaDia = `${dd}/${mm}/${yy}`;
+          }
+        }
+        if (modo === "mes") ym = document.getElementById("fechaMes").value; // yyyy-mm
+
+        // Filtra por campos básicos
+        let rows = data.filter(row => {
+          const [fecha, turno, s, r] = row;
+          const base =
+            (!sede || s === sede) &&
+            (!recep || r.toLowerCase().includes(recep));
+          if (!base) return false;
+          if (modo === "turno") return (!turnoSel || turnoSel.startsWith("Día") ? turno === "Día" : turno === "Noche");
+          if (modo === "dia") return (!fechaDia || fecha === fechaDia);
+          if (modo === "mes") {
+            if (!ym) return true;
+            const [y, m] = ym.split("-");
+            const d = parseDMY(fecha);
+            return d.getFullYear() === Number(y) && (d.getMonth()+1) === Number(m);
+          }
+          return true;
+        });
+
+        filteredRows = rows;
+
+        renderTabla();
+        updateTotalsCards();
+        updateCharts();
+
+        document.getElementById("loadingTbl").classList.add("hidden");
+      }, 180);
+    }
+
+    function renderTabla(){
+      const tbody = document.getElementById("tbodyReportes");
+      tbody.innerHTML = "";
+
+      // Ordena por fecha asc y luego turno Día>Noche
+      const rows = [...filteredRows].sort((a,b)=>{
+        const d = parseDMY(a[0]) - parseDMY(b[0]);
+        if (d !== 0) return d;
+        if (a[1] === b[1]) return 0;
+        return a[1] === "Día" ? -1 : 1;
+      });
+
+      let tEf=0, tTj=0, tYa=0, tTo=0;
+
+      rows.forEach((row, idx)=>{
+        const [fecha, turno, sede, recep, ef, tj, yp] = row;
+        const total = ef + tj + yp;
+        tEf+=ef; tTj+=tj; tYa+=yp; tTo+=total;
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 odd:bg-white even:bg-slate-50";
+        tr.innerHTML = `
+          <td class="p-2">${fecha}</td>
+          <td class="p-2">${turno}</td>
+          <td class="p-2">${sede}</td>
+          <td class="p-2">${recep}</td>
+          <td class="p-2 text-right font-mono tabular-nums">S/ ${NUM.format(ef)}</td>
+          <td class="p-2 text-right font-mono tabular-nums">S/ ${NUM.format(tj)}</td>
+          <td class="p-2 text-right font-mono tabular-nums">S/ ${NUM.format(yp)}</td>
+          <td class="p-2 text-right font-bold font-mono tabular-nums">S/ ${NUM.format(total)}</td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      document.getElementById("rowsCount").textContent = `${rows.length} fila${rows.length!==1?'s':''}`;
+      // footers
+      document.getElementById("tEfec").textContent  = `S/ ${NUM.format(tEf)}`;
+      document.getElementById("tTarj").textContent  = `S/ ${NUM.format(tTj)}`;
+      document.getElementById("tYape").textContent  = `S/ ${NUM.format(tYa)}`;
+      document.getElementById("tTotal").textContent = `S/ ${NUM.format(tTo)}`;
+    }
+
+    function sumarios(){
+      return filteredRows.reduce((acc,[, , , ,ef,tj,yp])=>{
+        acc.ef+=ef; acc.tj+=tj; acc.yp+=yp; return acc;
+      },{ef:0,tj:0,yp:0});
+    }
+
+    function updateTotalsCards(){
+      const s = sumarios();
+      const total = s.ef + s.tj + s.yp;
+      document.getElementById("cardEfectivo").textContent = PEN.format(s.ef);
+      document.getElementById("cardTarjeta").textContent = PEN.format(s.tj);
+      document.getElementById("cardYape").textContent    = PEN.format(s.yp);
+      document.getElementById("cardTotal").textContent    = PEN.format(total);
+    }
+
+    // ======= CHARTS =======
+    function groupByPeriod(){
+      const modo = document.getElementById("modo").value;
+      const map = new Map(); // key -> {ef,tj,yp}
+      const labels = [];
+
+      filteredRows.forEach(([fecha, turno, sede, recep, ef, tj, yp])=>{
+        let key = "";
+        if (modo === "turno") key = turno;       // con filtro 'Día' quedará un solo label
+        else if (modo === "dia") key = fecha;
+        else { // mes
+          const d = parseDMY(fecha);
+          key = `${String(d.getMonth()+1).padStart(2,"0")}/${d.getFullYear()}`;
+        }
+        if (!map.has(key)) map.set(key, {ef:0,tj:0,yp:0});
+        const v = map.get(key);
+        v.ef += ef; v.tj += tj; v.yp += yp;
+      });
+
+      for (const [k] of map) labels.push(k);
+      const ef = labels.map(l=>map.get(l).ef);
+      const tj = labels.map(l=>map.get(l).tj);
+      const yp = labels.map(l=>map.get(l).yp);
+
+      return { labels, ef, tj, yp };
+    }
+
+    function updateCharts(){
+      const ctxBar = document.getElementById("barChart").getContext("2d");
+      const ctxPie = document.getElementById("pieChart").getContext("2d");
+      const modo = document.getElementById("modo").value;
+
+      const { labels, ef, tj, yp } = groupByPeriod();
+
+      const subtitle = (()=>{
+        if (modo === "turno") return "Agrupado por Turno";
+        if (modo === "dia") return "Agrupado por Día";
+        return "Agrupado por Mes";
+      })();
+      document.getElementById("chartSubtitle").textContent = subtitle;
+
+      // BAR
+      if (barChart) barChart.destroy();
+      barChart = new Chart(ctxBar, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [
+            { label: "Efectivo", data: ef },
+            { label: "Tarjeta", data: tj },
+            { label: "Yape/Plin", data: yp },
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: { beginAtZero: true, ticks: { callback: v => NUM.format(v) } }
+          },
+          plugins: {
+            tooltip: { callbacks: { label: ctx => `${ctx.dataset.label}: S/ ${NUM.format(ctx.parsed.y)}` } },
+            legend: { position: "bottom" }
+          }
+        }
+      });
+
+      // PIE
+      const s = sumarios();
+      const total = s.ef + s.tj + s.yp;
+      document.getElementById("pieSubtitle").textContent = `Total: ${PEN.format(total)}`;
+      if (pieChart) pieChart.destroy();
+      pieChart = new Chart(ctxPie, {
+        type: "doughnut",
+        data: {
+          labels: ["Efectivo","Tarjeta","Yape/Plin"],
+          datasets: [{ data: [s.ef, s.tj, s.yp] }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            tooltip: { callbacks: { label: ctx => `${ctx.label}: ${PEN.format(ctx.parsed)}` } },
+            legend: { position: "bottom" }
+          },
+          cutout: "65%"
+        }
+      });
+    }
+
+    // ======= EXPORTS =======
     function exportExcel(){
-      const tabla = document.getElementById("tablaReportes");
+      const rows = [
+        ["Fecha","Turno","Sede","Recepcionista","Efectivo","Tarjeta","Yape/Plin","Total"],
+        ...filteredRows.map(([f,t,s,r,ef,tj,yp])=>[f,t,s,r,ef,tj,yp,ef+tj+yp])
+      ];
+      const s = sumarios();
+      rows.push([]);
+      rows.push(["","","","Totales", s.ef, s.tj, s.yp, s.ef+s.tj+s.yp]);
+
       const wb = XLSX.utils.book_new();
-      const ws = XLSX.utils.table_to_sheet(tabla);
+      const ws = XLSX.utils.aoa_to_sheet(rows);
+      ["E","F","G","H"].forEach(col=>{
+        for (let i=2;i<=filteredRows.length+1;i++){
+          const cell = ws[`${col}${i}`]; if (cell) cell.t = "n";
+        }
+      });
       XLSX.utils.book_append_sheet(wb, ws, "Reporte");
       XLSX.writeFile(wb, "Reporte_Ingresos.xlsx");
     }
@@ -150,15 +488,52 @@
     function exportPDF(){
       const { jsPDF } = window.jspdf;
       const doc = new jsPDF("l","pt","a4");
-      doc.text("Reporte de Ingresos", 40, 40);
-      doc.html(document.getElementById("tablaReportes"), {
-        callback: function (doc) {
-          doc.save("Reporte_Ingresos.pdf");
-        },
-        x: 40,
-        y: 60
+      const pageWidth = doc.internal.pageSize.getWidth();
+
+      doc.setFontSize(16);
+      doc.text("Reporte de Ingresos - Hotel Caribbean", 40, 40);
+      doc.setFontSize(10);
+      doc.text(`Generado: ${new Date().toLocaleString()}`, 40, 58);
+
+      const modo = document.getElementById("modo").value;
+      const turno = (document.getElementById("turno").value || "").replace(" (8AM - 8PM)","").replace(" (8PM - 8AM)","");
+      const sede = document.getElementById("sede").value || "Todas";
+      const recep = document.getElementById("recep").value || "—";
+      const fDia = document.getElementById("fechaDia").value || "—";
+      const fMes = document.getElementById("fechaMes").value || "—";
+      const filtros = `Modo: ${modo} | Turno: ${modo==="turno"?turno:"—"} | Día: ${modo==="dia"?fDia:"—"} | Mes: ${modo==="mes"?fMes:"—"} | Sede: ${sede} | Recepcionista: ${recep}`;
+      doc.text(filtros, 40, 74);
+
+      const body = filteredRows.map(([f,t,s,r,ef,tj,yp]) => [f,t,s,r,ef,tj,yp,ef+tj+yp]);
+      const s = sumarios();
+
+      doc.autoTable({
+        startY: 90,
+        head: [["Fecha","Turno","Sede","Recepcionista","Efectivo","Tarjeta","Yape/Plin","Total"]],
+        body,
+        styles: { fontSize: 9, cellPadding: 4 },
+        headStyles: { fillColor: [51,65,85] },
+        columnStyles: { 4:{halign:"right"}, 5:{halign:"right"}, 6:{halign:"right"}, 7:{halign:"right"} },
+        foot: [[{content:"Totales", colSpan:4, styles:{halign:"right"}}, s.ef, s.tj, s.yp, s.ef+s.tj+s.yp]],
+        footStyles: { fillColor: [241,245,249], textColor: [0,0,0], fontStyle: "bold" },
+        didDrawPage: () => {
+          const str = `Página ${doc.internal.getNumberOfPages()}`;
+          doc.setFontSize(9);
+          doc.text(str, pageWidth-80, doc.internal.pageSize.getHeight()-20);
+        }
       });
+
+      doc.save("Reporte_Ingresos.pdf");
     }
+
+    // ======= INIT: aplica filtro por defecto (Por Turno + Día) =======
+    cambiarModo();        // asegura visibilidad de filtros
+    filtrar();            // aplica el filtro inicial (turno Día)
+
+    // Enter para buscar
+    document.addEventListener("keydown",(e)=>{
+      if (e.key === "Enter") filtrar();
+    });
   </script>
 </body>
 </html>
