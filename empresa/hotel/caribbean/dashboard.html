@@ -298,18 +298,14 @@
         <!-- Columna 1 -->
         <div class="modal-column">
           <h3 class="section-title">1. HUÉSPED</h3>
-
-          <!-- Nacionalidad huésped -->
           <div class="custom-select" id="guestCountry"></div>
 
           <div class="form-grid">
-            <select class="form-select">
+            <select id="guestDocType" class="form-select">
               <option>DNI</option><option>CE</option><option>Pasaporte</option>
             </select>
-            
-            <!-- Input con lupa -->
             <div class="relative">
-              <input class="form-input pr-10" placeholder="N° Documento">
+              <input id="guestDocNum" class="form-input pr-10" placeholder="N° Documento">
               <button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-blue-600">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
@@ -317,116 +313,82 @@
           </div>
 
           <div class="form-grid">
-            <input class="form-input" placeholder="Primer Apellido">
-            <input class="form-input" placeholder="Segundo Apellido">
+            <input id="guestApellido1" class="form-input" placeholder="Primer Apellido">
+            <input id="guestApellido2" class="form-input" placeholder="Segundo Apellido">
           </div>
-          <input class="form-input" placeholder="Nombres">
+          <input id="guestNombres" class="form-input" placeholder="Nombres">
           <div class="form-grid">
-            <input type="date" class="form-input">
-            <select class="form-select"><option>Masculino</option><option>Femenino</option></select>
+            <input id="guestFechaNac" type="date" class="form-input">
+            <select id="guestGenero" class="form-select"><option>Masculino</option><option>Femenino</option></select>
           </div>
 
           <h3 class="section-title">2. ACOMPAÑANTE</h3>
-
-          <!-- Nacionalidad acompañante -->
           <div class="custom-select" id="acomCountry"></div>
-
           <div class="form-grid">
-            <select class="form-select">
+            <select id="acomDocType" class="form-select">
               <option>DNI</option><option>CE</option><option>Pasaporte</option>
             </select>
-            
-            <!-- Input con lupa -->
             <div class="relative">
-              <input class="form-input pr-10" placeholder="N° Documento">
+              <input id="acomDocNum" class="form-input pr-10" placeholder="N° Documento">
               <button type="button" class="absolute inset-y-0 right-0 px-3 flex items-center text-gray-500 hover:text-blue-600">
                 <i class="fa-solid fa-magnifying-glass"></i>
               </button>
             </div>
           </div>
           <div class="form-grid">
-            <input class="form-input" placeholder="Primer Apellido">
-            <input class="form-input" placeholder="Segundo Apellido">
+            <input id="acomApellido1" class="form-input" placeholder="Primer Apellido">
+            <input id="acomApellido2" class="form-input" placeholder="Segundo Apellido">
           </div>
-          <input class="form-input" placeholder="Nombres">
+          <input id="acomNombres" class="form-input" placeholder="Nombres">
           <div class="form-grid">
-            <input type="date" class="form-input">
-            <select class="form-select"><option>Masculino</option><option>Femenino</option></select>
+            <input id="acomFechaNac" type="date" class="form-input">
+            <select id="acomGenero" class="form-select"><option>Masculino</option><option>Femenino</option></select>
           </div>
         </div>
 
         <!-- Columna 2 -->
         <div class="modal-column">
           <h3 class="section-title">3. HABITACIÓN</h3>
-        <div class="form-grid">
-          <!-- Hora de Entrada -->
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="form-label font-bold">Hora de Entrada</label>
+              <input id="entradaInfo" class="form-input" readonly>
+            </div>
+            <div class="form-group">
+              <label class="form-label font-bold">Hora de Salida</label>
+              <input id="salidaInfo" class="form-input" readonly>
+            </div>
+          </div>
+
+          <div class="form-grid">
+            <div class="form-group relative">
+              <label class="form-label font-bold">Duración (horas)</label>
+              <input id="duracionHoras" type="number" class="form-input pl-8" min="1" max="72" value="12">
+              <i class="fa-solid fa-clock absolute left-2 top-9 text-gray-500"></i>
+            </div>
+            <div class="form-group">
+              <label class="form-label font-bold">Tarifa</label>
+              <input id="tarifaInput" type="number" class="form-input" value="50">
+            </div>
+          </div>
           <div class="form-group">
-            <label class="form-label" style="font-weight: bold;">Hora de Entrada</label>
-            <input class="form-input" id="entradaInfo" readonly>
+            <label class="form-label font-bold">Observaciones</label>
+            <textarea id="observacionesInput" class="form-input" rows="2" placeholder="Observaciones"></textarea>
           </div>
 
-          <!-- Hora de Salida -->
-          <div class="form-group">
-            <label class="form-label" style="font-weight: bold;">Hora de Salida</label>
-            <input class="form-input" placeholder="SALIDA" disabled>
+           <h3 class="section-title">BENEFICIOS</h3>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <div class="benefit-card"><i class="fas fa-tv"></i><span>Smart TV</span></div>
+            <div class="benefit-card"><i class="fas fa-music"></i><span>Radio Bluetooth</span></div>
+            <div class="benefit-card"><i class="fas fa-shower"></i><span>Ducha española</span></div>
+            <div class="benefit-card"><i class="fas fa-bed"></i><span>Cama 2 plazas</span></div>
+            <div class="benefit-card"><i class="fas fa-wifi"></i><span>Wi-Fi</span></div>
+            <div class="benefit-card"><i class="fas fa-snowflake"></i><span>Aire acondicionado</span></div>
+            <div class="benefit-card"><i class="fas fa-lock"></i><span>Caja seguridad</span></div>
           </div>
         </div>
 
-        <div class="form-grid">
-          <!-- Duración de Estadía -->
-          <div class="form-group relative">
-            <label class="form-label" style="font-weight: bold;">Duración (horas)</label>
-            <input type="number" class="form-input pl-8" min="1" max="72" value="12">
-            <i class="fa-solid fa-clock absolute left-2 top-9 text-gray-500"></i>
-          </div>
-
-          <!-- Tarifa -->
-          <div class="form-group">
-            <label class="form-label" style="font-weight: bold;">Tarifa</label>
-            <input type="number" class="form-input" value="50">
-          </div>
-        </div>
-        <!-- Observaciones-->
-        <div class="form-group">
-          <label class="form-label" style="font-weight: bold;">Observaciones</label>
-          <textarea class="form-input" rows="2" placeholder="Observaciones"></textarea>
-        </div>
-
-          <h3 class="section-title">BENEFICIOS</h3>
-  <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
-    <div class="benefit-card">
-      <i class="fas fa-tv"></i>
-      <span>Smart TV</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-music"></i>
-      <span>Radio Bluetooth</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-shower"></i>
-      <span>Ducha española</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-bed"></i>
-      <span>Cama 2 plazas</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-wifi"></i>
-      <span>Wi-Fi</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-snowflake"></i>
-      <span>Aire acondicionado</span>
-    </div>
-    <div class="benefit-card">
-      <i class="fas fa-lock"></i>
-      <span>Caja seguridad</span>
-    </div>
-  </div>
-
-        </div>
-
-        <!-- Columna 3 -->
+         <!-- Columna 3 -->
         <div class="modal-column">
           <div class="tabs">
             <div class="tab active" data-tab="venta">Realizar Venta</div>
@@ -483,8 +445,9 @@
             </select>
             <input id="recibiField" class="form-input bg-gray-100" readonly disabled>
           </div>
-
-            <button class="btn btn-success w-full"><i class="fa-solid fa-check"></i> Registrar Venta</button>
+            <button id="btnRegistrarVenta" class="btn btn-success w-full">
+              <i class="fa-solid fa-check"></i> Registrar Venta
+            </button>
           </div>
         </div>
       </div>
@@ -795,9 +758,9 @@
 
   <script>
   //venta ocupado
-    let carritoOcupado = [
-          { tipo: "Servicio", descripcion: "Habitación", precio: 50, cantidad: 1 }
-        ];
+    let carritoOcupado = []; // empieza vacío
+let currentAlqRoom = null;
+let currentAlqEntradaMs = null;
       // --- Productos básicos ---
     const productosOcupado = [
         { tipo: "Producto", descripcion: "Agua San Luis 500ml", precio: 3 },
@@ -805,6 +768,77 @@
         { tipo: "Producto", descripcion: "Galleta Oreo", precio: 2.5 },
         { tipo: "Producto", descripcion: "Papas Lays Clásicas", precio: 4 }
     ];
+
+    function getCustomSelectValue(containerId){
+  const c = document.getElementById(containerId);
+  const s = c?.querySelector('.selected');
+  return s?.dataset?.value || null;
+}
+function setCustomSelectValue(containerId, code){
+  const cont = document.getElementById(containerId);
+  if(!cont) return;
+  const s = cont.querySelector('.selected');
+  const c = countries.find(x => x.code === code) || countries[0];
+  if(s){
+    s.innerHTML = `<span><img src="https://flagsapi.com/${c.code}/flat/24.png"> ${c.name}</span><span>▼</span>`;
+    s.dataset.value = c.code;
+  }
+}
+
+function calcularTotal(arr){
+  return arr.reduce((sum, p) => sum + (Number(p.precio) * Number(p.cantidad || 1)), 0);
+}
+function registrarVenta(){
+  if(currentAlqRoom == null){ alert('No hay habitación seleccionada.'); return; }
+  const r = rooms.find(x => x.numero === currentAlqRoom);
+  if(!r){ alert('No se encontró la habitación.'); return; }
+  if(r.estado !== 'Disponible'){ alert('La habitación no está disponible.'); return; }
+
+  const guest = {
+    country: getCustomSelectValue('guestCountry'),
+    docTipo: guestDocType.value,
+    docNum:  guestDocNum.value.trim(),
+    apellido1: guestApellido1.value.trim().toUpperCase(),
+    apellido2: guestApellido2.value.trim().toUpperCase(),
+    nombres:   guestNombres.value.trim().toUpperCase(),
+    fechaNac:  guestFechaNac.value,
+    genero:    guestGenero.value
+  };
+  const acomp = {
+    country: getCustomSelectValue('acomCountry'),
+    docTipo: acomDocType.value,
+    docNum:  acomDocNum.value.trim(),
+    apellido1: acomApellido1.value.trim().toUpperCase(),
+    apellido2: acomApellido2.value.trim().toUpperCase(),
+    nombres:   acomNombres.value.trim().toUpperCase(),
+    fechaNac:  acomFechaNac.value,
+    genero:    acomGenero.value
+  };
+
+  const durH = parseInt(duracionHoras.value) || 1;
+  const tarifa = parseFloat(tarifaInput.value) || 0;
+  const observ = observacionesInput.value.trim();
+
+  const compSel = (document.querySelector('input[name="comp"]:checked')?.value) || 'boleta';
+  const ruc = (rucField.value || '').trim();
+
+  const ventaItems = carrito.map(p => ({
+  ...p, 
+  cantidad: Number(p.cantidad) || 1,
+  locked: true   // 🔒 todo lo que entra en la venta queda bloqueado
+}));
+  const total = calcularTotal(ventaItems);
+
+  r.estado = 'Ocupado';
+  r.start = currentAlqEntradaMs;
+  r.totalH = durH;
+  r.guest = guest.nombres.split(' ')[0] || '—';
+  r.rental = { entrada: r.start, salida: r.start + durH*3600000, duracionH: durH, tarifa, observ, guest, acomp, venta: {items:ventaItems,total,comp:compSel,ruc} };
+
+  saveRooms(); renderRooms();
+  closeAlquiler();
+}
+document.getElementById('btnRegistrarVenta').addEventListener('click', registrarVenta);
 
     // --- Buscador ---
     const searchProductOcupado = document.getElementById("searchProductOcupado");
@@ -875,34 +909,35 @@
 
 
     function renderCarritoOcupado() {
-      const tbody = document.querySelector("#consumoTableOcupado tbody");
-      tbody.innerHTML = "";
+  const tbody = document.querySelector("#consumoTableOcupado tbody");
+  tbody.innerHTML = "";
 
-      carritoOcupado.forEach((p, i) => {
-        const tr = document.createElement("tr");
-        tr.innerHTML = `
-          <td>${p.tipo}</td>
-          <td>${p.descripcion}</td>
-          <td>
-            ${p.tipo === "Servicio" 
-              ? p.cantidad 
-              : `<input type="number" min="1" value="${p.cantidad}" 
-                  class="w-16 border rounded px-1" 
-                  onchange="actualizarCantidadOcupado(${i}, this.value)">`}
-          </td>
-          <td>${p.precio.toFixed(2)}</td>
-          <td>${(p.precio * p.cantidad).toFixed(2)}</td>
-          <td>
-            ${p.tipo === "Servicio" ? "" : `<button onclick="eliminarCarritoOcupado(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>`}
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
+  carritoOcupado.forEach((p, i) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${p.tipo}</td>
+      <td>${p.descripcion}</td>
+      <td>
+        ${p.locked 
+          ? p.cantidad   // 🔒 ya vendido → fijo
+          : `<input type="number" min="1" value="${p.cantidad}" 
+                class="w-16 border rounded px-1" 
+                onchange="actualizarCantidadOcupado(${i}, this.value)">`}
+      </td>
+      <td>${p.precio.toFixed(2)}</td>
+      <td>${(p.precio * p.cantidad).toFixed(2)}</td>
+      <td>
+        ${p.locked ? "" : `<button onclick="eliminarCarritoOcupado(${i})" class="text-red-500"><i class="fa-solid fa-trash"></i></button>`}
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
 
-      const total = calcularTotalOcupado(carritoOcupado);
-      document.getElementById("totalVentaOcupado").textContent = total.toFixed(2);
-      document.getElementById("recibiFieldOcupado").value = total.toFixed(2);
-    }
+  const total = calcularTotalOcupado(carritoOcupado);
+  document.getElementById("totalVentaOcupado").textContent = total.toFixed(2);
+  document.getElementById("recibiFieldOcupado").value = total.toFixed(2);
+}
+
 
     function eliminarCarritoOcupado(i) {
       carritoOcupado.splice(i, 1);
@@ -927,40 +962,43 @@ function initModalOcupado() {
   renderCarritoOcupado();
 }
     
-  function openOcupado(num) {
-    const modal = document.getElementById("modalOcupado");
-    const habitacion = rooms.find(r => r.numero === num);
+  function openOcupado(num){
+  const modal = document.getElementById("modalOcupado");
+  const r = rooms.find(x => x.numero === num);
+  modal.querySelector("h2").textContent = "Habitación " + num + " (Ocupada)";
+  const rental = r?.rental || {};
 
-    // Título
-    modal.querySelector("h2").textContent = "Habitación " + num + " (Ocupada)";
+  const g = rental.guest || {};
+  nombresOcupado.value = g.nombres || "—";
+  apellido1Ocupado.value = g.apellido1 || "—";
+  apellido2Ocupado.value = g.apellido2 || "—";
+  docOcupado.value = g.docNum || "—";
+  fechaNacOcupado.value = g.fechaNac || "";
+  if(g.country) setCustomSelectValue("guestCountryOcupado", g.country);
 
-    // Datos Huesped Hab Ocupada
-    document.getElementById("nombresOcupado").value = habitacion.guest || "—";
-    document.getElementById("apellido1Ocupado").value = "PEREZ";
-    document.getElementById("apellido2Ocupado").value = "LOPEZ";
-    document.getElementById("docOcupado").value = "73517827";
-    document.getElementById("fechaNacOcupado").value = "21/04/1999"
-    document.getElementById("entradaInfoOcupado").value = new Date(habitacion.start).toLocaleString();
-    document.getElementById("duracionOcupado").value = habitacion.totalH;
-    document.getElementById("tarifaOcupado").value = 50;
-    
-    // Datos Acompañante Hab Ocupada
-    document.getElementById("nombresAcomOcupado").value = "FATIMA" || "—";
-    document.getElementById("apellido1AcomOcupado").value = "URPI";
-    document.getElementById("apellido2AcomOcupado").value = "CHAVEZ";
-    document.getElementById("docAcomOcupado").value = "44556677";
-    document.getElementById("fechaNacAcomOcupado").value = "01/01/2001"
+  const a = rental.acomp || {};
+  nombresAcomOcupado.value = a.nombres || "—";
+  apellido1AcomOcupado.value = a.apellido1 || "—";
+  apellido2AcomOcupado.value = a.apellido2 || "—";
+  docAcomOcupado.value = a.docNum || "—";
+  fechaNacAcomOcupado.value = a.fechaNac || "";
+  if(a.country) setCustomSelectValue("acomCountryOcupado", a.country);
 
-    // Mostrar modal
-    modal.classList.add("show");
+  entradaInfoOcupado.value = rental.entrada ? new Date(rental.entrada).toLocaleString() : "";
+  salidaInfoOcupado.value  = rental.salida  ? new Date(rental.salida).toLocaleString() : "";
+  duracionOcupado.value = rental.duracionH || 0;
+  tarifaOcupado.value   = rental.tarifa ?? 0;
+  obsOcupado.value      = rental.observ || "";
 
-    // 👉 Pestaña Pedido por defecto
-    modal.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-    modal.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
-    modal.querySelector("[data-tab='pedido']").classList.add("active");
-    modal.querySelector("#tab-pedido").classList.remove("hidden");
-    renderCarritoOcupado()
-  }
+  carritoOcupado = (rental.venta?.items || []).map(p => ({ ...p, locked: true }));
+  renderCarritoOcupado();
+
+  modal.classList.add("show");
+  modal.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
+  modal.querySelectorAll(".tab-content").forEach(c => c.classList.add("hidden"));
+  modal.querySelector("[data-tab='pedido']").classList.add("active");
+  modal.querySelector("#tab-pedido").classList.remove("hidden");
+}
 
   function closeOcupado() {
     document.getElementById("modalOcupado").classList.remove("show");
@@ -1535,25 +1573,71 @@ function initModalOcupado() {
       document.getElementById('tab-reservas').classList.toggle('active',which==='reservas');
     }
 
-    function openAlquiler(num){
-      document.querySelector('#modalAlquiler h2').textContent='Alquiler Habitación '+num;
-      document.getElementById('entradaInfo').value = new Date().toLocaleString();
-      document.getElementById('modalAlquiler').classList.add('show');
+  function openAlquiler(num){
+  currentAlqRoom = num;
+  currentAlqEntradaMs = Date.now();
 
-      // 👇 Control de tabs al abrir: dejar siempre "venta" activo
-      const modal = document.getElementById('modalAlquiler');
-      modal.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
-      modal.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  const modal = document.getElementById('modalAlquiler');
+  modal.querySelector('h2').textContent = 'Alquiler Habitación ' + num;
 
-      const ventaTab = modal.querySelector('.tab[data-tab="venta"]');
-      if (ventaTab) {
-        ventaTab.classList.add('active');
-      }
-      const ventaContent = modal.querySelector('#tab-venta');
-      if (ventaContent) {
-        ventaContent.classList.remove('hidden');
-      }
-    }
+  // 🔹 Reiniciar carrito (solo habitación)
+  carrito = [
+    { tipo: "Servicio", descripcion: "Habitación", precio: 50, cantidad: 1 }
+  ];
+  renderCarrito(); // 🔥 refresca la tabla con ese único ítem
+
+  // 🔹 LIMPIAR CAMPOS DE HUÉSPED
+  document.getElementById('guestDocNum').value = "";
+  document.getElementById('guestApellido1').value = "";
+  document.getElementById('guestApellido2').value = "";
+  document.getElementById('guestNombres').value = "";
+  document.getElementById('guestFechaNac').value = "";
+  document.getElementById('guestDocType').selectedIndex = 0;
+  document.getElementById('guestGenero').selectedIndex = 0;
+
+  // 🔹 LIMPIAR CAMPOS DE ACOMPAÑANTE
+  document.getElementById('acomDocNum').value = "";
+  document.getElementById('acomApellido1').value = "";
+  document.getElementById('acomApellido2').value = "";
+  document.getElementById('acomNombres').value = "";
+  document.getElementById('acomFechaNac').value = "";
+  document.getElementById('acomDocType').selectedIndex = 0;
+  document.getElementById('acomGenero').selectedIndex = 0;
+
+  // 🔹 LIMPIAR HABITACIÓN (observaciones, duración y tarifa por defecto)
+  document.getElementById('observacionesInput').value = "";
+  document.getElementById('duracionHoras').value = 12;
+  document.getElementById('tarifaInput').value = 50;
+
+  // Hora de entrada/salida
+  document.getElementById('entradaInfo').value = new Date(currentAlqEntradaMs).toLocaleString();
+  function updateSalidaPreview(){
+    const dur = parseInt(document.getElementById('duracionHoras').value) || 1;
+    const salidaMs = currentAlqEntradaMs + dur * 3600000;
+    document.getElementById('salidaInfo').value = new Date(salidaMs).toLocaleString();
+  }
+  document.getElementById('duracionHoras').oninput = updateSalidaPreview;
+  updateSalidaPreview();
+
+  // Abrir modal
+  modal.classList.add('show');
+  modal.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  modal.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+  modal.querySelector('.tab[data-tab="venta"]').classList.add('active');
+  modal.querySelector('#tab-venta').classList.remove('hidden');
+
+  document.getElementById('tarifaInput').addEventListener('input', () => {
+  const nuevaTarifa = parseFloat(document.getElementById('tarifaInput').value) || 0;
+  const servicio = carrito.find(p => p.tipo === "Servicio" && p.descripcion === "Habitación");
+  if (servicio) {
+    servicio.precio = nuevaTarifa;
+    renderCarrito();
+  }
+});
+}
+
+
+
 
     function closeAlquiler(){
       document.getElementById('modalAlquiler').classList.remove('show');
