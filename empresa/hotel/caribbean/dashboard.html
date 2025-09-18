@@ -3068,8 +3068,12 @@
         // Restaurar alquiler previo
         r.estado = "Ocupado";
         r.rental = { ...r.lastRental };
-        r.start = r.lastRental.entrada;   // restauramos inicio
+        r.start = r.lastRental.entrada;         // restauramos inicio
         r.totalH = r.lastRental.duracionH;
+
+        // 🔹 REPONER el nombre que muestra la tarjeta
+        const g = r.lastRental.guest || {};
+        r.guest = (g.nombres ? g.nombres.split(" ")[0] : "") || "—";
 
         // Quitar datos de limpieza
         r.limpiezaStart = null;
