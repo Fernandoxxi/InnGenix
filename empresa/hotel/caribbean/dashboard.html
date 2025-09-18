@@ -11,6 +11,24 @@
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
     />
     <style>
+      @keyframes blink {
+        50% { background-color: #dc2626; color: #fff; }
+      }
+      .warning-blink {
+        animation: blink 1s infinite;
+      }
+      .vencido {
+        border: 2px solid #dc2626 !important;
+        box-shadow: 0 0 10px #dc2626;
+      }
+
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .animate-fadeIn {
+        animation: fadeIn 0.3s ease-out;
+      }
       .custom-select {
         position: relative;
         width: 100%;
@@ -611,7 +629,7 @@
         >
       </nav>
       <div class="flex items-center gap:2 md:gap-3">
-        <button
+        <button onclick="openReserva()"
           class="hdr-btn bg-emerald-600 text-white hover:bg-emerald-700 flex items-center gap-2"
         >
           <i class="fa-solid fa-calendar-plus"></i>Reserva
@@ -669,31 +687,7 @@
         </div>
         <div id="panel-pedidos" class="space-y-2"></div>
         <div id="panel-reservas" class="space-y-3 hidden">
-          <!-- Reservas añadidas -->
-          <div class="reserva-card">
-            <div class="reserva-nombre">Alex Joel Zavaleta Rubio</div>
-            <div class="reserva-monto">S/ 50</div>
-            <div class="text-xs text-gray-500 flex items-center gap-2">
-              <i class="fa-solid fa-clock"></i> 05/08/2025 00:00
-            </div>
-            <span class="reserva-detalle">Detalle</span>
-          </div>
-          <div class="reserva-card">
-            <div class="reserva-nombre">Roger Fernando Pariona Licla</div>
-            <div class="reserva-monto">S/ 100</div>
-            <div class="text-xs text-gray-500 flex items-center gap-2">
-              <i class="fa-solid fa-clock"></i> 05/08/2025 09:00
-            </div>
-            <span class="reserva-detalle">Detalle</span>
-          </div>
-          <div class="reserva-card">
-            <div class="reserva-nombre">Jorge Martín Samame Reyes</div>
-            <div class="reserva-monto">S/ 70</div>
-            <div class="text-xs text-gray-500 flex items-center gap-2">
-              <i class="fa-solid fa-clock"></i> 05/08/2025 09:00
-            </div>
-            <span class="reserva-detalle">Detalle</span>
-          </div>
+          <!-- Reservas Futuras -->
         </div>
       </aside>
     </div>
@@ -1026,6 +1020,7 @@
             <div class="form-grid">
               <input
                 id="fechaNacOcupado"
+                type="date"
                 class="form-input disabled:cursor-not-allowed"
                 readonly
                 disabled
@@ -1418,6 +1413,133 @@
       </div>
     </div>
 
+    <!-- MODAL RESERVA -->
+    <div id="modalReserva" class="modal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 class="font-bold text-lg">Registrar Reserva</h2>
+          <button onclick="closeReserva()" class="close-btn">Cerrar ✖</button>
+        </div>
+        <div class="modal-body">
+          <!-- Columna 1 -->
+          <div class="modal-column">
+            <h3 class="section-title">1. HUÉSPED</h3>
+            <div class="custom-select" id="resGuestCountry"></div>
+
+            <div class="form-grid">
+              <select id="resGuestDocType" class="form-select">
+                <option>DNI</option>
+                <option>CE</option>
+                <option>Pasaporte</option>
+              </select>
+              <input id="resGuestDocNum" class="form-input" placeholder="N° Documento"/>
+            </div>
+
+            <div class="form-grid">
+              <input id="resGuestApellido1" class="form-input" placeholder="Primer Apellido"/>
+              <input id="resGuestApellido2" class="form-input" placeholder="Segundo Apellido"/>
+            </div>
+            <input id="resGuestNombres" class="form-input" placeholder="Nombres"/>
+            <div class="form-grid">
+              <input id="resGuestFechaNac" type="date" class="form-input"/>
+              <select id="resGuestGenero" class="form-select">
+                <option>Masculino</option>
+                <option>Femenino</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Columna 2 -->
+          <div class="modal-column">
+            <h3 class="section-title">2. DETALLES RESERVA</h3>
+            <div class="form-grid">
+              <div class="form-group">
+                <label class="form-label font-bold">Fecha Entrada</label>
+                <input type="date" id="resFecha" class="form-input"/>
+              </div>
+              <div class="form-group">
+                <label class="form-label font-bold">Hora Entrada</label>
+                <input type="time" id="resHora" class="form-input"/>
+              </div>
+            </div>
+
+            <div class="form-grid">
+              <div class="form-group relative">
+                <label class="form-label font-bold">Duración (horas)</label>
+                <input id="resHoras" type="number" class="form-input pl-8" min="1" max="72" value="12"/>
+                <i class="fa-solid fa-clock absolute left-2 top-9 text-gray-500"></i>
+              </div>
+              <div class="form-group">
+                <label class="form-label font-bold">Tarifa (S/)</label>
+                <input id="resTarifa" type="number" class="form-input" value="50"/>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label font-bold">Observaciones</label>
+              <textarea id="resObs" class="form-input" rows="3"></textarea>
+            </div>
+          </div>
+
+          <!-- Columna 3 -->
+          <div class="modal-column">
+            <h3 class="section-title">3. CONFIRMACIÓN</h3>
+
+            <!-- Tabla -->
+            <table class="table mb-2">
+              <thead>
+                <tr>
+                  <th>Tipo</th>
+                  <th>Descripción</th>
+                  <th>Cantidad</th>
+                  <th>P. Unit</th>
+                  <th>Importe</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td>Servicio</td>
+                  <td>Habitación</td>
+                  <td>1</td>
+                  <td><span id="resTarifaOut">50.00</span></td>
+                  <td><span id="resImporteOut">50.00</span></td>
+                </tr>
+              </tbody>
+              <tfoot>
+                <tr>
+                  <td colspan="4" class="text-right font-bold">Total:</td>
+                  <td id="resTotalFinal">50.00</td>
+                </tr>
+              </tfoot>
+            </table>
+
+            <!-- Datos de comprobante -->
+            <div class="flex flex-wrap gap-4 mb-3 text-sm items-center">
+              <label><input type="radio" name="resComp" value="boleta" checked/> Boleta</label>
+              <label><input type="radio" name="resComp" value="factura"/> Factura</label>
+              <input id="resRucField"
+                class="form-input flex-1 disabled:bg-gray-100 disabled:text-gray-500 disabled:cursor-not-allowed"
+                placeholder="Ingrese RUC" disabled/>
+            </div>
+
+            <!-- Pago (igual que en alquiler) -->
+            <div class="grid grid-cols-2 gap-2 items-center mb-3">
+              <select class="form-select">
+                <option>Efectivo</option>
+                <option>Tarjeta</option>
+                <option>Yape</option>
+              </select>
+              <input id="resPagoField" class="form-input bg-gray-100" readonly disabled/>
+            </div>
+
+            <button onclick="registrarReserva()" class="btn btn-success w-full">
+              <i class="fa-solid fa-calendar-check"></i> Registrar Reserva
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- MODAL CAJA -->
     <div
       id="modalCaja"
@@ -1610,6 +1732,50 @@
             class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-semibold flex items-center gap-2"
           >
             <i class="fa-solid fa-door-open"></i> Aperturar Caja
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- MODAL LIMPIEZA -->
+    <div id="modalLimpieza" class="modal">
+      <div class="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 relative animate-fadeIn">
+        <!-- Cerrar -->
+        <button onclick="closeLimpieza()" 
+          class="absolute top-3 right-3 text-gray-400 hover:text-red-500 transition">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+
+        <!-- Encabezado -->
+        <h2 class="text-lg font-bold text-slate-800 mb-4 flex items-center gap-2">
+          <i class="fa-solid fa-broom text-blue-600"></i> Habitación en Limpieza
+        </h2>
+
+        <!-- Info huésped -->
+        <div class="space-y-3 text-sm">
+          <div class="p-3 bg-slate-50 rounded-lg border">
+            <h3 class="font-semibold text-slate-700 mb-2">Último Huésped</h3>
+            <p><b>Nombre:</b> <span id="limpNombre" class="text-slate-600">—</span></p>
+            <p><b>Documento:</b> <span id="limpDoc" class="text-slate-600">—</span></p>
+          </div>
+
+          <div class="p-3 bg-slate-50 rounded-lg border">
+            <h3 class="font-semibold text-slate-700 mb-2">Estadía</h3>
+            <p><b>Entrada:</b> <span id="limpEntrada" class="text-slate-600">—</span></p>
+            <p><b>Salida:</b> <span id="limpSalida" class="text-slate-600">—</span></p>
+            <p><b>Observaciones:</b> <span id="limpObs" class="text-slate-600">—</span></p>
+          </div>
+        </div>
+
+        <!-- Botón -->
+        <div class="mt-5 flex justify-between">
+          <button onclick="revertirOcupado(currentLimpRoom)" 
+            class="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-medium shadow">
+            <i class="fa-solid fa-rotate-left"></i> Revertir a Ocupada
+          </button>
+          <button onclick="closeLimpieza()" 
+            class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow">
+            Cerrar
           </button>
         </div>
       </div>
@@ -1923,7 +2089,7 @@
         doc.text("Jr. C. A. Salaverry 3560", 40, y, { align: "center" });
         y += 4;
         doc.text("Los Olivos - Lima", 40, y, { align: "center" });
-        y += 6;
+        y += 8;
 
         // --- Tipo comprobante ---
         doc.setFontSize(10);
@@ -1934,13 +2100,13 @@
           y,
           { align: "center" }
         );
-        y += 6;
+        y += 8;
         doc.setFont("courier", "normal");
 
         // --- Datos cliente ---
         doc.setFontSize(9);
         doc.text("Fecha: " + new Date().toLocaleString(), 2, y);
-        y += 4;
+        y += 5;
         doc.text(
           "Cliente: " +
             (r.rental.guest?.nombres || "") +
@@ -1951,7 +2117,7 @@
           2,
           y
         );
-        y += 4;
+        y += 5;
         doc.text(
    
             (tipo === "factura"
@@ -1966,9 +2132,9 @@
 
         // --- Datos habitación ---
         doc.text("Duracion: " + (r.rental.duracionH || 0) + " h", 2, y);
-        y += 4;
+        y += 5;
         doc.text("Tarifa: S/ " + (r.rental.tarifa || 0).toFixed(2), 2, y);
-        y += 6;
+        y += 8;
 
         // --- Tabla productos ---
         doc.setFont("courier", "bold");
@@ -2623,6 +2789,7 @@
       createCustomSelect("acomCountry");
       createCustomSelect("guestCountryOcupado");
       createCustomSelect("acomCountryOcupado");
+      createCustomSelect("resGuestCountry");
 
       const ROOMS_KEY = "hc_pms_rooms_v1";
       let rooms = loadRooms();
@@ -2722,18 +2889,22 @@
 
               if (r.estado === "Limpieza") {
                 limp++;
-                const remaining = Math.max(0, r.cleaningEnd - Date.now());
-                const t = msToHMin(remaining);
                 card.innerHTML = `<div class="room-center">
-                <div class="clean-time">${t}</div>
-                <div class="room-num">${r.numero}</div>
-              </div>
-              <button class="badge-clean"><i class="fa-solid fa-broom text-[12px]"></i>Finalizar</button>`;
+                  <div class="clean-time" data-bind="timer">00:00:00</div>
+                  <div class="room-num">${r.numero}</div>
+                </div>
+                <button class="badge-clean"><i class="fa-solid fa-broom text-[12px]"></i>Finalizar</button>`;
+
                 // finalizar limpieza -> disponible
+                card.onclick = () => openLimpieza(r.numero);
                 card.querySelector(".badge-clean").onclick = (ev) => {
                   ev.stopPropagation();
                   finalizarLimpieza(r.numero);
                 };
+
+                // ⏱ iniciar cronómetro
+                const span = card.querySelector('[data-bind="timer"]');
+                startCleaningTimer(span, r.limpiezaStart);
               }
 
               if (r.estado === "Ocupado") {
@@ -2797,6 +2968,43 @@
 
       function startTimer(node, startMs, totalH) {
         const total = totalH * 3600000;
+        const card = node.closest(".room-card");
+
+        function fmt(ms) {
+          const s = Math.floor(ms / 1000);
+          const hh = String(Math.floor(s / 3600)).padStart(2, "0");
+          const mm = String(Math.floor((s % 3600) / 60)).padStart(2, "0");
+          const ss = String(s % 60).padStart(2, "0");
+          return `${hh}:${mm}:${ss}`;
+        }
+
+        function tick() {
+          const rest = total - (Date.now() - startMs);
+
+          if (rest > 0) {
+            // quedan minutos
+            node.textContent = fmt(rest);
+
+            // ⚠️ Parpadea cuando restan <= 10 min
+            if (rest <= 10 * 60000) {
+              card.classList.add("warning-blink");
+            }
+          } else {
+            // vencido
+            const excedido = Date.now() - (startMs + total);
+            node.textContent = "+" + fmt(excedido);
+
+            card.classList.remove("warning-blink");
+            card.classList.add("vencido");
+          }
+        }
+
+        tick();
+        const h = setInterval(tick, 1000);
+        timerHandles.push(h);
+      }
+
+      function startCleaningTimer(node, startMs) {
         function fmt(ms) {
           ms = Math.max(0, ms);
           const s = Math.floor(ms / 1000);
@@ -2806,12 +3014,70 @@
           return `${hh}:${mm}:${ss}`;
         }
         function tick() {
-          const rest = total - (Date.now() - startMs);
-          node.textContent = fmt(rest);
+          const elapsed = Date.now() - startMs;
+          node.textContent = fmt(elapsed);
         }
         tick();
         const h = setInterval(tick, 1000);
         timerHandles.push(h);
+      }
+
+      let currentLimpRoom = null;
+      function openLimpieza(num) {
+        currentLimpRoom = num;
+        const r = rooms.find(x => x.numero === num);
+        if (!r || !r.lastRental) {
+          alert("No hay historial de huésped para esta habitación.");
+          return;
+        }
+
+        // rellenamos modal
+        document.getElementById("limpNombre").textContent =
+          (r.lastRental.guest?.nombres || "") +
+          " " +
+          (r.lastRental.guest?.apellido1 || "") +
+          " " +
+          (r.lastRental.guest?.apellido2 || "");
+        document.getElementById("limpDoc").textContent =
+          (r.lastRental.guest?.docTipo || "") +
+          " " +
+          (r.lastRental.guest?.docNum || "");
+        document.getElementById("limpEntrada").textContent = r.lastRental.entrada
+          ? new Date(r.lastRental.entrada).toLocaleString()
+          : "—";
+        document.getElementById("limpSalida").textContent = r.lastRental.salida
+          ? new Date(r.lastRental.salida).toLocaleString()
+          : "—";
+        document.getElementById("limpObs").textContent =
+          r.lastRental.observ || "—";
+
+        document.getElementById("modalLimpieza").classList.add("show");
+      }
+
+      function closeLimpieza() {
+        document.getElementById("modalLimpieza").classList.remove("show");
+      }
+
+      function revertirOcupado(numero) {
+        const r = rooms.find((x) => x.numero === numero);
+        if (!r || !r.lastRental) {
+          alert("No hay historial para revertir esta habitación.");
+          return;
+        }
+
+        // Restaurar alquiler previo
+        r.estado = "Ocupado";
+        r.rental = { ...r.lastRental };
+        r.start = r.lastRental.entrada;   // restauramos inicio
+        r.totalH = r.lastRental.duracionH;
+
+        // Quitar datos de limpieza
+        r.limpiezaStart = null;
+        r.cleaningEnd = 0;
+
+        saveRooms();
+        renderRooms();
+        closeLimpieza();
       }
 
       // Acciones de estado
@@ -2827,12 +3093,18 @@
       function checkout(numero) {
         const r = rooms.find((x) => x.numero === numero);
         if (!r) return;
+
+        // Guardamos historial del último huésped
+        r.lastRental = { ...r.rental };
+
+        // Pasamos a limpieza
         r.estado = "Limpieza";
         r.guest = "";
         r.totalH = 0;
         r.start = 0;
-        // 45 minutos de limpieza
-        r.cleaningEnd = Date.now() + 45 * 60000;
+        r.limpiezaStart = Date.now();
+        r.cleaningEnd = 0;
+
         saveRooms();
         renderRooms();
       }
@@ -2937,6 +3209,272 @@
         document.getElementById("modalAlquiler").classList.remove("show");
       }
 
+      function limpiarModalReserva() {
+        resGuestDocType.selectedIndex = 0;
+        resGuestDocNum.value = "";
+        resGuestApellido1.value = "";
+        resGuestApellido2.value = "";
+        resGuestNombres.value = "";
+        resGuestFechaNac.value = "";
+        resGuestGenero.selectedIndex = 0;
+        resHoras.value = 12;
+        resTarifa.value = 50;
+        resObs.value = "";
+        resRucField.value = "";
+        resRucField.disabled = true;
+        document.querySelector('input[name="resComp"][value="boleta"]').checked = true;
+        actualizarResumenReserva();
+      }
+
+      function openReserva() {
+        const modal = document.getElementById("modalReserva");
+        modal.classList.add("show");
+
+        // Fecha y hora actual
+        const ahora = new Date();
+        const yyyy = ahora.getFullYear();
+        const mm = String(ahora.getMonth() + 1).padStart(2, "0");
+        const dd = String(ahora.getDate()).padStart(2, "0");
+        const hh = String(ahora.getHours()).padStart(2, "0");
+        const mins = String(ahora.getMinutes()).padStart(2, "0");
+
+        // Poner por defecto fecha y hora actuales
+        document.getElementById("resFecha").value = `${yyyy}-${mm}-${dd}`;
+        document.getElementById("resHora").value = `${hh}:${mins}`;
+
+        // Configurar fecha mínima = hoy
+        document.getElementById("resFecha").min = `${yyyy}-${mm}-${dd}`;
+
+        // Configurar hora mínima = ahora si la fecha seleccionada es hoy
+        const horaInput = document.getElementById("resHora");
+        horaInput.min = `${hh}:${mins}`;
+
+        document.getElementById("resFecha").addEventListener("change", () => {
+          const sel = document.getElementById("resFecha").value;
+          const hoyStr = `${yyyy}-${mm}-${dd}`;
+          if (sel === hoyStr) {
+            horaInput.min = `${hh}:${mins}`;
+          } else {
+            horaInput.min = "00:00";
+          }
+        });
+      }
+
+      function closeReserva() {
+        document.getElementById("modalReserva").classList.remove("show");
+      }
+
+      // RUC habilitar/deshabilitar
+      document.querySelectorAll("input[name='resComp']").forEach((radio) => {
+        radio.addEventListener("change", () => {
+          const rucField = document.getElementById("resRucField");
+          if (radio.value === "factura" && radio.checked) {
+            rucField.disabled = false;
+            rucField.focus();
+          } else {
+            rucField.disabled = true;
+            rucField.value = "";
+          }
+        });
+      });
+
+      function registrarReserva() {
+        const nombre = (resGuestNombres.value.trim() + " " +
+                        resGuestApellido1.value.trim() + " " +
+                        resGuestApellido2.value.trim()).toUpperCase();
+        const fecha = resFecha.value;
+        const hora = resHora.value;
+        const monto = parseFloat(resTarifa.value) || 0; // 👈 corregido, usar tarifa
+        const obs = resObs.value.trim();
+        const docTipo = resGuestDocType.value;
+        const docNum = resGuestDocNum.value.trim();
+
+        if (!nombre || !fecha || !hora) {
+          alert("Complete los campos obligatorios");
+          return;
+        }
+
+        const reserva = { nombre, fecha, hora, monto, obs, compSel: document.querySelector('input[name="resComp"]:checked').value, ruc: (resRucField.value || "").trim(), docTipo, docNum };
+
+        // Guardar en array y en localStorage
+        reservas.push(reserva);
+        saveReservas();
+
+        renderReservas();
+        generarPDFReserva(reserva);
+        closeReserva();
+        limpiarModalReserva();
+      }
+
+      async function generarPDFReserva(data) {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+          orientation: "portrait",
+          unit: "mm",
+          format: [80, 200],
+        });
+
+        let y = 10;
+        doc.setFont("courier", "normal");
+        doc.setFontSize(9);
+
+        // --- LOGO (igual que venta) ---
+        try {
+          const logoUrl =
+            "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQFpxGfaWiSnip5zDzE--DzTvrsVt5PoPD44Q&s";
+          const img = await fetch(logoUrl)
+            .then((res) => res.blob())
+            .then(
+              (b) =>
+                new Promise((resolve) => {
+                  const reader = new FileReader();
+                  reader.onload = () => resolve(reader.result);
+                  reader.readAsDataURL(b);
+                })
+            );
+          doc.addImage(img, "PNG", 25, y, 30, 30);
+          y += 35;
+        } catch (e) {
+          doc.text("HOTEL CARIBBEAN", 40, y, { align: "center" });
+          y += 6;
+        }
+
+        // --- Datos empresa ---
+        doc.setFontSize(9);
+        doc.text("RUC: 20502468767", 40, y, { align: "center" });
+        y += 4;
+        doc.text("INVERSIONES CARIBBEAN S.A.C.", 40, y, { align: "center" });
+        y += 4;
+        doc.text("Jr. C. A. Salaverry 3560", 40, y, { align: "center" });
+        y += 4;
+        doc.text("Los Olivos - Lima", 40, y, { align: "center" });
+        y += 8;
+
+        // --- Tipo comprobante ---
+        doc.setFontSize(10);
+        doc.setFont("courier", "bold");
+        doc.text(
+          data.compSel === "factura" ? "FACTURA RESERVA" : "BOLETA RESERVA",
+          40,
+          y,
+          { align: "center" }
+        );
+        y += 8;
+        doc.setFont("courier", "normal");
+
+        // --- Datos cliente ---
+        doc.setFontSize(9);
+        doc.text("Fecha: " + new Date().toLocaleString(), 2, y);
+        y += 5;
+        doc.text("Cliente: " + data.nombre, 2, y);
+        y += 5;
+        doc.text(
+          data.compSel === "factura"
+            ? "RUC: " + (data.ruc || "")
+            : (data.docTipo || "") + ": " + (data.docNum || ""),
+          2,
+          y
+        );
+        y += 6;
+
+        // --- Datos de la reserva ---
+        doc.text("Reserva: " + data.fecha + " " + data.hora, 2, y);
+        y += 5;
+        doc.text("Observaciones: " + (data.obs || "—"), 2, y);
+        y += 8;
+
+        // --- Tabla productos ---
+        doc.setFont("courier", "bold");
+        doc.text("DESC          CANT    P.UNIT      IMP", 2, y);
+        y += 4;
+        doc.setFont("courier", "normal");
+        doc.line(2, y, 78, y);
+        y += 4;
+
+        // único ítem: Habitación
+        const cantidad = 1;
+        const tarifa = data.monto.toFixed(2);
+        doc.text("Habitación", 2, y);
+        doc.text(String(cantidad), 35, y, { align: "right" });
+        doc.text(tarifa, 55, y, { align: "right" });
+        doc.text(tarifa, 78, y, { align: "right" });
+        y += 5;
+
+        // --- Totales ---
+        y += 2;
+        doc.line(2, y, 78, y);
+        y += 5;
+        doc.setFont("courier", "bold");
+        doc.text("TOTAL: S/ " + data.monto.toFixed(2), 78, y, { align: "right" });
+        doc.setFont("courier", "normal");
+
+        // --- Mensaje ---
+        y += 10;
+        doc.setFontSize(9);
+        doc.text("¡Gracias por su preferencia!", 40, y, { align: "center" });
+
+        // Descargar PDF
+        doc.save(`${data.compSel}_RESERVA_${Date.now()}.pdf`);
+      }
+
+      function actualizarResumenReserva() {
+        const tarifa = parseFloat(document.getElementById("resTarifa").value) || 0;
+
+        // Tabla (P. Unit = tarifa, Importe = tarifa × 1)
+        document.getElementById("resTarifaOut").textContent = tarifa.toFixed(2);
+        document.getElementById("resImporteOut").textContent = tarifa.toFixed(2);
+        document.getElementById("resTotalFinal").textContent = tarifa.toFixed(2);
+
+        // Campo "Recibí"
+        document.getElementById("resPagoField").value = tarifa.toFixed(2);
+      }
+
+      document.getElementById("resTarifa").addEventListener("input", actualizarResumenReserva);
+
+      const RESERVAS_KEY = "hc_pms_reservas_v1";
+      let reservas = loadReservas();
+
+      function loadReservas() {
+        const raw = localStorage.getItem(RESERVAS_KEY);
+        if (raw) {
+          try {
+            return JSON.parse(raw);
+          } catch (e) {
+            console.warn("Error cargando reservas, reiniciando", e);
+          }
+        }
+        return [];
+      }
+
+      function saveReservas() {
+        localStorage.setItem(RESERVAS_KEY, JSON.stringify(reservas));
+      }
+
+      function renderReservas() {
+        const panel = document.getElementById("panel-reservas");
+        panel.innerHTML = "";
+        reservas.forEach((res) => {
+          const card = document.createElement("div");
+          card.className = "reserva-card";
+          card.innerHTML = `
+            <div class="reserva-nombre">${res.nombre}</div>
+            <div class="reserva-monto">S/ ${res.monto.toFixed(2)}</div>
+            <div class="text-xs text-gray-500 flex items-center gap-2">
+              <i class="fa-solid fa-clock"></i> ${res.fecha} ${res.hora}
+            </div>
+            <span class="reserva-detalle">${res.obs || "Detalle"}</span>
+          `;
+          panel.appendChild(card);
+        });
+      }
+
+      // inicializar
+      actualizarResumenReserva();
+
+      // Escuchar cambios
+      document.getElementById("resHoras").addEventListener("input", actualizarResumenReserva);
+      document.getElementById("resTarifa").addEventListener("input", actualizarResumenReserva);
+
       function openCaja() {
         document.getElementById("modalCaja").classList.remove("hidden");
         document.getElementById("modalCaja").classList.add("flex");
@@ -2964,6 +3502,7 @@
       }
 
       renderRooms();
+      renderReservas();
       renderPedidosPanel();
 
     </script>
