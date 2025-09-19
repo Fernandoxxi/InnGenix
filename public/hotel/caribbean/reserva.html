@@ -668,13 +668,12 @@
 
     <script>
       function generarOperacionEsperada() {
-        const num = Math.floor(100000 + Math.random() * 900000); // solo números
+        // 🔒 Código fijo para la demo
+        const num = "210406"; 
         state.pago.esperada = "OP-" + num;
+        state.pago.esperadaNum = num;
 
-        // Guardar también solo el número para comparar después
-        state.pago.esperadaNum = String(num);
-
-        // Actualizar QR dinámico con ese código incrustado
+        // Actualizar QR (ya no cambia nunca, siempre el mismo)
         const qrData = `RESERVA:${state.code || "TEMP"}|MONTO:${state.monto}|OP:${state.pago.esperada}`;
         document.getElementById("qrYape").src =
           "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" +
@@ -882,6 +881,9 @@
 
       // ========= Inicialización =========
       document.addEventListener("DOMContentLoaded", () => {
+        localStorage.removeItem("reservaExpira"); 
+        startCountdown();
+
         // Menú móvil y usuario
         const mobileBtn = $("#mobileMenuButton"),
           mobileMenu = $("#mobileMenu");
@@ -952,6 +954,9 @@
           "change",
           (e) => (state.hora = e.target.value)
         );
+        $("#duracion").addEventListener("change", (e) => {
+          state.duracion = e.target.value;
+        });
         $("#btnDisponibilidad").addEventListener(
           "click",
           verificarDisponibilidad
@@ -1407,25 +1412,24 @@
         y += 16;
 
         // Calcular fecha/hora de fin
-let fechaFinStr = "-";
-if (state.fecha && state.hora && state.duracion && state.duracion !== "promo") {
-  const [hh, mm] = state.hora.split(":").map(Number);
-  const fechaInicioDT = new Date(state.fecha);
-  fechaInicioDT.setHours(hh, mm, 0, 0);
+        let fechaFinStr = "-";
+        if (state.fecha && state.hora && state.duracion && state.duracion !== "promo") {
+          const [hh, mm] = state.hora.split(":").map(Number);
+          const fechaInicioDT = new Date(state.fecha);
+          fechaInicioDT.setHours(hh, mm, 0, 0);
 
-  const horasDur = parseInt(state.duracion.replace("h", ""), 10) || 0;
-  const fechaFinDT = new Date(fechaInicioDT.getTime() + horasDur * 3600000);
+          const horasDur = parseInt(state.duracion.replace("h", ""), 10) || 0;
+          const fechaFinDT = new Date(fechaInicioDT.getTime() + horasDur * 3600000);
 
-  const f = fechaFinDT.toISOString().split("T")[0];
-  const h = fechaFinDT.toTimeString().slice(0, 5);
-  fechaFinStr = `${f} ${h}`;
-}
-
+          const f = fechaFinDT.toISOString().split("T")[0];
+          const h = fechaFinDT.toTimeString().slice(0, 5);
+          fechaFinStr = `${f} ${h}`;
+        }
 
         const desc2 = `Inicio: ${fechaStr} ${horaStr}   |   Duración: ${durStr}   |   Fin: ${fechaFinStr}`;
-doc.setTextColor(90);
-doc.text(desc2, col1, y);
-doc.setTextColor(0);
+        doc.setTextColor(90);
+        doc.text(desc2, col1, y);
+        doc.setTextColor(0);
 
         y += 24;
 
